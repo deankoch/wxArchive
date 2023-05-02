@@ -136,4 +136,6 @@ The GFS component doesn't involve imputation, so it has a simpler structure:
 
 Data access functions (in R) are designed to operate on the the whole grid at a specified subset of times, with support for chunking time across different files. This means you can have different sets of times in different files, and the access functions will sort out which files/layers are needed for given query.
 
-On my workstation it takes about 5 seconds to load the entire time series for a given variable - this includes all grid points from 2005 to present + 5 days. It should be easy to export this completed series to a single monolithic NetCDF file, or CSV, or whatever you like. One exception is GeoTIFF, which has limit of about 65,000 layers (times) because it uses a 16 bit layer index. 
+On my workstation it takes about 5 seconds to load the entire time series for a given variable - this includes all grid points from 2005 to present + 5 days. The times are seamlessly drawn from multiple files (eg. for `pcp_total` there are 9 different files, representing different steps in the extraction/imputation process described above), and the result is complete, containing no missing times or NA values whatsoever.
+
+It should be easy to export this completed series to a single monolithic NetCDF file, or CSV, or whatever you like. One exception is GeoTIFF, which has limit of about 65,000 layers (times) because it uses a 16 bit layer index. 
