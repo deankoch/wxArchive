@@ -6,9 +6,6 @@
 \usage{
 my_detect_step(grib_df, times = "posix_pred", quiet = FALSE, more = FALSE)
 }
-\arguments{
-\item{more}{}
-}
 \description{
 Returns the step size in hours, or if \code{more=TRUE}, appends the columns "ts_hour" (the
 number of hours since the first observation) and "interval" (the difference in

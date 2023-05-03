@@ -113,12 +113,12 @@ my_fit_spatial(var_nm = nm_output_var,
                append = TRUE) |> invisible()
 
 # part 6: fit temporal model to fine grid (include all layers)
-my_fit_temporal(var_nm = nm_output_var,
+time_fit(var_nm = nm_output_var,
                 base_dir = base_dir,
                 input_nm = nm_resample_rap) |> invisible()
 
 # part 7: impute missing times in time series
-my_impute_temporal(var_nm = nm_output_var,
+time_impute(var_nm = nm_output_var,
                    base_dir = base_dir,
                    input_nm = nm_resample_rap,
                    output_nm = 'fine_complete',

@@ -5,14 +5,7 @@
 
 library(devtools)
 load_all()
-
-library(rNOMADS)
-library(terra)
-library(sf)
-library(forecast)
-library(dplyr)
-library(jsonlite)
-library(snapKrig)
+document()
 
 # set me to TRUE on first run. This adds about 1-2 hours processing time
 model_fitting_run = FALSE
@@ -70,9 +63,9 @@ nm_output_var = c(list(c(var_pcp, 'pcp_total')), as.list(var_other))
 #
 
 # part 1: download GRIBs
-my_update_archive(base_dir = base_dir_rap,
-                  hour_rel = hour_rel_rap,
-                  model = 'rap_archive') |> invisible()
+archive_update(base_dir = base_dir_rap,
+               hour_rel = hour_rel_rap,
+               model = 'rap_archive') |> invisible()
 
 # To speed things on the initial run, set `dummy_total=TRUE` to skip
 # loading NA pcp_total layers in early years
@@ -118,15 +111,15 @@ my_fit_spatial(var_nm = nm_output_var,
                append = TRUE) |> invisible()
 
 # part 6: fit temporal model to fine grid (include all layers)
-my_fit_temporal(var_nm = nm_output_var,
+time_fit(var_nm = nm_output_var,
                 base_dir = base_dir_rap,
                 input_nm = nm_resample_rap,
                 n_max = NA) |> invisible()
 
 }
 
-# part 8: impute missing times in fine grid series (run my_fit_temporal first)
-my_impute_temporal(var_nm = nm_output_var,
+# part 8: impute missing times in fine grid series (run time_fit first)
+time_impute(var_nm = nm_output_var,
                    base_dir = base_dir_rap,
                    input_nm = nm_resample_rap,
                    output_nm = nm_complete) |> invisible()
@@ -143,7 +136,7 @@ my_impute_temporal(var_nm = nm_output_var,
 # GFS
 
 # part 7: grab new GFS forecast data (up to 10 days worth of releases)
-gfs_result = my_update_archive(base_dir = base_dir_gfs,
+gfs_result = archive_update(base_dir = base_dir_gfs,
                                hour_pred = hour_pred_gfs,
                                hour_rel = hour_rel_gfs,
                                aoi = aoi,

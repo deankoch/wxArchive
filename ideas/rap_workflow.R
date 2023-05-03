@@ -123,15 +123,15 @@ my_fit_spatial(var_nm = nm_output_var,
                append = TRUE) |> invisible()
 
 # part 6: fit temporal model to fine grid (include all layers)
-my_fit_temporal(var_nm = nm_output_var,
+time_fit(var_nm = nm_output_var,
                 base_dir = base_dir_rap,
                 input_nm = nm_resample_rap,
                 n_max = NA) |> invisible()
 
 }
 
-# part 8: impute missing times in fine grid series (run my_fit_temporal first)
-my_impute_temporal(var_nm = nm_output_var,
+# part 8: impute missing times in fine grid series (run time_fit first)
+time_impute(var_nm = nm_output_var,
                    base_dir = base_dir_rap,
                    input_nm = nm_resample_rap,
                    output_nm = nm_complete) |> invisible()
@@ -212,7 +212,7 @@ t_obs = time(r)
 all(p_attr[['time_obs']] == t_obs)
 
 # check for gaps
-ts_df = data.frame(posix_pred=t_obs) |> my_archive_padder()
+ts_df = data.frame(posix_pred=t_obs) |> archive_pad()
 
 # identify times that were imputed
 p_impute = wx_file('nc', base_dir_rap, nm_complete, names(p_all)[[var_i]])
@@ -251,7 +251,7 @@ knots = model_info[['knots']]
 #model_info
 # betas = rast(pp)[][,-seq(2)][k_test,]
 # alphas = rast(pp)[][,seq(2)][k_test,]
-X = my_time_X(t_obs, knots_t=knots)
+X = time_X(t_obs, knots_t=knots)
 y_lm = X %*% betas
 
 
@@ -313,7 +313,7 @@ idx_plot = seq(show_len) + idx * show_len
 # r2
 
 # # check for gaps
-# ts_df = data.frame(posix_pred=t_obs) |> my_archive_padder()
+# ts_df = data.frame(posix_pred=t_obs) |> archive_pad()
 # ts_df[is.na(ts_df$ts_hours),]
 
 #g = r |> sk()
@@ -362,7 +362,7 @@ my_nc_layers()
 #' 3. `my_pcp_total` fills gaps in "pcp_total" using component precipitation
 #' 3. `my_fine_from_coarse` fills gaps in fine resolution series using coarse grid data
 #' 3. `my_fit_spatial` fits a model of spatial covariance to assist with gap-filling
-#' 4. `my_fit_temporal` fits an AR(2) model to residuals to assist with gap-filling
+#' 4. `time_fit` fits an AR(2) model to residuals to assist with gap-filling
 #' 5. `my_fill_gaps` fills missing time points with imputed data
 #' 6. `my_aggregate` produces daily aggregate variables suitable for input to SWAT+
 #' 

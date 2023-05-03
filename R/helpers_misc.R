@@ -1,85 +1,4 @@
 
-
-
-#' Expands/subsets the tibble returned by `grib_list` to get gap-less time series
-#'
-#' This creates a time series with interval `step_hours`, starting from the earliest time
-#' (`times` column) found in `grib_df`. Rows inconsistent with the series are removed, and
-#' new rows (with NA fields apart from `times`) are added to for missing times.
-#'
-#' @param grib_df data frame containing column `t`
-#' @param times character column name containing `POSIXct` times.
-#' @param quiet logical indicating to suppress console output
-#'
-#' @return a tibble with the same columns as `grib_df`
-#' @export
-my_archive_padder = function(grib_df, times='posix_pred', until=NULL, quiet=FALSE) {
-
-  # times should be a column name of the first argument
-  if( !(times %in% names(grib_df)) ) stop(paste(times, 'not found in grib_df'))
-  grib_df = grib_df |> dplyr::arrange(get(times))
-
-  # detect step size and identify gap sizes
-  include_df = grib_df |> my_detect_step(times=times, more=TRUE)
-  step_hours = grib_df |> my_detect_step(times=times, more=FALSE)
-  n_omit = nrow(grib_df) - nrow(include_df)
-
-  # identify times appearing more than once (eg forecast files from different hours)
-  time_dupe = include_df |>
-    dplyr::filter(interval == 0) |>
-    dplyr::pull(get(times)) |>
-    as.character() |>
-    paste(collapse=', ')
-
-  # this omits the second of any duplicates
-  include_df[['interval']][1L] = step_hours
-  include_df = include_df |> dplyr::filter(interval > 0)
-  n_omit = nrow(grib_df) - nrow(include_df) - n_omit
-  if(!quiet & (n_omit > 0) ) cat('omitted', n_omit, 'duplicate(s):', time_dupe, '\n')
-
-  # filter date/times out of alignment with first, given interval step_hours
-  include_df = include_df |> dplyr::filter( (ts_hours %% step_hours ) == 0 )
-  n_omit = nrow(grib_df) - nrow(include_df) - n_omit
-  if(!quiet & (n_omit > 0) ) cat('omitted', n_omit, 'file(s) with misaligned date/time\n')
-
-  # set default end time
-  to_grib = max(include_df[[times]])
-  if( !is.null(until) ) {
-
-    # extend time series as needed
-    hours_added = ( as.integer(until) - as.integer(to_grib) ) / (60 * 60)
-    if(hours_added > step_hours) {
-
-      if(!quiet) cat('extending by', floor(hours_added/step_hours), 'time steps')
-      to_grib = until
-    }
-  }
-
-  # set up a data frame with regular sequence of times covering the input
-  from_grib = min(include_df[[times]])
-  missing_df = data.frame(seq(from_grib, to_grib, 60 * 60 * step_hours)) |> setNames(times)
-
-  # join with existing data
-  out_df = dplyr::right_join(include_df, missing_df, by=times) |> dplyr::arrange(get(times))
-
-  # new column indicating gap length (or 0 for continuous)
-  out_df = out_df |> dplyr::mutate(gap = my_look_ahead(interval-2L))
-
-  # print info before returning the tibble
-  n_miss = out_df[['ts_hours']] |> is.na() |> sum()
-
-  # date range and time step
-  msg_time = paste(format(from_grib, tz='UTC'), 'to', format(to_grib, tz='UTC'),
-                   paste0('UTC (', step_hours, ' hour interval)\n'))
-
-  # size and missingness
-  msg_files = paste(nrow(out_df), 'time points', paste0('(', n_miss, ' missing)'))
-
-  if( !quiet ) cat('\ntime series: ', paste0(msg_time, msg_files))
-  return( dplyr::tibble(out_df) )
-}
-
-
 # find the index of first match to each element in pattern to the choices in available.
 # pattern should be character vector of regular expressions
 # if pattern is NULL the function instead returns all indices 1...length(available)
@@ -126,81 +45,6 @@ my_look_ahead = function(x) {
   rev(c(NA, rev(x[is_obs]))[ 1L + cumsum(rev(is_obs)) ])
 }
 
-#
-#' Return a tibble of start/end indices for all NA sequences in a vector
-#'
-#' Identifies the start and end points of all gaps (contiguous stretches of `NA` values)
-#' in a vector, along with their lengths. If `invert=TRUE` the function returns
-#' information about the non-`NA` segments.
-#'
-#' `x` can be any vector containing `NA` entries. If `times` is supplied, The function
-#' returns the value of `times` at the start/end index, instead of the index itself.
-#'
-#' If a data frame is passed to `x` then `times` should be a (character) column
-#' name identifying the time values to use - the first (non-time) column in `x`
-#' is then checked for `NA`s.
-#'
-#' If there are no `NA`s (or, with `invert=TRUE`, no non-NA's), the function returns NULL
-#'
-#' @param x
-#' @param start_only
-#' @param times
-#' @param invert
-#'
-#' @return a tibble containing a row for each distinct gap
-#' @export
-#'
-#' @examples
-my_gap_finder = function(x, start_only=FALSE, times=NULL, invert=FALSE) {
-
-  if( is.data.frame(x) ) {
-
-    # if x is a data frame then times must give a column name
-    is_time = names(x) == times[1]
-    if( is.null(times) | !any(is_time) ) stop('expected "times" to be a column name of x')
-    if( ncol(x) < 2 ) stop('expected a data frame with 2 or more columns')
-
-    # proceed with first column of data frame (after removing time column)
-    times = x[[ which(is_time)[1] ]]
-    x = x[[ which(!is_time)[1] ]]
-    return( my_gap_finder(x, start_only=start_only, times=times, invert=invert) )
-  }
-
-  # find non-NA entries
-  is_obs = !is.na(x)
-  if( invert ) is_obs = !is_obs
-  if( all(is_obs) ) return(data.frame())
-
-  # compute first index of all gaps
-  i = which(!is_obs)
-  i_start = head(i, 1) |> c( tail(i, -1)[ which( diff(i) != 1 ) ] )
-  if( start_only ) return(i_start)
-
-  # compute last index of all gaps
-  i_end = if( all(!is_obs) ) length(is_obs) else {
-
-    # create dummy vector with NAs in the right place (invert prevents using x)
-    x_dummy = seq_along(is_obs) |> match(which(is_obs))
-
-    # reverse on either end gets us sequence endpoints, but in reversed index
-    i_end_inv = x_dummy |> rev() |> my_gap_finder(start_only=TRUE) |> rev()
-    i_end = 1L + length(is_obs) - i_end_inv
-  }
-
-  # return in a tibble
-  i_len = 1L+i_end-i_start
-  out_df = data.frame(start=i_start, end=i_end, length=i_len) |> dplyr::tibble()
-
-  # return start/end times too
-  if( !is.null(times) ) {
-
-    out_df[['start_time']] = times[i_start]
-    out_df[['end_time']] = times[i_end]
-  }
-
-  return(out_df)
-}
-
 
 # estimate memory usage for a subset of the forecast archive
 # gdim should be the grid dimensions (integer vector length 2)
@@ -223,16 +67,6 @@ estimate_memory = function(gdim, n_var=1L, n_file=1L, quiet=FALSE) {
 #' number of hours since the first observation) and "interval" (the difference in
 #' "ts_hour" between a given observation and the previous). The step size is the least
 #' nonzero "interval".
-#'
-#' @param grib_df
-#' @param times
-#' @param quiet
-#' @param more
-#'
-#' @return
-#' @export
-#'
-#' @examples
 my_detect_step = function(grib_df, times='posix_pred', quiet=FALSE, more=FALSE) {
 
   # filter NA date/times
@@ -260,7 +94,7 @@ my_detect_step = function(grib_df, times='posix_pred', quiet=FALSE, more=FALSE) 
 my_sample_na = function(t_obs, n, p_max=0.5, step_hours=NULL, na_rm=TRUE, i_max=1e5) {
 
   # extract completed time series and na index
-  df_pad = data.frame(time=t_obs) |> my_archive_padder(t='time', step_hours, quiet=TRUE)
+  df_pad = data.frame(time=t_obs) |> archive_pad(t='time', step_hours, quiet=TRUE)
   all_times = df_pad[['time']]
   is_na = df_pad[['interval']] |> is.na()
   n_times = length(all_times)

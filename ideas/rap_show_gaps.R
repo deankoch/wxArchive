@@ -29,7 +29,7 @@ base_dir = 'L:/spatial_data/rap'
 grib_df = base_dir |> 
   wx_file(what='grib') |> 
   grib_list() |> 
-  my_archive_padder() |> 
+  archive_pad() |> 
   dplyr::mutate( gap_days = gap/24 ) |>
   dplyr::mutate( hour_of_day = as.numeric(format(posix_pred, '%H', tz='UTC')))
 
@@ -112,7 +112,7 @@ png(png_path, width=10*png_height_px, height=png_height_px, units='px', pointsiz
     # filter drops the NA rows so we add them back again below
     df_plot = grib_df |> dplyr::filter(coarse == (nm_res == 'coarse'))
     if(nrow(df_plot) > 0) lines(hour_of_day ~ posix_pred,
-                                data =  my_archive_padder(df_plot, quiet=TRUE),
+                                data =  archive_pad(df_plot, quiet=TRUE),
                                 col = my_cols[[nm_res]] ) 
   }
 
