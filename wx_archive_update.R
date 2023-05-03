@@ -11,8 +11,10 @@ document()
 model_fitting_run = FALSE
 
 # project directories, an area of interest in North America and a fine-resolution DEM covering it
-base_dir_rap = 'G:/weather_db/rap'
-base_dir_gfs = 'G:/weather_db/gfs'
+# base_dir_rap = 'G:/weather_db/rap'
+# base_dir_gfs = 'G:/weather_db/gfs'
+base_dir_rap = 'G:/rap'
+base_dir_gfs = 'G:/gfs'
 
 dem_path = 'G:/weather_db/NAM_elv_msk.tif'
 aoi_path = 'G:/weather_db/aoi.geojson'

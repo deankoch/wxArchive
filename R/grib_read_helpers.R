@@ -186,7 +186,7 @@ my_grib_extract = function(grib_df, file_idx=NULL, regex=.rr_regex, aoi=NULL, me
 
   # initialize SpatRaster list in memory, split by variable name
   r_out = r_template |>
-    lapply(\(r) rast(r, nlyrs=n_file)) |>
+    lapply(\(r) terra::rast(r, nlyrs=n_file)) |>
     stats::setNames(nm=names(regex))
 
   # loop over variables, copying matrix data to SpatRaster
