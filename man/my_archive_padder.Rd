@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers_misc.R
 \name{my_archive_padder}
 \alias{my_archive_padder}
-\title{Expands/subsets the tibble returned by \code{my_archive_lister} to get gap-less time series}
+\title{Expands/subsets the tibble returned by \code{grib_list} to get gap-less time series}
 \usage{
 my_archive_padder(grib_df, times = "posix_pred", until = NULL, quiet = FALSE)
 }

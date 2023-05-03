@@ -64,7 +64,7 @@ grib_dir = wx_file('grib', base_dir_rap, make_dir=TRUE)
 
 # copy small subset of the archive GRIBS containing both coarse and fine grids and NAs
 copy_df = wx_file('grib', base_dir_permanent) |>
-  my_archive_lister(dupe=FALSE) |>
+  grib_list(dupe=FALSE) |>
   filter(date_rel < as.Date('2008-12-24')) |>
   filter(date_rel > as.Date('2008-11-30'))
 copy_dest_path = grib_dir |> file.path(copy_df[['file']])
@@ -80,7 +80,7 @@ my_update_nc(aoi = aoi,
 
 # add some more GRIBS (with gap) and do an update to establish near term file
 copy_df = wx_file('grib', base_dir_permanent) |>
-  my_archive_lister(dupe=FALSE) |>
+  grib_list(dupe=FALSE) |>
   filter(date_rel < as.Date('2009-01-02')) |>
   filter(date_rel > as.Date('2008-12-26'))
 copy_dest_path = grib_dir |> file.path(copy_df[['file']])
@@ -141,7 +141,7 @@ nc_nm = rap_nm
 nc_path = input_path$fine$pcp_large
 my_nc_attributes(nc_path, overwrite=TRUE, lazy=TRUE, ch=TRUE)
 
-#grib_df = wx_file('grib', base_dir) |> my_archive_lister()
+#grib_df = wx_file('grib', base_dir) |> grib_list()
 
 #
 ##

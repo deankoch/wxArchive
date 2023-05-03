@@ -1,7 +1,7 @@
 
 
 
-#' Expands/subsets the tibble returned by `my_archive_lister` to get gap-less time series
+#' Expands/subsets the tibble returned by `grib_list` to get gap-less time series
 #'
 #' This creates a time series with interval `step_hours`, starting from the earliest time
 #' (`times` column) found in `grib_df`. Rows inconsistent with the series are removed, and
@@ -298,7 +298,7 @@ my_sample_na = function(t_obs, n, p_max=0.5, step_hours=NULL, na_rm=TRUE, i_max=
 #' This function allows us to trick `my_update_nc` into not checking for this variable
 #' on prior dates which speeds loading.
 #'
-#' @param grib_df data frame returned by `my_archive_lister(..., dupe=FALSE)`
+#' @param grib_df data frame returned by `grib_list(..., dupe=FALSE)`
 #' @param aoi geometry object passed to `my_grib_idx` (area of interest)
 #' @param output_nc the output file name
 #'

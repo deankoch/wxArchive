@@ -13,7 +13,7 @@ my_grib_extract(
 )
 }
 \arguments{
-\item{grib_df}{data frame, a subset of the rows by \code{my_archive_lister}}
+\item{grib_df}{data frame, a subset of the rows by \code{grib_list}}
 
 \item{file_idx}{integer vector, the rows of \code{grib_df} to load}
 

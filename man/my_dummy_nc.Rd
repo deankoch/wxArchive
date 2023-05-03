@@ -9,7 +9,7 @@ my_dummy_nc(output_nc, grib_df, aoi, date_cutoff = as.Date("2016-10-01"))
 \arguments{
 \item{output_nc}{the output file name}
 
-\item{grib_df}{data frame returned by \code{my_archive_lister(..., dupe=FALSE)}}
+\item{grib_df}{data frame returned by \code{grib_list(..., dupe=FALSE)}}
 
 \item{aoi}{geometry object passed to \code{my_grib_idx} (area of interest)}
 }

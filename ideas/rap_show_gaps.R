@@ -28,7 +28,7 @@ source('D:/rapid_refresh/helpers_misc.R')
 base_dir = 'L:/spatial_data/rap'
 grib_df = base_dir |> 
   wx_file(what='grib') |> 
-  my_archive_lister() |> 
+  grib_list() |> 
   my_archive_padder() |> 
   dplyr::mutate( gap_days = gap/24 ) |>
   dplyr::mutate( hour_of_day = as.numeric(format(posix_pred, '%H', tz='UTC')))

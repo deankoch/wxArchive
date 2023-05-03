@@ -75,7 +75,7 @@ nm_output_var = c(list(c(var_pcp, 'pcp_total')), as.list(var_other))
 #
 
 # part 1: download GRIBs
-my_update_archive(base_dir = base_dir_rap,
+archive_update(base_dir = base_dir_rap,
                   hour_rel = hour_rel_rap,
                   model = 'rap_archive') |> invisible()
 
@@ -148,7 +148,7 @@ my_impute_temporal(var_nm = nm_output_var,
 # GFS
 
 # part 7: grab new GFS forecast data (up to 10 days worth of releases)
-gfs_result = my_update_archive(base_dir = base_dir_gfs,
+gfs_result = archive_update(base_dir = base_dir_gfs,
                                hour_pred = hour_pred_gfs,
                                hour_rel = hour_rel_gfs,
                                aoi = aoi,
@@ -357,7 +357,7 @@ my_nc_layers()
 #' 
 #' #' ## IMPORTANT FUNCTIONS
 #' 
-#' 1. `my_update_archive` initializes the archive and downloads new files #
+#' 1. `archive_update` initializes the archive and downloads new files #
 #' 2. `my_update_nc` exports the (many) GRIB files to (a few) monolithic nc files 
 #' 3. `my_pcp_total` fills gaps in "pcp_total" using component precipitation
 #' 3. `my_fine_from_coarse` fills gaps in fine resolution series using coarse grid data
@@ -404,7 +404,7 @@ my_nc_layers()
 #' accessible from `terra`, or if their potential impact would be worth the fuss. 
 #' 
 #' 
-#' ## PART 1 `my_update_archive` (populates "/grib")
+#' ## PART 1 `archive_update` (populates "/grib")
 #' 
 #' This part downloads archived forecast grids from NCEI servers, using `rNOMADS` to
 #' get the https download links. These servers are sometimes down for maintenance. If
@@ -419,7 +419,7 @@ my_nc_layers()
 #' 
 #' Note that the default request is for over 70,000 files (at the time of writing) - it
 #' will likely take more than a week to download everything, so I recommend setting the
-#' arguments `from` and `to` in `my_update_archive` to select smaller chunks at a time for
+#' arguments `from` and `to` in `archive_update` to select smaller chunks at a time for
 #' downloading. Once the bulk of it is downloaded, smaller updates (dozens of files) should
 #' complete in under a minute.
 #' 

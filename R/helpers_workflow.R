@@ -1,11 +1,11 @@
 #' Create or update a NetCDF version of a local RAP archive
 #' 
-#' Most GRIB files fetched by `my_update_archive` are around 20-30 MB compressed,
+#' Most GRIB files fetched by `archive_update` are around 20-30 MB compressed,
 #' so loading tens of thousands at once is extremely slow. To make the time series
 #' easier to work with, this function extracts the subset that we need and saves it in
 #' a format that can be loaded more quickly.
 #' 
-#' The function opens the GRIB files in the time series created by `my_update_archive`
+#' The function opens the GRIB files in the time series created by `archive_update`
 #' and merges the data into a single (multi-layer) NetCDF file for each of the variables
 #' selected by `regex`. Only the sub-grid overlapping with `aoi` is copied.
 #' 
@@ -85,7 +85,7 @@ my_update_nc = function(aoi,
   output_json = wx_file('index', base_dir, lapply(output_nm, \(x) x[1]), as.list(names(regex)))
   
   # parse filenames of existing archive files to get times
-  all_gribs = my_archive_lister(grib_dir, dupe=FALSE)
+  all_gribs = grib_list(grib_dir, dupe=FALSE)
   if( nrow(all_gribs) == 0 ) stop('no GRIB files found in ', grib_dir)
   
   # set default start times

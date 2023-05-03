@@ -37,13 +37,13 @@ my_update_nc(
 nothing, but possibly writes to the nc and JSON files in \code{file.path(base_dir, output_nm)}
 }
 \description{
-Most GRIB files fetched by \code{my_update_archive} are around 20-30 MB compressed,
+Most GRIB files fetched by \code{archive_update} are around 20-30 MB compressed,
 so loading tens of thousands at once is extremely slow. To make the time series
 easier to work with, this function extracts the subset that we need and saves it in
 a format that can be loaded more quickly.
 }
 \details{
-The function opens the GRIB files in the time series created by \code{my_update_archive}
+The function opens the GRIB files in the time series created by \code{archive_update}
 and merges the data into a single (multi-layer) NetCDF file for each of the variables
 selected by \code{regex}. Only the sub-grid overlapping with \code{aoi} is copied.
 
