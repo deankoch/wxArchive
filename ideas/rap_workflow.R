@@ -170,11 +170,11 @@ my_update_nc(aoi = aoi,
 # resample done fresh each update? Test this
 
 # find latest observed time with all variables present in RAP/RUC archive
-nc_path_rap = my_file_path('nc', base_dir_rap, nm_resample_rap, nm_output_var)
+nc_path_rap = wx_file('nc', base_dir_rap, nm_resample_rap, nm_output_var)
 nc_tmax = do.call(c, lapply(nc_path_rap, \(x) max( my_nc_attributes(x, ch=TRUE)[['time_obs']] ) ))
 
 # load an example grid at fine resolution (second rast call drops cell values)
-r_fine = my_file_path('nc', base_dir_rap, nm_spatial, names(regex_rap)[[1]]) |> 
+r_fine = wx_file('nc', base_dir_rap, nm_spatial, names(regex_rap)[[1]]) |> 
   terra::rast() |> terra::rast()
 
 # part 9: resample to match fine
@@ -195,8 +195,8 @@ my_resample(var_nm = nm_gfs_var,
 
 # merge datasets and prefer RAP archive over GFS
 p_all = Map(\(rap, gfs) c(rap, gfs),
-            gfs = my_file_path('nc', base_dir_gfs, nm_resample, as.list(nm_gfs_var)),
-            rap = my_file_path('nc', base_dir_rap, nm_complete_rap, nm_output_var))
+            gfs = wx_file('nc', base_dir_gfs, nm_resample, as.list(nm_gfs_var)),
+            rap = wx_file('nc', base_dir_rap, nm_complete_rap, nm_output_var))
              
 # load example variable
 var_i = 2
@@ -215,11 +215,11 @@ all(p_attr[['time_obs']] == t_obs)
 ts_df = data.frame(posix_pred=t_obs) |> my_archive_padder()
 
 # identify times that were imputed
-p_impute = my_file_path('nc', base_dir_rap, nm_complete, names(p_all)[[var_i]])
+p_impute = wx_file('nc', base_dir_rap, nm_complete, names(p_all)[[var_i]])
 t_imp = my_nc_attributes(p_impute, ch=TRUE)[['time_obs']]
 
 # identify times from GFS
-p_gfs = my_file_path('nc', base_dir_gfs, nm_resample, names(p_all)[[var_i]])
+p_gfs = wx_file('nc', base_dir_gfs, nm_resample, names(p_all)[[var_i]])
 t_gfs = my_nc_attributes(p_gfs)[['time_obs']]
 
 # pick a random grid point and plot its time series

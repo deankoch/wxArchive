@@ -23,7 +23,7 @@
 #' in a loop. The results are written to a JSON file in sub-directory "model" of the first
 #' sub-directory listed in `input_nm`. Get the list of all output paths with:
 #' 
-#' `my_file_path('spatial', base_dir, input_nm[1], as.list(names(var_nm))`
+#' `wx_file('spatial', base_dir, input_nm[1], as.list(names(var_nm))`
 #' 
 #' If `append=FALSE` the function deletes any existing data in the JSON and replaces
 #' it with the new model fit. If `append=TRUE`, the new fit is appended to the bottom of
@@ -49,9 +49,9 @@ my_fit_spatial = function(var_nm,
                           positive = NULL) {
   
   # input and output paths
-  input_nc = my_file_path('nc', base_dir, input_nm, var_nm)
+  input_nc = wx_file('nc', base_dir, input_nm, var_nm)
   var_nm = var_nm |> stats::setNames(nm=names(input_nc))
-  output_path = my_file_path('spatial', base_dir, input_nm[1], as.list(names(var_nm)), make_dir=TRUE)
+  output_path = wx_file('spatial', base_dir, input_nm[1], as.list(names(var_nm)), make_dir=TRUE)
   
   # get grid info from first nc file, and spatial covariates matrix from DEM and grid dimensions
   cat('\nconstructing covariates from', dem_path)

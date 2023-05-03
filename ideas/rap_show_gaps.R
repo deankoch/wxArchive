@@ -27,7 +27,7 @@ source('D:/rapid_refresh/helpers_misc.R')
 # create a data frame of GRIB files and missing times, split by resolution
 base_dir = 'L:/spatial_data/rap'
 grib_df = base_dir |> 
-  my_file_path(what='grib') |> 
+  wx_file(what='grib') |> 
   my_archive_lister() |> 
   my_archive_padder() |> 
   dplyr::mutate( gap_days = gap/24 ) |>

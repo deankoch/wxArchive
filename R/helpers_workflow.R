@@ -13,7 +13,7 @@
 #' have layers named after the POSIXct time (as character, in GMT) at which the
 #' forecast is valid. To see the paths of the output nc files, do:
 #' 
-#' `my_file_path('nc', base_dir, output_nm, regex)`
+#' `wx_file('nc', base_dir, output_nm, regex)`
 #' 
 #' RAP/RUC GRIBS come in two resolutions, so these are processed separately and saved
 #' to separate sub-directories, named in `output_nm`. This means there are two output
@@ -42,7 +42,7 @@
 #' of NA layers, and the observed times, for quicker loading later on. To see their
 #' output paths. do:
 #' 
-#' `my_file_path('index', base_dir, output_nm, regex)`
+#' `wx_file('index', base_dir, output_nm, regex)`
 #' 
 #' The script will be very slow on the initial run with many input GRIBs, but subsequent
 #' calls to update an existing set of nc files (and JSONs) will be much faster, as
@@ -75,14 +75,14 @@ my_update_nc = function(aoi,
                         from = NULL,
                         append = TRUE) {
   
-  # pass lists to my_file_path to loop over the variable/directory and set names properly
+  # pass lists to wx_file to loop over the variable/directory and set names properly
   var_nm = names(regex)
-  grib_dir = my_file_path('grib', base_dir)
-  input_path = my_file_path('nc', base_dir, as.list(output_nm), as.list(var_nm), make_dir=TRUE)
+  grib_dir = wx_file('grib', base_dir)
+  input_path = wx_file('nc', base_dir, as.list(output_nm), as.list(var_nm), make_dir=TRUE)
   
   # new data written to the first of the files listed in `output_nm`
-  output_path = my_file_path('nc', base_dir, lapply(output_nm, \(x) x[1]), as.list(names(regex)))
-  output_json = my_file_path('index', base_dir, lapply(output_nm, \(x) x[1]), as.list(names(regex)))
+  output_path = wx_file('nc', base_dir, lapply(output_nm, \(x) x[1]), as.list(names(regex)))
+  output_json = wx_file('index', base_dir, lapply(output_nm, \(x) x[1]), as.list(names(regex)))
   
   # parse filenames of existing archive files to get times
   all_gribs = my_archive_lister(grib_dir, dupe=FALSE)
@@ -217,7 +217,7 @@ my_update_nc = function(aoi,
 #' The function writes one output file for each of the vectors in `input_nm`, to the
 #' location(s) in `output_nm`. The output file name is `paste0(pcp_nm, 'nc')`, so the
 #' function will not allow you to set `pcp_nm` to any of the (in-use) names to avoid
-#' confusion downstream (list them with `my_file_path('nc', base_dir, output_nm)`)
+#' confusion downstream (list them with `wx_file('nc', base_dir, output_nm)`)
 #' 
 #' Layers with negatives are set to `NA` in the output file.
 #' 
@@ -238,14 +238,14 @@ my_pcp_total = function(base_dir,
   
   # paths to expected inputs
   pcp_var_nm = list('pcp_total', 'pcp_large', 'pcp_small')
-  input_path = my_file_path('nc', base_dir, input_nm, var_nm=pcp_var_nm)
+  input_path = wx_file('nc', base_dir, input_nm, var_nm=pcp_var_nm)
 
   # sanity check for pcp_nm
   nm_var_all = stats::setNames(nm=names(input_path[[1]]))
   if( pcp_nm %in% nm_var_all ) stop('pcp_nm cannot be an existing variable name')
   
   # new files to write
-  output_nc_path = my_file_path('nc', base_dir, as.list(output_nm), var_nm=pcp_nm)
+  output_nc_path = wx_file('nc', base_dir, as.list(output_nm), var_nm=pcp_nm)
 
   # find time coverage of each variable at both resolutions
   cat('\nscanning available times for', paste(nm_var_all, collapse=', '))
@@ -351,9 +351,9 @@ my_resample = function(var_nm,
                        ...) {
 
   # paths to expected inputs and outputs 
-  input_nc = my_file_path('nc', base_dir, as.list(input_nm), as.list(var_nm))
+  input_nc = wx_file('nc', base_dir, as.list(input_nm), as.list(var_nm))
   var_nm = var_nm |> stats::setNames(nm=names(input_nc[[1]]))
-  output_nc = my_file_path('nc', base_dir, output_nm, as.list(names(var_nm)), make_dir=TRUE)
+  output_nc = wx_file('nc', base_dir, output_nm, as.list(names(var_nm)), make_dir=TRUE)
 
   # find time coverage of each variable at both resolutions
   cat('\nscanning available times for', paste(names(var_nm), collapse=', '))

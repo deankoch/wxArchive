@@ -60,10 +60,10 @@ nm_gfs_var = names(regex_gfs)
 nm_output_var = c(list(c(var_pcp, 'pcp_total')), as.list(var_other))
 
 
-grib_dir = my_file_path('grib', base_dir_rap, make_dir=TRUE)
+grib_dir = wx_file('grib', base_dir_rap, make_dir=TRUE)
 
 # copy small subset of the archive GRIBS containing both coarse and fine grids and NAs
-copy_df = my_file_path('grib', base_dir_permanent) |>
+copy_df = wx_file('grib', base_dir_permanent) |>
   my_archive_lister(dupe=FALSE) |>
   filter(date_rel < as.Date('2008-12-24')) |>
   filter(date_rel > as.Date('2008-11-30'))
@@ -79,7 +79,7 @@ my_update_nc(aoi = aoi,
 
 
 # add some more GRIBS (with gap) and do an update to establish near term file
-copy_df = my_file_path('grib', base_dir_permanent) |>
+copy_df = wx_file('grib', base_dir_permanent) |>
   my_archive_lister(dupe=FALSE) |>
   filter(date_rel < as.Date('2009-01-02')) |>
   filter(date_rel > as.Date('2008-12-26'))
@@ -141,7 +141,7 @@ nc_nm = rap_nm
 nc_path = input_path$fine$pcp_large
 my_nc_attributes(nc_path, overwrite=TRUE, lazy=TRUE, ch=TRUE)
 
-#grib_df = my_file_path('grib', base_dir) |> my_archive_lister()
+#grib_df = wx_file('grib', base_dir) |> my_archive_lister()
 
 #
 ##
@@ -178,8 +178,8 @@ my_fit_spatial(var_nm = var_nm,
 
 
 # testing 
-grib_dir = my_file_path('grib', base_dir, make_dir=T)
-list_out = my_file_path('nc', base_dir, 'coarse') |> my_nc_attributes()
+grib_dir = wx_file('grib', base_dir, make_dir=T)
+list_out = wx_file('nc', base_dir, 'coarse') |> my_nc_attributes()
 rap_nm_extra = list(coarse=c('coarse', 'foobar', 'coarse_archive'),
                     fine=c('fine', 'fine_archive'))
 
@@ -188,11 +188,11 @@ var_nm[[1]] = c('pcp_total', 'pcp')
 
 
 
-my_file_path('nc', base_dir, var_nm=var_nm, sub_dir=rap_nm, collapse=F) 
+wx_file('nc', base_dir, var_nm=var_nm, sub_dir=rap_nm, collapse=F) 
 
 
 
-out_list = my_file_path('nc', base_dir, var_nm=names(regex_rap), sub_dir=rap_nm) 
+out_list = wx_file('nc', base_dir, var_nm=names(regex_rap), sub_dir=rap_nm) 
 out_list
 
 data.frame(out_list) |> t() |> as.data.frame() |> as.list()
@@ -202,7 +202,7 @@ data.frame(out_list) |> t() |> as.data.frame() |> as.list()
 
 
 
-my_file_path('nc', base_dir, sub_dir=c('test'), var_nm=var_nm[1:2], collapse=T, simplify=T) |> str()
+wx_file('nc', base_dir, sub_dir=c('test'), var_nm=var_nm[1:2], collapse=T, simplify=T) |> str()
 
 
 
@@ -226,18 +226,18 @@ my_file_path('nc', base_dir, sub_dir=c('test'), var_nm=var_nm[1:2], collapse=T, 
 
 
 # copy test file
-p_src = my_file_path('nc', base_dir_rap, 'coarse', 'wnd_u')
-p_test = my_file_path('nc', base_dir, 'chunks', 'wnd_u', make_dir=T)
+p_src = wx_file('nc', base_dir_rap, 'coarse', 'wnd_u')
+p_test = wx_file('nc', base_dir, 'chunks', 'wnd_u', make_dir=T)
 if(!file.exists(p_test)) file.copy(p_src, p_test)
 p_attr = my_nc_attributes(p_test, overwrite=TRUE)
 t_src = p_attr[['time']]
 
 # first chunk is the start
-p_big = my_file_path('nc', base_dir, 'chunks', 'wnd_big')
+p_big = wx_file('nc', base_dir, 'chunks', 'wnd_big')
 t_big = t_src |> head(-4e3)
 
 # second chunk is the end (much smaller). Include some overlap 
-p_small = my_file_path('nc', base_dir, 'chunks', 'wnd_small')
+p_small = wx_file('nc', base_dir, 'chunks', 'wnd_small')
 t_small = t_src |> tail(4e3 + 10)
 
 # write both to disk

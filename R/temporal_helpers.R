@@ -23,13 +23,13 @@ my_impute_temporal = function(var_nm,
                               quiet = FALSE) {
   
   # data input/output paths (var_nm is list to ensure output paths are in list)
-  input_nc = my_file_path('nc', base_dir, input_nm, as.list(var_nm))
+  input_nc = wx_file('nc', base_dir, input_nm, as.list(var_nm))
   var_nm = var_nm |> stats::setNames(nm=names(input_nc))
   var_nm_list = names(var_nm) |> as.list()
-  output_nc = my_file_path('nc', base_dir, output_nm, var_nm_list, make_dir=TRUE)
+  output_nc = wx_file('nc', base_dir, output_nm, var_nm_list, make_dir=TRUE)
   
   # paths to fitted parameter nc files are in this file
-  pars_json = my_file_path('temporal_index', base_dir, model_nm[1], var_nm_list)
+  pars_json = wx_file('temporal_index', base_dir, model_nm[1], var_nm_list)
   
   # load time coverage of each variable 
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
@@ -199,11 +199,11 @@ my_fit_temporal = function(var_nm,
                            n_max = NA) {
   
   # input/output paths (var_nm is list to ensure output paths are in list)
-  input_nc = my_file_path('nc', base_dir, input_nm, as.list(var_nm))
+  input_nc = wx_file('nc', base_dir, input_nm, as.list(var_nm))
   var_nm = var_nm |> stats::setNames(nm=names(input_nc))
   var_nm_list = names(var_nm) |> as.list()
-  output_json = my_file_path('temporal_index', base_dir, input_nm[1], var_nm_list, make_dir=TRUE)
-  output_nc = my_file_path('temporal_nc', base_dir, input_nm[1], var_nm_list, make_dir=TRUE)
+  output_json = wx_file('temporal_index', base_dir, input_nm[1], var_nm_list, make_dir=TRUE)
+  output_nc = wx_file('temporal_nc', base_dir, input_nm[1], var_nm_list, make_dir=TRUE)
   
   # load time coverage of each variable 
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))

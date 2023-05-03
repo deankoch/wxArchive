@@ -22,11 +22,11 @@
 #' duplicate (ie the most recently released file); and `TRUE` returns the complement of
 #' `FALSE` (ie all duplicates except the most recent).
 #' 
-#' Call `my_file_path('csv')` to get the default `csv`; and `my_file_path('grib', base_dir)`
+#' Call `wx_file('csv')` to get the default `csv`; and `wx_file('grib', base_dir)`
 #' to get the default `grib_dir` for project directory `base_dir`.
 #'
 #' @param grib_dir path to directory with GRIB files
-#' @param csv character, file name for the CSV (set `NULL` to use default in `my_file_path`)
+#' @param csv character, file name for the CSV (set `NULL` to use default in `wx_file`)
 #' @param dupe logical, indicating to keep only the first of every duplicate time
 #'
 #' @return a tibble, the contents of the CSV
@@ -34,7 +34,7 @@
 my_archive_lister = function(grib_dir, csv=NULL, dupe=NA, quiet=FALSE) {
   
   # default paths from another helper function
-  if( is.null(csv) ) csv = my_file_path('csv') |> basename()
+  if( is.null(csv) ) csv = wx_file('csv') |> basename()
   
   if( !quiet ) cat('scanning for GRIB files in', grib_dir)
   files_new = files_existing = list.files(grib_dir)
