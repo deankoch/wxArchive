@@ -19,15 +19,15 @@ All missing times are imputed as described below. The result is a complete time 
 
 For our purposes we need the following variables
 
-* `pcp_total` ('^SFC.*hr Total precipitation')
-* `pcp_large` ('^SFC.*Large scale precipitation')
-* `pcp_small` ('^SFC.*Convective precipitation')
-* `tmp` ('\^2[m].*Temperature')
-* `hum` ('\^2[m].*Relative humidity')
-* `wnd_u` ('\^10[m].*u-component of wind')
-* `wnd_v` ('\^10[m].*v-component of wind')
+* `pcp_total` = `'^SFC.*hr Total precipitation'`
+* `pcp_large` = `'^SFC.*Large scale precipitation'`
+* `pcp_small` = `'^SFC.*Convective precipitation')`
+* `tmp` = `'\^2\\[m\\].*Temperature')`
+* `hum` = `'\^2\\[m\\].*Relative humidity')`
+* `wnd_u` = `'\^10\\[m\\].*u-component of wind')`
+* `wnd_v` = `'\^10\\[m\\].*v-component of wind')`
 
-The first string (eg `pcp_total`) is my name for the variable, whereas the one in parentheses is a regular expression to match layer names in the GRIB/GRIB2 files. The wildcards accommodate a small degree of variation in names among the three models, and among the different forecast times published on a given day. Notice that a vertical level has to be specified (SFC="surface").
+The first string (eg `pcp_total`) is my name for the variable, whereas the one in parentheses is a regular expression to match layer names in the GRIB/GRIB2 files. The wildcards accommodate a small degree of variation in names among the three models, and among the different forecast times published on a given day. Notice that a vertical level has to be specified (SFC="surface") and square brackets in the name should be escaped (eg `\\[` instead of `[`).
 
 The precipitation type we are interested in is `pcp_total`. Variables `pcp_large` and `pcp_small` are included so that we can derive an estimate of `pcp_total` for time layers where it is missing.
 
