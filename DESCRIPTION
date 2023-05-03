@@ -1,0 +1,11 @@
+Package: wx_archive
+Title: Create and Maintain an Archive of 2-hourly Data from Three NOAA Forecast Models
+Version: 0.0.0.9000
+Authors@R: 
+    person("Dean", "Koch", , "koch@yellowstoneresearch.org", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: This collects 2-hourly data from the following (NOAA) forecast models:  Rapid Update Cycle (RUC) from 2005 to 2007 (26km resolution); Rapid Refresh (RAP) from 2007 to present less 2 days (13km resolution); and Global Forecast System (GFS) from 10 days before present to 5 days ahead (28km resolution). It builds a completed archive (extending 5 days into the future) with all missing times imputed.
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
