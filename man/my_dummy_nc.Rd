@@ -11,7 +11,7 @@ my_dummy_nc(output_nc, grib_df, aoi, date_cutoff = as.Date("2016-10-01"))
 
 \item{grib_df}{data frame returned by \code{grib_list(..., dupe=FALSE)}}
 
-\item{aoi}{geometry object passed to \code{my_grib_idx} (area of interest)}
+\item{aoi}{geometry object passed to \code{grib_idx} (area of interest)}
 }
 \value{
 nothing, but overwrites the file \code{output_nc}
@@ -27,6 +27,6 @@ read the grid dimensions etc. It is assumed that all files in \code{grib_df} are
 same spatial grid.
 
 \code{pcp_total} is not available prior to 2016-10-01 (the default for \code{date_cutoff}).
-This function allows us to trick \code{my_update_nc} into not checking for this variable
+This function allows us to trick \code{nc_update} into not checking for this variable
 on prior dates which speeds loading.
 }

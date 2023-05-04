@@ -60,10 +60,10 @@ nm_gfs_var = names(regex_gfs)
 nm_output_var = c(list(c(var_pcp, 'pcp_total')), as.list(var_other))
 
 
-grib_dir = wx_file('grib', base_dir_rap, make_dir=TRUE)
+grib_dir = file_wx('grib', base_dir_rap, make_dir=TRUE)
 
 # copy small subset of the archive GRIBS containing both coarse and fine grids and NAs
-copy_df = wx_file('grib', base_dir_permanent) |>
+copy_df = file_wx('grib', base_dir_permanent) |>
   grib_list(dupe=FALSE) |>
   filter(date_rel < as.Date('2008-12-24')) |>
   filter(date_rel > as.Date('2008-11-30'))
@@ -72,14 +72,14 @@ file.copy(copy_df[['path']], copy_dest_path, overwrite=FALSE)
 
 
 # part 2: export all to netCDF long term storage
-my_update_nc(aoi = aoi,
+nc_update(aoi = aoi,
              base_dir = base_dir_rap,
              output_nm = nm_src_rap,
              regex = regex_rap) |> invisible()
 
 
 # add some more GRIBS (with gap) and do an update to establish near term file
-copy_df = wx_file('grib', base_dir_permanent) |>
+copy_df = file_wx('grib', base_dir_permanent) |>
   grib_list(dupe=FALSE) |>
   filter(date_rel < as.Date('2009-01-02')) |>
   filter(date_rel > as.Date('2008-12-26'))
@@ -87,7 +87,7 @@ copy_dest_path = grib_dir |> file.path(copy_df[['file']])
 file.copy(copy_df[['path']], copy_dest_path, overwrite=FALSE)
 
 # part 2: export new file to netCDF near term storage
-my_update_nc(aoi = aoi,
+nc_update(aoi = aoi,
              base_dir = base_dir_rap,
              output_nm = nm_src_rap,
              regex = regex_rap) |> invisible()
@@ -141,7 +141,7 @@ nc_nm = rap_nm
 nc_path = input_path$fine$pcp_large
 my_nc_attributes(nc_path, overwrite=TRUE, lazy=TRUE, ch=TRUE)
 
-#grib_df = wx_file('grib', base_dir) |> grib_list()
+#grib_df = file_wx('grib', base_dir) |> grib_list()
 
 #
 ##
@@ -159,7 +159,7 @@ append = TRUE
 
 
 # part 2: export to netCDF
-my_update_nc(aoi = aoi,
+nc_update(aoi = aoi,
              base_dir = base_dir,
              nc_nm = rap_nm,
              regex = regex_rap) |> invisible()
@@ -178,8 +178,8 @@ my_fit_spatial(var_nm = var_nm,
 
 
 # testing 
-grib_dir = wx_file('grib', base_dir, make_dir=T)
-list_out = wx_file('nc', base_dir, 'coarse') |> my_nc_attributes()
+grib_dir = file_wx('grib', base_dir, make_dir=T)
+list_out = file_wx('nc', base_dir, 'coarse') |> my_nc_attributes()
 rap_nm_extra = list(coarse=c('coarse', 'foobar', 'coarse_archive'),
                     fine=c('fine', 'fine_archive'))
 
@@ -188,11 +188,11 @@ var_nm[[1]] = c('pcp_total', 'pcp')
 
 
 
-wx_file('nc', base_dir, var_nm=var_nm, sub_dir=rap_nm, collapse=F) 
+file_wx('nc', base_dir, var_nm=var_nm, sub_dir=rap_nm, collapse=F) 
 
 
 
-out_list = wx_file('nc', base_dir, var_nm=names(regex_rap), sub_dir=rap_nm) 
+out_list = file_wx('nc', base_dir, var_nm=names(regex_rap), sub_dir=rap_nm) 
 out_list
 
 data.frame(out_list) |> t() |> as.data.frame() |> as.list()
@@ -202,7 +202,7 @@ data.frame(out_list) |> t() |> as.data.frame() |> as.list()
 
 
 
-wx_file('nc', base_dir, sub_dir=c('test'), var_nm=var_nm[1:2], collapse=T, simplify=T) |> str()
+file_wx('nc', base_dir, sub_dir=c('test'), var_nm=var_nm[1:2], collapse=T, simplify=T) |> str()
 
 
 
@@ -226,43 +226,43 @@ wx_file('nc', base_dir, sub_dir=c('test'), var_nm=var_nm[1:2], collapse=T, simpl
 
 
 # copy test file
-p_src = wx_file('nc', base_dir_rap, 'coarse', 'wnd_u')
-p_test = wx_file('nc', base_dir, 'chunks', 'wnd_u', make_dir=T)
+p_src = file_wx('nc', base_dir_rap, 'coarse', 'wnd_u')
+p_test = file_wx('nc', base_dir, 'chunks', 'wnd_u', make_dir=T)
 if(!file.exists(p_test)) file.copy(p_src, p_test)
 p_attr = my_nc_attributes(p_test, overwrite=TRUE)
 t_src = p_attr[['time']]
 
 # first chunk is the start
-p_big = wx_file('nc', base_dir, 'chunks', 'wnd_big')
+p_big = file_wx('nc', base_dir, 'chunks', 'wnd_big')
 t_big = t_src |> head(-4e3)
 
 # second chunk is the end (much smaller). Include some overlap 
-p_small = wx_file('nc', base_dir, 'chunks', 'wnd_small')
+p_small = file_wx('nc', base_dir, 'chunks', 'wnd_small')
 t_small = t_src |> tail(4e3 + 10)
 
 # write both to disk
-my_nc_layers(p_test, t_small) |> my_nc_write(p=p_small, overwrite=TRUE, append=FALSE)
-my_nc_layers(p_test, t_big) |> my_nc_write(p=p_big, overwrite=TRUE, append=FALSE)
+nc_layers(p_test, t_small) |> nc_write(p=p_small, overwrite=TRUE, append=FALSE)
+nc_layers(p_test, t_big) |> nc_write(p=p_big, overwrite=TRUE, append=FALSE)
 
 my_nc_attributes(c(p_small, p_big), ch=TRUE)
 
 
 # select a set of times with duplicate matches and one file is not used
 times = c( tail(t_big, 5), head(t_small, 6)) |> unique()
-r = my_nc_layers(p_test, times)
+r = nc_layers(p_test, times)
 
 # check a random layer
 r_test = r[[sample(nlyr(r), 1)]]
-r_validate = my_nc_layers(p_src, time(r_test))
+r_validate = nc_layers(p_src, time(r_test))
 max(r_test[] - r_validate[])
 
 # select a set of times with duplicate matches and both files are used
 times = c( tail(t_big, 25), head(t_small, 26)) |> unique()
-r = my_nc_layers(p_test, times)
+r = nc_layers(p_test, times)
 
 # check a random layer
 r_test = r[[sample(nlyr(r), 1)]]
-r_validate = my_nc_layers(p_test, time(r_test))
+r_validate = nc_layers(p_test, time(r_test))
 max(r_test[] - r_validate[])
 
 my_attributes()

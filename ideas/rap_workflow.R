@@ -83,7 +83,7 @@ archive_update(base_dir = base_dir_rap,
 # loading NA pcp_total layers in early years
 
 # part 2: export all to netCDF long term storage
-my_update_nc(aoi = aoi,
+nc_update(aoi = aoi,
              base_dir = base_dir_rap,
              output_nm = nm_src_rap,
              regex = regex_rap) |> invisible()
@@ -159,7 +159,7 @@ time_added_gfs = gfs_result |> dplyr::filter(downloaded) |> dplyr::pull(posix_pr
 t_gfs = if( length(time_added_gfs) == 0 ) NULL else min(time_added_gfs) 
 
 # part 8: export latest GFS data to nc
-my_update_nc(aoi = aoi,
+nc_update(aoi = aoi,
              base_dir = base_dir_gfs,
              output_nm = list(coarse='coarse'),
              regex = regex_gfs,
@@ -170,11 +170,11 @@ my_update_nc(aoi = aoi,
 # resample done fresh each update? Test this
 
 # find latest observed time with all variables present in RAP/RUC archive
-nc_path_rap = wx_file('nc', base_dir_rap, nm_resample_rap, nm_output_var)
+nc_path_rap = file_wx('nc', base_dir_rap, nm_resample_rap, nm_output_var)
 nc_tmax = do.call(c, lapply(nc_path_rap, \(x) max( my_nc_attributes(x, ch=TRUE)[['time_obs']] ) ))
 
 # load an example grid at fine resolution (second rast call drops cell values)
-r_fine = wx_file('nc', base_dir_rap, nm_spatial, names(regex_rap)[[1]]) |> 
+r_fine = file_wx('nc', base_dir_rap, nm_spatial, names(regex_rap)[[1]]) |> 
   terra::rast() |> terra::rast()
 
 # part 9: resample to match fine
@@ -195,8 +195,8 @@ my_resample(var_nm = nm_gfs_var,
 
 # merge datasets and prefer RAP archive over GFS
 p_all = Map(\(rap, gfs) c(rap, gfs),
-            gfs = wx_file('nc', base_dir_gfs, nm_resample, as.list(nm_gfs_var)),
-            rap = wx_file('nc', base_dir_rap, nm_complete_rap, nm_output_var))
+            gfs = file_wx('nc', base_dir_gfs, nm_resample, as.list(nm_gfs_var)),
+            rap = file_wx('nc', base_dir_rap, nm_complete_rap, nm_output_var))
              
 # load example variable
 var_i = 2
@@ -205,7 +205,7 @@ p = p_all[[var_i]]
 p_attr = my_nc_attributes(p, ch=TRUE)
 
 # load all layers into RAM (~5GB)
-r = my_nc_layers(p, times=p_attr[['time_obs']], na_rm=TRUE)
+r = nc_layers(p, times=p_attr[['time_obs']], na_rm=TRUE)
 t_obs = time(r)
 
 # consistency check
@@ -215,11 +215,11 @@ all(p_attr[['time_obs']] == t_obs)
 ts_df = data.frame(posix_pred=t_obs) |> archive_pad()
 
 # identify times that were imputed
-p_impute = wx_file('nc', base_dir_rap, nm_complete, names(p_all)[[var_i]])
+p_impute = file_wx('nc', base_dir_rap, nm_complete, names(p_all)[[var_i]])
 t_imp = my_nc_attributes(p_impute, ch=TRUE)[['time_obs']]
 
 # identify times from GFS
-p_gfs = wx_file('nc', base_dir_gfs, nm_resample, names(p_all)[[var_i]])
+p_gfs = file_wx('nc', base_dir_gfs, nm_resample, names(p_all)[[var_i]])
 t_gfs = my_nc_attributes(p_gfs)[['time_obs']]
 
 # pick a random grid point and plot its time series
@@ -298,7 +298,7 @@ idx_plot = seq(show_len) + idx * show_len
 
 # 
 # ttest = '2023-04-18 19:00:00' |> as.POSIXct(tz='UTC')
-# r = my_nc_layers(p[1], times=ttest)
+# r = nc_layers(p[1], times=ttest)
 # plot(r)
 # ttest
 # time(r)
@@ -309,7 +309,7 @@ idx_plot = seq(show_len) + idx * show_len
 
 # tt = as.POSIXct('2007-08-14 21:00:00', tz='UTC')
 # tt %in% my_nc_attributes(p[5])$time_obs
-# r2 = my_nc_layers(p[5], tt, na_rm=TRUE)
+# r2 = nc_layers(p[5], tt, na_rm=TRUE)
 # r2
 
 # # check for gaps
@@ -345,7 +345,7 @@ lines(y_lm[idx_plot] ~ t_obs[idx_plot], col='green')
 # impute missing values?
 
 my_nc_attributes(nm_all)
-my_nc_layers()
+nc_layers()
 
 
 # part 9/10: aggregate to daily
@@ -358,7 +358,7 @@ my_nc_layers()
 #' #' ## IMPORTANT FUNCTIONS
 #' 
 #' 1. `archive_update` initializes the archive and downloads new files #
-#' 2. `my_update_nc` exports the (many) GRIB files to (a few) monolithic nc files 
+#' 2. `nc_update` exports the (many) GRIB files to (a few) monolithic nc files 
 #' 3. `my_pcp_total` fills gaps in "pcp_total" using component precipitation
 #' 3. `my_fine_from_coarse` fills gaps in fine resolution series using coarse grid data
 #' 3. `my_fit_spatial` fits a model of spatial covariance to assist with gap-filling
@@ -424,7 +424,7 @@ my_nc_layers()
 #' complete in under a minute.
 #' 
 #' 
-#' ## PART 2 `my_update_nc` (creates or updates "/fine" and "/coarse")
+#' ## PART 2 `nc_update` (creates or updates "/fine" and "/coarse")
 #' 
 #' We are interested in a small number of variables (about 8 of the 300+ in each
 #' GRIB), and a relatively small sub-grid (the Yellowstone/Tetons and surrounding

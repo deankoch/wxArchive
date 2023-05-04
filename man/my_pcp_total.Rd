@@ -37,7 +37,7 @@ with more recent times.
 The function writes one output file for each of the vectors in \code{input_nm}, to the
 location(s) in \code{output_nm}. The output file name is \code{paste0(pcp_nm, 'nc')}, so the
 function will not allow you to set \code{pcp_nm} to any of the (in-use) names to avoid
-confusion downstream (list them with \code{wx_file('nc', base_dir, output_nm)})
+confusion downstream (list them with \code{file_wx('nc', base_dir, output_nm)})
 
 Layers with negatives are set to \code{NA} in the output file.
 

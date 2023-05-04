@@ -47,7 +47,7 @@ archive_update = function(base_dir,
   date_today = as.Date(Sys.time(), tz='UTC')
 
   # scan for existing files or create the directory as needed
-  grib_dir = wx_file('grib', base_dir, make_dir=TRUE)
+  grib_dir = file_wx('grib', base_dir, make_dir=TRUE)
   grib_df = grib_dir |> grib_list()
   date_rel = NULL
 

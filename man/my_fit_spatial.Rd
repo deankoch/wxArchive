@@ -57,7 +57,7 @@ Variable names (\code{var_nm}) specify a subset of the nc files in \code{input_n
 in a loop. The results are written to a JSON file in sub-directory "model" of the first
 sub-directory listed in \code{input_nm}. Get the list of all output paths with:
 
-\verb{wx_file('spatial', base_dir, input_nm[1], as.list(names(var_nm))}
+\verb{file_wx('spatial', base_dir, input_nm[1], as.list(names(var_nm))}
 
 If \code{append=FALSE} the function deletes any existing data in the JSON and replaces
 it with the new model fit. If \code{append=TRUE}, the new fit is appended to the bottom of

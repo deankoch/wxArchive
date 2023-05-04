@@ -73,10 +73,11 @@ archive_update(base_dir = base_dir_rap,
 # loading NA pcp_total layers in early years
 
 # part 2: export all to netCDF long term storage
-my_update_nc(aoi = aoi,
-             base_dir = base_dir_rap,
-             output_nm = nm_src_rap,
-             regex = regex_rap) |> invisible()
+nc_update(aoi = aoi,
+          base_dir = base_dir_rap,
+          output_nm = nm_src_rap,
+          regex = regex_rap) |> invisible()
+
 
 # part 3: compute pcp_total from large + small
 my_pcp_total(base_dir = base_dir_rap,
@@ -122,9 +123,9 @@ time_fit(var_nm = nm_output_var,
 
 # part 8: impute missing times in fine grid series (run time_fit first)
 time_impute(var_nm = nm_output_var,
-                   base_dir = base_dir_rap,
-                   input_nm = nm_resample_rap,
-                   output_nm = nm_complete) |> invisible()
+            base_dir = base_dir_rap,
+            input_nm = nm_resample_rap,
+            output_nm = nm_complete) |> invisible()
 
 
 # after updating the temporal model, delete the contents of `nm_complete` and
@@ -139,17 +140,18 @@ time_impute(var_nm = nm_output_var,
 
 # part 7: grab new GFS forecast data (up to 10 days worth of releases)
 gfs_result = archive_update(base_dir = base_dir_gfs,
-                               hour_pred = hour_pred_gfs,
-                               hour_rel = hour_rel_gfs,
-                               aoi = aoi,
-                               model = 'gfs_0p25')
+                            hour_pred = hour_pred_gfs,
+                            hour_rel = hour_rel_gfs,
+                            aoi = aoi,
+                            model = 'gfs_0p25')
+
 
 # find the earliest of the forecast times downloaded above
-time_added_gfs = gfs_result |> dplyr::filter(downloaded) |> dplyr::pull(posix_pred)
-t_gfs = if( length(time_added_gfs) == 0 ) NULL else min(time_added_gfs)
+# time_added_gfs = gfs_result |> dplyr::filter(downloaded) |> dplyr::pull(posix_pred)
+# t_gfs = if( length(time_added_gfs) == 0 ) NULL else min(time_added_gfs)
 
 # part 8: export latest GFS data to nc
-my_update_nc(aoi = aoi,
+nc_update(aoi = aoi,
              base_dir = base_dir_gfs,
              output_nm = list(coarse='coarse'),
              regex = regex_gfs,
@@ -160,11 +162,15 @@ my_update_nc(aoi = aoi,
 # resample done fresh each update? Test this
 
 # find latest observed time with all variables present in RAP/RUC archive
-nc_path_rap = wx_file('nc', base_dir_rap, nm_resample_rap, nm_output_var)
+nc_path_rap = file_wx('nc', base_dir_rap, nm_resample_rap, nm_output_var)
 nc_tmax = do.call(c, lapply(nc_path_rap, \(x) max( my_nc_attributes(x, ch=TRUE)[['time_obs']] ) ))
 
+nc_path_rap[[1]]
+
+
+
 # load an example grid at fine resolution (second rast call drops cell values)
-r_fine = wx_file('nc', base_dir_rap, nm_spatial, names(regex_rap)[[1]]) |>
+r_fine = file_wx('nc', base_dir_rap, nm_spatial, names(regex_rap)[[1]]) |>
   terra::rast() |> terra::rast()
 
 # part 9: resample to match fine

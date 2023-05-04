@@ -2,7 +2,8 @@
 % Please edit documentation in R/nc_helpers.R
 \name{my_nc_attributes}
 \alias{my_nc_attributes}
-\title{Get or set fields in a JSON file on disk representing attributes of a time series}
+\title{DEPRACATED DO NOT USE
+Get or set fields in a JSON file on disk representing attributes of a time series}
 \usage{
 my_nc_attributes(
   nc_path,

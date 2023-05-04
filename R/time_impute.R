@@ -21,13 +21,13 @@ time_impute = function(var_nm,
                        quiet = FALSE) {
 
   # data input/output paths (var_nm is list to ensure output paths are in list)
-  input_nc = wx_file('nc', base_dir, input_nm, as.list(var_nm))
+  input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
   var_nm = var_nm |> stats::setNames(nm=names(input_nc))
   var_nm_list = names(var_nm) |> as.list()
-  output_nc = wx_file('nc', base_dir, output_nm, var_nm_list, make_dir=TRUE)
+  output_nc = file_wx('nc', base_dir, output_nm, var_nm_list, make_dir=TRUE)
 
   # paths to fitted parameter nc files are in this file
-  pars_json = wx_file('temporal_index', base_dir, model_nm[1], var_nm_list)
+  pars_json = file_wx('temporal_index', base_dir, model_nm[1], var_nm_list)
 
   # load time coverage of each variable
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
@@ -117,7 +117,7 @@ time_impute = function(var_nm,
 
     # load all observed data into a matrix with NAs for unobserved to be filled below
     cat('\nloading observed data into memory')
-    r_obs = input_nc[[nm]] |> my_nc_layers(t_pre)
+    r_obs = input_nc[[nm]] |> nc_layers(t_pre)
     mat_both = r_obs[][, match(t_both, t_pre)]
     cat(' \U2713')
 
@@ -171,7 +171,7 @@ time_impute = function(var_nm,
     t_overwrite = terra::time(r_pred)
 
     # append to nc file
-    r_pred |> my_nc_write(output_nc[[nm]], overwrite=TRUE, append=TRUE)
+    r_pred |> nc_write(output_nc[[nm]], overwrite=TRUE, append=TRUE)
     t2 = proc.time()
     cat('\n\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.')
   }

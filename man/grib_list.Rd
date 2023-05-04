@@ -9,7 +9,7 @@ grib_list(grib_dir, csv = NULL, dupe = NA, quiet = FALSE)
 \arguments{
 \item{grib_dir}{path to directory with GRIB files}
 
-\item{csv}{character, file name for the CSV (set \code{NULL} to use default in \code{wx_file})}
+\item{csv}{character, file name for the CSV (set \code{NULL} to use default in \code{file_wx})}
 
 \item{dupe}{logical, indicating to keep only the first of every duplicate time}
 
@@ -43,6 +43,6 @@ then \code{hour_rel}. Duplicate \code{posix_pred} values are dealt with accordin
 duplicate (ie the most recently released file); and \code{TRUE} returns the complement of
 \code{FALSE} (ie all duplicates except the most recent).
 
-Call \code{wx_file('csv')} to get the default \code{csv}; and \code{wx_file('grib', base_dir)}
+Call \code{file_wx('csv')} to get the default \code{csv}; and \code{file_wx('grib', base_dir)}
 to get the default \code{grib_dir} for project directory \code{base_dir}.
 }

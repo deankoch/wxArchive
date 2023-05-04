@@ -48,11 +48,11 @@
 #'
 #' @return a named character vector, or a named list of them (depending on `what` and `sub_dir`)
 #' @export
-wx_file = function(what,
-                        base_dir = '',
-                        sub_dir = list('coarse', 'fine'),
-                        var_nm = as.list(names(.rap_regex)),
-                        make_dir = FALSE) {
+file_wx = function(what,
+                   base_dir = '',
+                   sub_dir = list('coarse', 'fine'),
+                   var_nm = as.list(names(.rap_regex)),
+                   make_dir = FALSE) {
 
   # set default variable names (first element of each vector in list)
   var_nm = setNames(var_nm, nm = sapply(var_nm, \(x) x[1]))
@@ -76,7 +76,7 @@ wx_file = function(what,
   if( is.list(sub_dir) ) {
 
     # loop over sub-directory lists and collapse result
-    out_list = sub_dir |> lapply(\(s) wx_file(what = what,
+    out_list = sub_dir |> lapply(\(s) file_wx(what = what,
                                                    base_dir = base_dir,
                                                    sub_dir = s,
                                                    var_nm = var_nm,
@@ -87,7 +87,7 @@ wx_file = function(what,
     # loop over variable name lists and collapse result
     if( is.list(var_nm) ) {
 
-      out_list = var_nm |> lapply(\(v) wx_file(what = what,
+      out_list = var_nm |> lapply(\(v) file_wx(what = what,
                                                     base_dir = base_dir,
                                                     sub_dir = sub_dir,
                                                     var_nm = v,

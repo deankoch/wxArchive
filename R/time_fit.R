@@ -21,11 +21,11 @@ time_fit = function(var_nm,
                     n_max = NA) {
 
   # input/output paths (var_nm is list to ensure output paths are in list)
-  input_nc = wx_file('nc', base_dir, input_nm, as.list(var_nm))
+  input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
   var_nm = var_nm |> stats::setNames(nm=names(input_nc))
   var_nm_list = names(var_nm) |> as.list()
-  output_json = wx_file('temporal_index', base_dir, input_nm[1], var_nm_list, make_dir=TRUE)
-  output_nc = wx_file('temporal_nc', base_dir, input_nm[1], var_nm_list, make_dir=TRUE)
+  output_json = file_wx('temporal_index', base_dir, input_nm[1], var_nm_list, make_dir=TRUE)
+  output_nc = file_wx('temporal_nc', base_dir, input_nm[1], var_nm_list, make_dir=TRUE)
 
   # load time coverage of each variable
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
@@ -56,7 +56,7 @@ time_fit = function(var_nm,
     # copy data to memory as sk object
     cat('\nselected subset', as.character(min(t_fit)), 'to', as.character(max(t_fit)))
     cat('\ncopying', n_fit, 'layers to memory')
-    g_obs = input_nc[[nm]] |> my_nc_layers(t_fit) |> snapKrig::sk()
+    g_obs = input_nc[[nm]] |> nc_layers(t_fit) |> snapKrig::sk()
 
     # build matrix of seasonal predictors and compute QR decomposition
     cat('\ncomputing temporal covariates')

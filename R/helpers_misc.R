@@ -129,11 +129,11 @@ my_sample_na = function(t_obs, n, p_max=0.5, step_hours=NULL, na_rm=TRUE, i_max=
 #' same spatial grid.
 #'
 #' `pcp_total` is not available prior to 2016-10-01 (the default for `date_cutoff`).
-#' This function allows us to trick `my_update_nc` into not checking for this variable
+#' This function allows us to trick `nc_update` into not checking for this variable
 #' on prior dates which speeds loading.
 #'
 #' @param grib_df data frame returned by `grib_list(..., dupe=FALSE)`
-#' @param aoi geometry object passed to `my_grib_idx` (area of interest)
+#' @param aoi geometry object passed to `grib_idx` (area of interest)
 #' @param output_nc the output file name
 #'
 #' @return nothing, but overwrites the file `output_nc`
@@ -146,14 +146,14 @@ my_dummy_nc = function(output_nc, grib_df, aoi, date_cutoff=as.Date('2016-10-01'
 
     # open first available file in grib_df
     cat('\ncreating empty file', basename(output_nc))
-    r_dummy = my_grib_idx(grib_df, aoi=aoi, quiet=TRUE, try_again=TRUE)[['r_aoi']] |>
+    r_dummy = grib_idx(grib_df, aoi=aoi, quiet=TRUE, try_again=TRUE)[['r_aoi']] |>
       terra::rast(nlyrs=length(t_NA)) |>
       stats::setNames(t_NA)
 
     # write dummy file to disk (and attributes JSON)
     r_dummy[] = NA
     terra::time(r_dummy) = t_NA
-    my_nc_write(r_dummy, output_nc, overwrite=TRUE, append=FALSE)
+    nc_write(r_dummy, output_nc, overwrite=TRUE, append=FALSE)
   }
 }
 
@@ -182,7 +182,7 @@ my_archive_dates = function(base_dir, var_nm=NULL, sub_dir=NULL) {
     if( length(s_nm) == 0 ) return( NULL )
 
     # read all attributes JSON files to find dates info
-    s_index_path = wx_file('index', base_dir, s, s_nm)
+    s_index_path = file_wx('index', base_dir, s, s_nm)
     var_df_list = s_nm |> stats::setNames(s_nm) |> lapply(\(nm) {
 
       var_attr = my_nc_attributes(nc_path[nm])

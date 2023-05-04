@@ -23,7 +23,7 @@
 #' in a loop. The results are written to a JSON file in sub-directory "model" of the first
 #' sub-directory listed in `input_nm`. Get the list of all output paths with:
 #' 
-#' `wx_file('spatial', base_dir, input_nm[1], as.list(names(var_nm))`
+#' `file_wx('spatial', base_dir, input_nm[1], as.list(names(var_nm))`
 #' 
 #' If `append=FALSE` the function deletes any existing data in the JSON and replaces
 #' it with the new model fit. If `append=TRUE`, the new fit is appended to the bottom of
@@ -49,9 +49,9 @@ my_fit_spatial = function(var_nm,
                           positive = NULL) {
   
   # input and output paths
-  input_nc = wx_file('nc', base_dir, input_nm, var_nm)
+  input_nc = file_wx('nc', base_dir, input_nm, var_nm)
   var_nm = var_nm |> stats::setNames(nm=names(input_nc))
-  output_path = wx_file('spatial', base_dir, input_nm[1], as.list(names(var_nm)), make_dir=TRUE)
+  output_path = file_wx('spatial', base_dir, input_nm[1], as.list(names(var_nm)), make_dir=TRUE)
   
   # get grid info from first nc file, and spatial covariates matrix from DEM and grid dimensions
   cat('\nconstructing covariates from', dem_path)
@@ -139,7 +139,7 @@ my_sk_fit = function(p, X, n_max=1e2, t_fit=NULL, positive=NULL) {
   # copy non-NA layers and times into memory as sk object
   msg_n = paste0('(subsample of ', length(t_obs), ')')
   cat('\ncopying data from', n_fit, 'layers', msg_n)
-  g_fit = my_nc_layers(p, t_fit) |> snapKrig::sk()
+  g_fit = nc_layers(p, t_fit) |> snapKrig::sk()
   cat(' \U2713')
   
   # filter to times where the grid had non-zero value
