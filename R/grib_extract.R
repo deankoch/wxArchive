@@ -88,6 +88,35 @@ grib_extract = function(grib_df, file_idx=NULL, regex=.rr_regex, aoi=NULL, memor
   return(r_out)
 }
 
+
+#' Estimate memory usage in GB for a nested list of numeric matrices
+#'
+#' Helper function for `grib_extract`
+#'
+#' This prints a rough estimate of the memory needed for a list of `n_file * n_var`
+#' grids of dimensions `gdim`. The output is always in GB whereas the console message
+#' is printed in MB if the volume is less than 1 GB.
+#'
+#' @param gdim integer vector, the grid dimensions (order unimportant)
+#' @param n_var integer number of variables
+#' @param n_file integer number of files
+#' @param quiet logical, if FALSE the function prints information to console
+#'
+#' @return numeric (GB)
+#' @export
+estimate_memory = function(gdim, n_var=1L, n_file=1L, quiet=FALSE) {
+
+  # memory requirement estimate (based on NCmisc)
+  est_gb = 1.05 * prod(c(gdim, n_file, n_var) ) / 2^27
+  if(!quiet) cat('\nexpected memory usage:', ifelse(est_gb < 1,
+                                                    round(1e3*est_gb, 2) |> paste('MB'),
+                                                    round(est_gb, 2) |> paste('GB')))
+
+  return(est_gb)
+}
+
+
+
 #' Find layer and sub-grid indices for calls to `terra::rast` and `terra::values`
 #'
 #' This uses `terra` to read the layer names and grid dimensions from the GRIB at
@@ -160,6 +189,48 @@ grib_idx = function(grib_path, regex=NULL, aoi=NULL, quiet=FALSE, try_again=FALS
   return( list(k=k, ij=c(i, j), dim=dim(r_aoi)[1:2], r_aoi=r_aoi) )
 }
 
+#' Find the index of first match to each element in pattern against a set of strings
+#'
+#' Helper for `grib_idx` and `grib_extract`, where `available` are the layer names in
+#' a GRIB file and we want to select exactly one of them for each pattern.
+#'
+#' If pattern is NULL the function instead returns all indices 1...length(`available`)
+#'
+#' @param available character vector of strings to match against
+#' @param pattern character vector of regular expressions
+#' @param na.rm logical, if TRUE omit unmatched results
+#' @param quiet logical, if TRUE the function won't warn about multiple matches
+#'
+#' @return integer vector
+#' @export
+which_lyr = function(available, pattern=NULL, na.rm=FALSE, quiet=FALSE) {
+
+  if(is.null(pattern)) return(stats::setNames(seq(length(available)), available))
+
+  # literal matching with regex=FALSE
+  pattern_map = match(pattern, available)
+
+  # grep to get list of matches (expect 1 per nm)
+  pattern_map_list = pattern |> lapply(\(x) grep(x, available))
+
+  # deal with multiple matches
+  is_replicate = sapply(pattern_map_list, length) > 1
+  if( any(is_replicate) ) {
+
+    # warn before discarding matches
+    msg_pattern = paste(pattern[is_replicate], collapse=', ')
+    msg_available = pattern_map_list[is_replicate] |> sapply(\(x) paste(x[-1], collapse=', '))
+    msg_problem = paste('variable(s)', msg_pattern, 'also matched:', msg_available)
+    if(!quiet) warning(msg_problem)
+
+    # extract the first match only
+    pattern_map = pattern_map_list |> sapply(\(x) x[1])
+
+  } else { pattern_map = do.call(c, pattern_map_list) }
+
+  if(na.rm) pattern_map = pattern_map[!is.na(pattern_map)]
+  return(pattern_map)
+}
 
 #' GRIB loader to catch errors with missing/damaged files
 #'
@@ -167,8 +238,9 @@ grib_idx = function(grib_path, regex=NULL, aoi=NULL, quiet=FALSE, try_again=FALS
 #' layers specified in `regex` and `aoi` (using `grib_idx`) for the GRIB
 #' file at `grib_path`.
 #'
-#' This catches loading errors - instead of halting, the function
-#' returns the error object (and prints it as a warning if `quiet=FALSE`).
+#' The purpose is to recover from loading errors - instead of halting, the
+#' function returns the error object (and prints it as a warning if
+#' `quiet=FALSE`).
 #'
 #' @param grib_path character path to the GRIB file to (attempt to) load
 #' @param regex character vector passed to `grib_idx` (layer names)
@@ -202,6 +274,3 @@ grib_read = function(grib_path, regex=NULL, aoi=NULL, quiet=FALSE) {
 
   return(t_mat)
 }
-
-
-

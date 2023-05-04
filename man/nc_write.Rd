@@ -21,11 +21,11 @@ supplied SpatRaster \code{r}.
 \details{
 \code{r} must have a time for each layer (check \code{terra::time(r)}). Only new times
 are copied - ie those occurring after the latest time in the file at \code{p}. To
-add/modify earlier times you will need to delete the file and create it again.
+add/modify earlier times you will need to delete the file and start over.
 
-The function does little checking to see if the request is valid. It assumes
-that \code{p} is a valid path to a NetCDF file (.nc), and that raster grid in \code{r}
-is compatible with the file at \code{p} in terms of dimensions etc.
+The function assumes that \code{p} is a valid path to a NetCDF file (.nc), and that
+the raster grid in \code{r} is compatible with the file at \code{p} in terms of dimensions,
+projection, etc.
 
 When overwriting an existing file, the function initially writes to a temporary
 file in the same directory. At the end of the function call the old file is
@@ -33,5 +33,6 @@ deleted and the temporary one is renamed to take its place. If something goes
 wrong and the function halts, this temporary file can be safely deleted.
 
 After writing to the .nc file, the function creates/updates the JSON attributes
-file in the 'time' subdirectory.
+file in the 'time' subdirectory. If something goes wrong with this file, it can
+be safely deleted then rebuilt with \code{time_wx(p)}.
 }

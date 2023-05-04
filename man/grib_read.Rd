@@ -24,6 +24,7 @@ layers specified in \code{regex} and \code{aoi} (using \code{grib_idx}) for the 
 file at \code{grib_path}.
 }
 \details{
-This catches loading errors - instead of halting, the function
-returns the error object (and prints it as a warning if \code{quiet=FALSE}).
+The purpose is to recover from loading errors - instead of halting, the
+function returns the error object (and prints it as a warning if
+\code{quiet=FALSE}).
 }

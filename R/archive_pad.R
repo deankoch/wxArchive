@@ -18,8 +18,8 @@ archive_pad = function(grib_df, times='posix_pred', until=NULL, quiet=FALSE) {
   grib_df = grib_df |> dplyr::arrange(get(times))
 
   # detect step size and identify gap sizes
-  include_df = grib_df |> my_detect_step(times=times, more=TRUE)
-  step_hours = grib_df |> my_detect_step(times=times, more=FALSE)
+  include_df = grib_df |> time_step(times=times, more=TRUE)
+  step_hours = grib_df |> time_step(times=times, more=FALSE)
   n_omit = nrow(grib_df) - nrow(include_df)
 
   # identify times appearing more than once (eg forecast files from different hours)
@@ -60,8 +60,16 @@ archive_pad = function(grib_df, times='posix_pred', until=NULL, quiet=FALSE) {
   # join with existing data
   out_df = dplyr::right_join(include_df, missing_df, by=times) |> dplyr::arrange(get(times))
 
+  # Fill missing values (NAs) with the next non-NA value
+  look_ahead = \(x) {
+
+    # based on code in the `zoo` package
+    is_obs = !is.na(x)
+    rev(c(NA, rev(x[is_obs]))[ 1L + cumsum(rev(is_obs)) ])
+  }
+
   # new column indicating gap length (or 0 for continuous)
-  out_df = out_df |> dplyr::mutate(gap = my_look_ahead(interval-2L))
+  out_df = out_df |> dplyr::mutate(gap = look_ahead(interval-2L))
 
   # print info before returning the tibble
   n_miss = out_df[['ts_hours']] |> is.na() |> sum()

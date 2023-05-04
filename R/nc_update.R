@@ -112,7 +112,7 @@ nc_update = function(aoi,
     # create empty pcp_total file for times where it was not offered
     is_missing = ifelse(is.null(path_nc[['pcp_total']]), TRUE, !file.exists(path_nc[['pcp_total']]))
     make_dummy = make_dummy & ('pcp_total' %in% var_nm) & is_missing
-    if( make_dummy ) my_dummy_nc(path_nc[['pcp_total']], grib_df, aoi)
+    if( make_dummy ) dummy_nc(path_nc[['pcp_total']], grib_df, aoi)
 
     # matrix indicating for each variable (column) whether the file (row) needs to be loaded
     is_new_mat = names(input_path[[nm_res]]) |> sapply(\(nm) {
@@ -186,5 +186,48 @@ nc_update = function(aoi,
       # update counters
       is_new_mat[file_idx,] = FALSE
     }
+  }
+}
+
+
+#' Make an empty NetCDF file covering time period prior to a cutoff date
+#'
+#' The function writes a NetCDF file containing an empty layer for each time in
+#' `grib_df[['posix_pred']]` prior to `date_cutoff`. All data values are set to `NA`.
+#'
+#' WARNING: This overwrites any existing data in `output_nc`!
+#'
+#' `pcp_total` is not currently available prior to 2016-10-01 (the default for
+#' `date_cutoff`). The purpose of this function is to trick `nc_update` into not
+#' checking for this variable on prior dates. This helps speed up the initial call
+#' to `nc_update`.
+#'
+#' At least one of the files listed in `grib_df` must exist so that this function can
+#' get a template grid from it. It is assumed that all files in `grib_df` are from
+#' same spatial grid. There are three different grids: GFS, and RAP/RUC coarse
+#' and fine - make sure you filter to only of these groups.
+#'
+#' @param grib_df data frame returned by `grib_list(..., dupe=FALSE)`
+#' @param aoi geometry object passed to `grib_idx` (area of interest)
+#' @param output_nc the output file name
+#'
+#' @return nothing, but overwrites the file `output_nc`
+#' @export
+dummy_nc = function(output_nc, grib_df, aoi, date_cutoff=as.Date('2016-10-01')) {
+
+  # all rows in grib_df prior to date_cutoff
+  t_NA = grib_df |> dplyr::filter(date_rel < date_cutoff) |> pull(posix_pred)
+  if( length(t_NA) > 0 ) {
+
+    # open first available file in grib_df
+    cat('\ncreating empty file', basename(output_nc))
+    r_dummy = grib_idx(grib_df, aoi=aoi, quiet=TRUE, try_again=TRUE)[['r_aoi']] |>
+      terra::rast(nlyrs=length(t_NA)) |>
+      stats::setNames(t_NA)
+
+    # write dummy file to disk (and attributes JSON)
+    r_dummy[] = NA
+    terra::time(r_dummy) = t_NA
+    nc_write(r_dummy, output_nc)
   }
 }
