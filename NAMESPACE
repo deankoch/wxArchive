@@ -12,6 +12,10 @@ export(grib_extract)
 export(grib_idx)
 export(grib_list)
 export(grib_read)
+<<<<<<< HEAD
+=======
+export(dummy_nc)
+>>>>>>> d611a861b5536ed7232c91a0ee047ebf9be09f38
 export(my_fit_spatial)
 export(my_nc_attributes)
 export(my_sk_fit)
