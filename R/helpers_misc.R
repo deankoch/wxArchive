@@ -153,7 +153,7 @@ my_dummy_nc = function(output_nc, grib_df, aoi, date_cutoff=as.Date('2016-10-01'
     # write dummy file to disk (and attributes JSON)
     r_dummy[] = NA
     terra::time(r_dummy) = t_NA
-    nc_write(r_dummy, output_nc, overwrite=TRUE, append=FALSE)
+    nc_write(r_dummy, output_nc)
   }
 }
 

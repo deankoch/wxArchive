@@ -4,14 +4,12 @@
 \alias{time_wx}
 \title{Find index of NA layers and times available in a (set of) NetCDF files(s)}
 \usage{
-time_wx(nc_path, join = TRUE, collapse = TRUE)
+time_wx(nc_path, join = TRUE)
 }
 \arguments{
 \item{nc_path}{character vector, path(s) to the NetCDF file(s)}
 
 \item{join}{logical, when TRUE the results from all \code{nc_path} are combined}
-
-\item{collapse}{logical, if TRUE and output list has length 1, it is unlisted}
 }
 \value{
 a list with vectors 'na' (integer), 'time', 'time_na', 'time_obs' (or a list of them)

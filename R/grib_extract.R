@@ -41,11 +41,11 @@ grib_extract = function(grib_df, file_idx=NULL, regex=.rr_regex, aoi=NULL, memor
 
   # loop over files, copying only the requested variables to storage
   cat('\nloading', n_file, 'files...\n')
-  if(n_file > 1) pb = txtProgressBar(max=n_file, style=3)
+  if(n_file > 1) pb = utils::txtProgressBar(max=n_file, style=3)
   for(t in seq(n_file)) {
 
     # progress bar in console updated with current filename
-    if(n_file > 1) setTxtProgressBar(pb, t)
+    if(n_file > 1) utils::setTxtProgressBar(pb, t)
     t_path = grib_df[['path']][file_idx[t]]
     cat('\r|=', basename(t_path), '')
 

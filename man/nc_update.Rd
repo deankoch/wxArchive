@@ -12,8 +12,7 @@ nc_update(
   n_chunk = 5000,
   memory_limit = 8L,
   make_dummy = FALSE,
-  from = NULL,
-  append = TRUE
+  from = NULL
 )
 }
 \arguments{
@@ -68,12 +67,6 @@ If \code{from} is supplied, the function only copies new times greater than or e
 \code{from}. A different \code{from} can be specified for each variable, in which case
 \code{length(from)} should match \code{length(regex)}. By default, \code{from} is set to the
 earliest available time.
-
-TEMPORARY
-The default \code{append=TRUE} only copies data from files whose time does not already
-appear in the existing files listed in \code{output_nm}. With \code{append=FALSE}, the function
-copies all times greater than or equal to \code{from}, overwriting any existing times in
-the output nc files (any existing times before \code{from} will remain).
 
 Within each of these sub-directories, another sub-directory, 'time', is created
 to store JSON files, one per variable (ie one per nc file). These hold the indices

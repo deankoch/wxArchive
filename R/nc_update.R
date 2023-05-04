@@ -31,12 +31,6 @@
 #' `length(from)` should match `length(regex)`. By default, `from` is set to the
 #' earliest available time.
 #'
-#' TEMPORARY
-#' The default `append=TRUE` only copies data from files whose time does not already
-#' appear in the existing files listed in `output_nm`. With `append=FALSE`, the function
-#' copies all times greater than or equal to `from`, overwriting any existing times in
-#' the output nc files (any existing times before `from` will remain).
-#'
 #' Within each of these sub-directories, another sub-directory, 'time', is created
 #' to store JSON files, one per variable (ie one per nc file). These hold the indices
 #' of NA layers, and the observed times, for quicker loading later on. To see their
@@ -72,8 +66,7 @@ nc_update = function(aoi,
                      n_chunk = 5e3,
                      memory_limit = 8L,
                      make_dummy = FALSE,
-                     from = NULL,
-                     append = TRUE) {
+                     from = NULL) {
 
   # pass lists to file_wx to loop over the variable/directory and set names properly
   var_nm = names(regex)
@@ -103,7 +96,7 @@ nc_update = function(aoi,
   # files at different resolutions processed separately
   for( nm_res in c('coarse', 'fine') ) {
 
-    cat('\n\nchecking', nm_res, 'grids')
+    cat('\n\n', nm_res, 'grids')
     path_nc = output_path[[nm_res]]
 
     # identify all files at this resolution
@@ -127,13 +120,10 @@ nc_update = function(aoi,
       # select all times beyond cutoff date
       p = input_path[[nm_res]][[nm]]
       is_eligible = grib_df[['posix_pred']] >= from[nm]
-      if( append ) {
 
-        # of those, select all times not already processed
-        time_done = time_wx(p)[['time']]
-        is_eligible = is_eligible & !( grib_df[['posix_pred']] %in% time_done )
-      }
-      is_eligible
+      # of those, select all times not already processed
+      time_done = time_wx(p)[['time']]
+      is_eligible & !( grib_df[['posix_pred']] %in% time_done )
     })
 
     # load chunks in a loop until nothing left to load
@@ -185,10 +175,7 @@ nc_update = function(aoi,
         for( nm in names(r_from_gribs) ) {
 
           cat('\n\n', nm, '...')
-          nc_write(r = r_from_gribs[[nm]],
-                   p = output_path[[nm_res]][[nm]],
-                   overwrite = TRUE)
-
+          nc_write(r = r_from_gribs[[nm]], p = output_path[[nm_res]][[nm]])
         }
 
         # finished the slow part

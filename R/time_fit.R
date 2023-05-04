@@ -68,7 +68,7 @@ time_fit = function(var_nm,
     n_g = prod(dim(g_obs))
     fit_mat = matrix(NA_real_, n_g, 2L + ncol(X_time))
     cat('\nfitting seasonal trend and AR2 model separately to', n_g, 'time series...\n')
-    pb = txtProgressBar(max=n_g, style=3)
+    pb = utils::txtProgressBar(max=n_g, style=3)
     for(k in seq(n_g)) {
 
       # time series vector with NAs for missing times
@@ -88,7 +88,7 @@ time_fit = function(var_nm,
 
       # copy to storage
       fit_mat[k,] = c(temporal_alphas, temporal_betas)
-      setTxtProgressBar(pb, k)
+      utils::setTxtProgressBar(pb, k)
     }
 
     close(pb)

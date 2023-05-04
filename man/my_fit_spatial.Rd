@@ -51,7 +51,7 @@ default), the function detects precipitation layers automatically (and sets
 
 \code{input_nc} can be a vector of sub-directories, and \code{var_nm} can be a list of
 character vectors (specifying sets of equivalent names), allowing users to specify
-multiple source files for a single variable, similar to \code{my_resample}.
+multiple source files for a single variable, similar to \code{nc_resample}.
 
 Variable names (\code{var_nm}) specify a subset of the nc files in \code{input_nm} to process
 in a loop. The results are written to a JSON file in sub-directory "model" of the first

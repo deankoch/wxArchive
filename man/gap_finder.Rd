@@ -16,7 +16,7 @@ gap_finder(x, start_only = FALSE, times = NULL, invert = FALSE)
 \item{invert}{logical indicating to return the inverted result}
 }
 \value{
-a tibble containing a row for each distinct gap
+a tibble with a row of information about each distinct gap
 }
 \description{
 A helper function for time_impute that identifies the start and end points of all gaps

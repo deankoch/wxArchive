@@ -39,8 +39,8 @@ in \code{p} contain data for the same variable (variable names are ignored).
 The function creates the JSON file(s) as needed, and assumes that
 all of \code{times} can be found in the .nc file(s) at \code{p}. Available times
 for the file at \code{p} can be listed with \code{terra::rast(p) |> terra::time()},
-and this should match \code{my_nc_attributes(p)[['time']]}, assuming the JSON
-is up to date.
+and this should match the "time" entries of \code{time_wx(p)}, assuming the JSONs
+are up to date.
 
 When \code{preload=TRUE} the function forces \code{terra} to copy all data values
 into memory before returning the SpatRaster handle. Normally \code{terra} loads

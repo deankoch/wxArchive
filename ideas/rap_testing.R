@@ -3,13 +3,13 @@ library(terra)
 library(sf)
 library(forecast)
 library(dplyr)
-library(jsonlite) 
+library(jsonlite)
 library(snapKrig)
 
 source('D:/rapid_refresh/helpers_misc.R')
 
 # set me to TRUE on first run. This adds about 1-2 hours processing time
-model_fitting_run = FALSE 
+model_fitting_run = FALSE
 
 # project directory
 base_dir_permanent = 'G:/rap'
@@ -40,13 +40,13 @@ nm_resample = 'coarse_resampled'
 nm_complete = 'completed'
 
 #  sets of subdirectories with semi-completed series
-nm_src_rap = cbind(nm_rap, nm_old_rap) |> apply(1, identity, simplify=FALSE) |> stats::setNames(nm_rap) 
+nm_src_rap = cbind(nm_rap, nm_old_rap) |> apply(1, identity, simplify=FALSE) |> stats::setNames(nm_rap)
 nm_resample_rap = c(nm_src_rap[['fine']], nm_resample)
 nm_complete_rap = c(nm_resample_rap, nm_complete)
 
 # which to use for model fitting
 nm_temporal = nm_resample
-nm_spatial = 'fine' 
+nm_spatial = 'fine'
 
 # variables to fetch in GRIBs from each model
 regex_rap = .rap_regex
@@ -93,17 +93,17 @@ nc_update(aoi = aoi,
              regex = regex_rap) |> invisible()
 
 # part 3: compute pcp_total from large + small
-my_pcp_total(base_dir = base_dir_rap,
+pcp_update(base_dir = base_dir_rap,
              pcp_nm = var_pcp,
              input_nm = nm_src_rap,
              output_nm = nm_rap) |> invisible()
 
 # part 4: impute fine resolution grids from coarse by spatial resampling
-my_resample(var_nm = nm_output_var,
+nc_resample(var_nm = nm_output_var,
             base_dir = base_dir_rap,
             input_nm = nm_src_rap,
             output_nm = nm_resample) |> invisible()
-                    
+
 # part 5: fit spatial model to fine grid (don't use resampled layers)
 my_fit_spatial(var_nm = nm_output_var,
                base_dir = base_dir,
@@ -123,7 +123,7 @@ time_impute(var_nm = nm_output_var,
                    input_nm = nm_resample_rap,
                    output_nm = 'fine_complete',
                    model_nm = nm_resample_rap[1]) |> invisible()
-                
+
 
 
 
@@ -177,7 +177,7 @@ my_fit_spatial(var_nm = var_nm,
 
 
 
-# testing 
+# testing
 grib_dir = file_wx('grib', base_dir, make_dir=T)
 list_out = file_wx('nc', base_dir, 'coarse') |> my_nc_attributes()
 rap_nm_extra = list(coarse=c('coarse', 'foobar', 'coarse_archive'),
@@ -188,11 +188,11 @@ var_nm[[1]] = c('pcp_total', 'pcp')
 
 
 
-file_wx('nc', base_dir, var_nm=var_nm, sub_dir=rap_nm, collapse=F) 
+file_wx('nc', base_dir, var_nm=var_nm, sub_dir=rap_nm, collapse=F)
 
 
 
-out_list = file_wx('nc', base_dir, var_nm=names(regex_rap), sub_dir=rap_nm) 
+out_list = file_wx('nc', base_dir, var_nm=names(regex_rap), sub_dir=rap_nm)
 out_list
 
 data.frame(out_list) |> t() |> as.data.frame() |> as.list()
@@ -236,13 +236,13 @@ t_src = p_attr[['time']]
 p_big = file_wx('nc', base_dir, 'chunks', 'wnd_big')
 t_big = t_src |> head(-4e3)
 
-# second chunk is the end (much smaller). Include some overlap 
+# second chunk is the end (much smaller). Include some overlap
 p_small = file_wx('nc', base_dir, 'chunks', 'wnd_small')
 t_small = t_src |> tail(4e3 + 10)
 
 # write both to disk
-nc_layers(p_test, t_small) |> nc_write(p=p_small, overwrite=TRUE, append=FALSE)
-nc_layers(p_test, t_big) |> nc_write(p=p_big, overwrite=TRUE, append=FALSE)
+nc_layers(p_test, t_small) |> nc_write(p=p_small)
+nc_layers(p_test, t_big) |> nc_write(p=p_big)
 
 my_nc_attributes(c(p_small, p_big), ch=TRUE)
 

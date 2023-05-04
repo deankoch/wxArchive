@@ -2,34 +2,30 @@
 % Please edit documentation in R/nc_write.R
 \name{nc_write}
 \alias{nc_write}
-\title{Create or modify a NetCDF file by adding new time layers from SpatRaster}
+\title{Create or modify a NetCDF file by appending new time layers from SpatRaster}
 \usage{
-nc_write(r, p, overwrite = FALSE)
+nc_write(r, p)
 }
 \arguments{
 \item{r}{SpatRaster with POSIXct vector \code{terra::time(r)}, the data to write}
 
 \item{p}{character path the (.nc) time series data file to write}
-
-\item{overwrite}{logical indicating to write changes to the nc file on disk}
 }
 \value{
 vector of POSIXct times, the layers added to the file
 }
 \description{
-This creates or updates an existing NetCDF file by adding the layers (times)
-in the supplied SpatRaster \code{r}.
+This creates or updates an existing NetCDF file with new times (layers) in the
+supplied SpatRaster \code{r}.
 }
 \details{
+\code{r} must have a time for each layer (check \code{terra::time(r)}). Only new times
+are copied - ie those occurring after the latest time in the file at \code{p}. To
+add/modify earlier times you will need to delete the file and create it again.
+
 The function does little checking to see if the request is valid. It assumes
 that \code{p} is a valid path to a NetCDF file (.nc), and that raster grid in \code{r}
 is compatible with the file at \code{p} in terms of dimensions etc.
-
-\code{r} must have a time for each layer (check \code{terra::time(r)}). Only new times
-are copied - ie those not found in the file at \code{p}.
-
-If \code{overwrite=FALSE} (the default), the function overwrites nothing but
-returns the times that would be added to the file.
 
 When overwriting an existing file, the function initially writes to a temporary
 file in the same directory. At the end of the function call the old file is

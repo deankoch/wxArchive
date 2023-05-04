@@ -80,7 +80,7 @@ nc_update(aoi = aoi,
 
 
 # part 3: compute pcp_total from large + small
-my_pcp_total(base_dir = base_dir_rap,
+pcp_update(base_dir = base_dir_rap,
              pcp_nm = var_pcp,
              input_nm = nm_src_rap,
              output_nm = nm_rap) |> invisible()
@@ -92,7 +92,7 @@ my_pcp_total(base_dir = base_dir_rap,
 # still be available for all downstream steps.
 
 # part 4: impute fine resolution grids from coarse by spatial resampling
-my_resample(var_nm = nm_output_var,
+nc_resample(var_nm = nm_output_var,
             base_dir = base_dir_rap,
             input_nm = nm_src_rap,
             output_nm = nm_resample) |> invisible()
@@ -120,6 +120,7 @@ time_fit(var_nm = nm_output_var,
                 n_max = NA) |> invisible()
 
 }
+
 
 # part 8: impute missing times in fine grid series (run time_fit first)
 time_impute(var_nm = nm_output_var,
@@ -150,34 +151,106 @@ gfs_result = archive_update(base_dir = base_dir_gfs,
 # time_added_gfs = gfs_result |> dplyr::filter(downloaded) |> dplyr::pull(posix_pred)
 # t_gfs = if( length(time_added_gfs) == 0 ) NULL else min(time_added_gfs)
 
-# part 8: export latest GFS data to nc
+# time info from the completed RAP/RUC archive
+rap_nc_path = file_wx('nc', base_dir_rap, nm_complete_rap, nm_output_var)
+rap_time = lapply(rap_nc_path, \(p) time_wx(p))
+
+# find the latest observed times in the RAP/RUC archive
+from = do.call(c, lapply(rap_time, \(x) max(x[['time_obs']]) ))
+
+# delete the old GFS NetCDF directories
+base_dir_gfs |> file.path('coarse') |> unlink(recursive=TRUE)
+base_dir_gfs |> file.path(nm_resample) |> unlink(recursive=TRUE)
+
+# part 8: export latest GFS data to nc (creates "coarse" subdirectory)
 nc_update(aoi = aoi,
-             base_dir = base_dir_gfs,
-             output_nm = list(coarse='coarse'),
-             regex = regex_gfs,
-             from = t_gfs,
-             append = is.null(t_gfs)) |> invisible()
-
-
-# resample done fresh each update? Test this
-
-# find latest observed time with all variables present in RAP/RUC archive
-nc_path_rap = file_wx('nc', base_dir_rap, nm_resample_rap, nm_output_var)
-nc_tmax = do.call(c, lapply(nc_path_rap, \(x) max( my_nc_attributes(x, ch=TRUE)[['time_obs']] ) ))
-
-nc_path_rap[[1]]
-
-
+          base_dir = base_dir_gfs,
+          output_nm = list(coarse='coarse'),
+          regex = regex_gfs,
+          from = from) |> invisible()
 
 # load an example grid at fine resolution (second rast call drops cell values)
 r_fine = file_wx('nc', base_dir_rap, nm_spatial, names(regex_rap)[[1]]) |>
   terra::rast() |> terra::rast()
 
 # part 9: resample to match fine
-my_resample(var_nm = nm_gfs_var,
+nc_resample(var_nm = nm_gfs_var,
             base_dir = base_dir_gfs,
             input_nm = list(coarse='coarse'),
             output_nm = nm_resample,
-            r_fine = r_fine,
-            from = nc_tmax,
-            append = FALSE) |> invisible()
+            r_fine = r_fine) |> invisible()
+
+#
+##
+###
+##
+#
+
+# merge datasets and prefer RAP archive over GFS
+rap_nc_path = file_wx('nc', base_dir_rap, nm_complete_rap, nm_output_var)
+gfs_nc_path = file_wx('nc', base_dir_gfs, nm_resample, as.list(nm_gfs_var))
+p_all = Map(\(rap, gfs) c(rap, gfs), rap = rap_nc_path, gfs = gfs_nc_path)
+
+# load example variable
+var_i = 2
+nm_gfs_var[var_i] |> print()
+p = p_all[[var_i]]
+p_attr = time_wx(p)
+range(p_attr[['time_obs']])
+
+# load all layers into RAM (~5GB)
+r = nc_layers(p, times=p_attr[['time_obs']], na_rm=TRUE)
+t_obs = terra::time(r)
+
+# xx = r |> terra::global('mean') |> as.matrix() |> as.numeric()
+# plot(xx ~ t_obs, type='l')
+
+# check for gaps
+ts_df = data.frame(posix_pred=t_obs) |> archive_pad()
+
+# identify times that were resampled from RAP (violet)
+p_res = file_wx('nc', base_dir_rap, nm_resample, names(p_all)[[var_i]])
+t_res = time_wx(p_res)[['time_obs']]
+
+# identify times that were imputed (red)
+p_impute = file_wx('nc', base_dir_rap, nm_complete, names(p_all)[[var_i]])
+t_imp = time_wx(p_impute)[['time_obs']]
+
+# identify times from GFS (blue)
+p_gfs = file_wx('nc', base_dir_gfs, nm_resample, names(p_all)[[var_i]])
+t_gfs = time_wx(p_gfs)[['time_obs']]
+
+# pick a random grid point and plot its time series
+k_test = sample(terra::ncell(r), 1)
+y_black = y_red = y_blue = y_violet = r[][k_test,] |> c()
+y_black[t_obs %in% c(t_gfs, t_imp, t_res)] = NA
+#y_red[t_obs %in% c(t_gfs, t_res)] = NA
+y_blue[t_obs %in% c(t_imp, t_res)] = NA
+y_violet[t_obs %in% c(t_gfs, t_imp)] = NA
+
+all_len = length(y_black)
+show_len = 1e3
+idx_plot = all_len + seq(show_len) - 1
+
+idx_plot = idx_plot - show_len
+plot(y_red[idx_plot] ~ t_obs[idx_plot], type='l', col='red')
+lines(y_blue[idx_plot] ~ t_obs[idx_plot], col='blue')
+lines(y_violet[idx_plot] ~ t_obs[idx_plot], col='violet')
+lines(y_black[idx_plot] ~ t_obs[idx_plot])
+
+
+
+
+#
+# t_obs |> length()
+# t_obs |> unique() |> length()
+#
+# # consistency check
+# all(p_attr[['time_obs']] == t_obs)
+#
+# #p_attr[['time_obs']][p_attr[['time_obs']] - t_obs]
+# ts_df |> dplyr::filter(is.na(ts_hours))
+
+
+
+

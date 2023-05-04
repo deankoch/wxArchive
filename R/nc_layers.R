@@ -19,8 +19,8 @@
 #' The function creates the JSON file(s) as needed, and assumes that
 #' all of `times` can be found in the .nc file(s) at `p`. Available times
 #' for the file at `p` can be listed with `terra::rast(p) |> terra::time()`,
-#' and this should match `my_nc_attributes(p)[['time']]`, assuming the JSON
-#' is up to date.
+#' and this should match the "time" entries of `time_wx(p)`, assuming the JSONs
+#' are up to date.
 #'
 #' When `preload=TRUE` the function forces `terra` to copy all data values
 #' into memory before returning the SpatRaster handle. Normally `terra` loads
@@ -47,7 +47,7 @@ nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE) {
   p = p[p_valid]
 
   # loop over vectorized input
-  load_all = is.null(times)
+  load_all_times = is.null(times)
   times = unique(times)
   r_out_list = seq_along(p) |> lapply(\(x) NULL)
   for(i in seq_along(p)) {
@@ -55,7 +55,7 @@ nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE) {
     # load/create attributes JSON and find matching times in this file
     attr_i = time_wx(p[i])
     time_available_i = if( na_rm ) attr_i[['time_obs']] else attr_i[['time']]
-    if( load_all ) times = time_available_i
+    if( load_all_times ) times = time_available_i
     is_i = times %in% time_available_i
     if( any(is_i) ) {
 

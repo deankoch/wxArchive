@@ -17,7 +17,7 @@
 #' 
 #' `input_nc` can be a vector of sub-directories, and `var_nm` can be a list of
 #' character vectors (specifying sets of equivalent names), allowing users to specify
-#' multiple source files for a single variable, similar to `my_resample`.
+#' multiple source files for a single variable, similar to `nc_resample`.
 #' 
 #' Variable names (`var_nm`) specify a subset of the nc files in `input_nm` to process
 #' in a loop. The results are written to a JSON file in sub-directory "model" of the first

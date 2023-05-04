@@ -31,7 +31,7 @@ time_impute = function(var_nm,
 
   # load time coverage of each variable
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
-  var_info = input_nc |> lapply(\(p) my_nc_attributes(p, ch=TRUE))
+  var_info = input_nc |> lapply(\(p) time_wx(p))
 
   # loop over variable names
   for(nm in names(var_nm)) {
@@ -46,10 +46,9 @@ time_impute = function(var_nm,
     if( ( length(daily_n) > 1 ) ) stop('inconsistent "daily_n"')
     if( ( length(yearly_n) > 1 ) ) stop('inconsistent "yearly_n"')
 
-    # load latest fitted parameter matrices and take their element-wise mean
-    pars_nc = pars_info |> sapply(\(x) x[['file']])
-
+    # load latest fitted parameter matrices
     #pars_r = Reduce('+', lapply(pars_nc, terra::rast)) / length(pars_info)
+    pars_nc = pars_info |> sapply(\(x) x[['file']])
     pars_r = tail(pars_info, 1)[[1]][['file']] |> terra::rast()
     t_knots = tail(pars_info, 1)[[1]][['knots']] |> as.POSIXct(tz='UTC')
     gdim = dim( pars_r[[1]] )[1:2]
@@ -59,7 +58,7 @@ time_impute = function(var_nm,
     pars_AR2 = pars_r[][, seq(2)]
 
     # check for existing imputed times
-    t_out = my_nc_attributes(output_nc[[nm]])[['time_obs']]
+    t_out = time_wx(output_nc[[nm]])[['time_obs']]
 
     # extract observed times, compute step size, compute default n_max (2 years)
     t_obs = var_info[[nm]][['time_obs']]
@@ -84,24 +83,23 @@ time_impute = function(var_nm,
     # warn of times that were previously missing (and imputed) but are now observed
     if( any( ts_df[['changed']] ) ) {
 
-      t_changed = ts_df[['posix_pred']][ ts_df[['updated']] ]
-      msg_changed = t_changed |> paste(collapse=', ')
       output_dir = dirname(output_nc[[nm]])
-      msg_info_1 = paste('\n(fix by deleting', output_dir, 'and running time_impute again)')
-      cat(output_nc[[nm]], 'contains observed time(s):', msg_changed, msg_info_1)
+      t_changed = ts_df[['posix_pred']][ ts_df[['changed']] ]
+      msg_info = paste('\n(fix by deleting', output_dir, 'and running time_impute again)')
+      cat('\nNOTE:', output_nc[[nm]], 'contains observed time(s):', msg_info)
     }
 
     # collect missing times marked for processing
     t_update = ts_df |> dplyr::filter(missing) |> dplyr::filter(!done) |> dplyr::pull(posix_pred)
     if( length(t_update) == 0 ) {
 
-      cat('\nall missing times have been imputed already \U2713')
+      cat('\nup to date \U2713')
       next
     }
 
     # data frame of gaps to impute, filtered to time range requiring update
     t_start = min(t_update)
-    gap_table = ts_df |> gap_finder(times='posix_pred') |> filter(end_time >= t_start)
+    gap_table = ts_df |> gap_finder(times='posix_pred') |> dplyr::filter(end_time >= t_start)
     n_gap = nrow(gap_table)
 
     # list with index of all gap times, and another that includes preceding two observations
@@ -125,7 +123,7 @@ time_impute = function(var_nm,
     if(n_gap > 1) {
 
       cat('\nlooping over', n_gap, 'gaps to impute missing layers...\n')
-      pb = txtProgressBar(max=n_gap, style=3)
+      pb = utils::txtProgressBar(max=n_gap, style=3)
     }
     for(g in seq(n_gap)) {
 
@@ -155,7 +153,7 @@ time_impute = function(var_nm,
 
       # add back linear predictor to get predictions, copy to storage
       mat_both[, match(t_pred, t_both)] = (z_res + X_pred)[, -seq(2)]
-      if(n_gap > 1) setTxtProgressBar(pb, g)
+      if(n_gap > 1) utils::setTxtProgressBar(pb, g)
     }
     if(n_gap > 1) close(pb)
 
@@ -171,7 +169,7 @@ time_impute = function(var_nm,
     t_overwrite = terra::time(r_pred)
 
     # append to nc file
-    r_pred |> nc_write(output_nc[[nm]], overwrite=TRUE, append=TRUE)
+    r_pred |> nc_write(output_nc[[nm]])
     t2 = proc.time()
     cat('\n\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.')
   }
@@ -198,7 +196,7 @@ time_impute = function(var_nm,
 #' @param times POSIXct vector or character giving a column name in `x`
 #' @param invert logical indicating to return the inverted result
 #'
-#' @return a tibble containing a row for each distinct gap
+#' @return a tibble with a row of information about each distinct gap
 #' @export
 gap_finder = function(x, start_only=FALSE, times=NULL, invert=FALSE) {
 

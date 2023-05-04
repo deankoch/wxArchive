@@ -89,7 +89,7 @@ nc_update(aoi = aoi,
              regex = regex_rap) |> invisible()
 
 # part 3: compute pcp_total from large + small
-my_pcp_total(base_dir = base_dir_rap,
+pcp_update(base_dir = base_dir_rap,
              pcp_nm = var_pcp,
              input_nm = nm_src_rap,
              output_nm = nm_rap) |> invisible()
@@ -101,7 +101,7 @@ my_pcp_total(base_dir = base_dir_rap,
 # still be available for all downstream steps.
 
 # part 4: impute fine resolution grids from coarse by spatial resampling
-my_resample(var_nm = nm_output_var,
+nc_resample(var_nm = nm_output_var,
             base_dir = base_dir_rap,
             input_nm = nm_src_rap,
             output_nm = nm_resample) |> invisible()
@@ -178,7 +178,7 @@ r_fine = file_wx('nc', base_dir_rap, nm_spatial, names(regex_rap)[[1]]) |>
   terra::rast() |> terra::rast()
 
 # part 9: resample to match fine
-my_resample(var_nm = nm_gfs_var,
+nc_resample(var_nm = nm_gfs_var,
             base_dir = base_dir_gfs,
             input_nm = list(coarse='coarse'),
             output_nm = nm_resample,
@@ -359,7 +359,7 @@ nc_layers()
 #' 
 #' 1. `archive_update` initializes the archive and downloads new files #
 #' 2. `nc_update` exports the (many) GRIB files to (a few) monolithic nc files 
-#' 3. `my_pcp_total` fills gaps in "pcp_total" using component precipitation
+#' 3. `pcp_update` fills gaps in "pcp_total" using component precipitation
 #' 3. `my_fine_from_coarse` fills gaps in fine resolution series using coarse grid data
 #' 3. `my_fit_spatial` fits a model of spatial covariance to assist with gap-filling
 #' 4. `time_fit` fits an AR(2) model to residuals to assist with gap-filling
@@ -448,7 +448,7 @@ nc_layers()
 #' The JSON files are for keeping track of NAs and timestamps.
 #' 
 #' 
-#' ## PART 3 `my_pcp_total` (creates/updates "pcp.nc" in "/fine" and "/coarse")
+#' ## PART 3 `pcp_update` (creates/updates "pcp.nc" in "/fine" and "/coarse")
 #' 
 #' This part defines a new variable "pcp" and creates/updates the "pcp.nc" file on
 #' disk at each resolution. "pcp" is just a copy of "pcp_total" where missing time

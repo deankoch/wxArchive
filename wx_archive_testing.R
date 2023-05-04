@@ -59,6 +59,48 @@ nm_output_var = c(list(c(var_pcp, 'pcp_total')), as.list(var_other))
 ##
 #
 
+# library(terra)
+#
+rap_nc_path = file_wx('nc', base_dir_rap, nm_complete_rap, nm_output_var)
+gfs_nc_path = file_wx('nc', base_dir_rap, nm_resample, as.list(nm_gfs_var))
+
+nc_path = rap_nc_path[['wnd_u']][['fine']]
+r = terra::rast(nc_path)
+rt = terra::time(r)
+length(rt)
+length(unique(rt))
+
+xx = time_wx(nc_path)
+rtx = xx$time
+length(rtx)
+length(unique(rtx))
+all(rt == rtx)
+
+
+
+# max(rt)
+#
+#
+# nc_path = rap_nc_path[['tmp']]['fine']
+# r = rast(nc_path)
+# rt = time(r)
+# length(rt)
+# length(unique(rt))
+# min(rt)
+#
+#
+#
+#
+# time_wx(rap_nc_path[['tmp']])[['time']] |> range()
+#
+
+
+#
+##
+###
+##
+#
+
 base_dir = base_dir_rap
 output_nm = nm_src_rap
 regex = regex_rap
@@ -74,6 +116,76 @@ nc_update(aoi = aoi,
           base_dir = base_dir_rap,
           output_nm = nm_src_rap,
           regex = regex_rap) |> invisible()
+
+
+#
+##
+###
+##
+#
+
+
+base_dir = base_dir_rap
+pcp_nm = var_pcp
+input_nm = nm_src_rap
+output_nm = nm_rap
+
+
+# part 3: compute pcp_total from large + small
+pcp_update(base_dir = base_dir_rap,
+           pcp_nm = var_pcp,
+           input_nm = nm_src_rap,
+           output_nm = nm_rap) |> invisible()
+
+
+#
+##
+###
+##
+#
+
+var_nm = nm_output_var
+base_dir = base_dir_rap
+input_nm = nm_src_rap
+output_nm = nm_resample
+r_fine = NULL
+from = NULL
+
+
+# part 4: impute fine resolution grids from coarse by spatial resampling
+nc_resample(var_nm = nm_output_var,
+            base_dir = base_dir_rap,
+            input_nm = nm_src_rap,
+            output_nm = nm_resample) |> invisible()
+
+
+#
+##
+###
+##
+#
+
+
+var_nm = nm_output_var
+base_dir = base_dir_rap
+input_nm = nm_resample_rap
+output_nm = nm_complete
+model_nm = input_nm[1]
+n_max = NULL
+until = NULL
+quiet = FALSE
+
+# part 8: impute missing times in fine grid series (run time_fit first)
+time_impute(var_nm = nm_output_var,
+            base_dir = base_dir_rap,
+            input_nm = nm_resample_rap,
+            output_nm = nm_complete) |> invisible()
+
+
+
+
+nc_path_rap = file_wx('nc', base_dir_rap, 'coarse', 'pcp')
+time_wx(nc_path_rap)[['time_obs']] |> range()
 
 
 

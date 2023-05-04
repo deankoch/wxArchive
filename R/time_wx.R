@@ -28,11 +28,10 @@
 #'
 #' @param nc_path character vector, path(s) to the NetCDF file(s)
 #' @param join logical, when TRUE the results from all `nc_path` are combined
-#' @param collapse logical, if TRUE and output list has length 1, it is unlisted
 #'
 #' @return a list with vectors 'na' (integer), 'time', 'time_na', 'time_obs' (or a list of them)
 #' @export
-time_wx = function(nc_path, join=TRUE, collapse=TRUE) {
+time_wx = function(nc_path, join=TRUE) {
 
   # if requested, first attempt to get the info from the JSON (fast)
   time_result = time_json(nc_path)
@@ -56,7 +55,7 @@ time_wx = function(nc_path, join=TRUE, collapse=TRUE) {
   if( all(is_failed) ) return( list() )
 
   # join lists from different chunks of the same time series
-  if( join & ( sum(!is_failed) > 1 ) ) {
+  if( join & ( sum(!is_failed) > 0 ) ) {
 
     # merge all times, handling degenerate case list(NULL, x) by dropping empty entries
     list_all = time_result[!is_failed] |> lapply(\(x) x[['time']])
@@ -78,10 +77,7 @@ time_wx = function(nc_path, join=TRUE, collapse=TRUE) {
                 time_na = time_all[na_all]))
   }
 
-  # collapse length-1 lists
-  list_out = time_result[!is_failed]
-  if( collapse & ( length(list_out) == 1 ) ) list_out = list_out[[1]]
-  return( list_out )
+  return( time_result[!is_failed] )
 }
 
 
@@ -116,7 +112,6 @@ time_nc = function(r) {
   if( is(r, 'SpatRaster') ) {
 
     # load the times then check data values for NAs
-    cat('\nchecking', terra::nlyr(r), 'layers for NAs')
     n_obs = r |> terra::global('notNA') |> as.matrix() |> as.integer()
     is_na = n_obs < terra::ncell(r)
     r_time = terra::time(r)
@@ -191,88 +186,4 @@ time_json = function(nc_path) {
     } else { NA }
 
   }) |> stats::setNames(json_path)
-}
-
-
-#' Create or update the JSON file associated with a NetCDF time series
-#'
-#' This manages the JSON file read by `time_json`. To get the path to this
-#' file, do `nc_path |> time_json() |> names()`. This function will create both
-#' the file and its parent directory (if they don't exist already). It only modifies
-#' the JSON and never the NetCDF file.
-#'
-#' Note that the JSON contains only the fields "na" and "time" and not the derived
-#' fields "time_na" and "time_obs" (see `?time_wx`).
-#'
-#' Call the function with default arguments to initialize the JSON for an existing
-#' NetCDF file. This involves loading all data into memory, so it can be very slow when
-#' there are numerous time points.
-#'
-#' If `r` is supplied along with `append=TRUE`, the function creates/updates the JSON
-#' to make it consistent with the result of concatenating the layers in `nc_path` with
-#' the layers in `r`. In this case all times in `r` must lie after the existing times
-#' in `nc_path`.
-#'
-#' To delete an existing JSON file and replace it with layer info from SpatRaster `r`,
-#' set `append=FALSE`.
-#'
-#' If `nc_path` doesn't exist, the function returns `FALSE` and writes nothing
-#'
-#' @param nc_path character path the NetCDF file
-#' @param r SpatRaster or NULL, containing times to add
-#' @param append logical indicating to append times rather than overwrite
-#'
-#' @return logical indicating if the file was modified
-#' @export
-write_time_json = function(nc_path, r=NULL, append=TRUE) {
-
-  # nc_path must point to a single, existing file
-  if( length(nc_path) > 1 ) stop('nc_path had length > 1')
-  if( !file.exists(nc_path) ) return(FALSE)
-
-  # fetch any existing JSON data in a list, and the file path
-  json_data = time_json(nc_path)
-  json_path = names(json_data)
-  cat('\nindexing NAs and writing to', json_path)
-
-  # collapse the length-1 list
-  json_data = json_data[[1]]
-
-  # make the sub-directory if necessary
-  json_dir = dirname(json_path)
-  if( !dir.exists(json_dir) ) dir.create(json_dir)
-
-  # check for times in input SpatRaster
-  r_index = time_nc(r)
-  r_exists = !anyNA(r_index)
-
-  # overwrite request erases existing JSON data
-  if( !append ) {
-
-    if( !r_exists ) stop('append=FALSE but no data supplied')
-    json_data = r_index
-
-  } else {
-
-    # if there is no existing JSON, compute NA index from scratch (slow)
-    if( anyNA(json_data) ) json_data = time_nc(nc_path)[[1]]
-
-    # append request merges new times with existing JSON data
-    if( r_exists ) {
-
-      # validity check
-      final_time = json_data[['time']] |> max()
-      msg_final = paste('all times in r must lie after', final_time)
-      if( !all( r_index[['time']] > final_time ) ) stop(msg_final)
-
-      # update important fields
-      n_existing = length(json_data[['time']])
-      json_data[['time']] = json_data[['time']] |> c(r_index[['time']])
-      json_data[['na']] = json_data[['na']] |> c(n_existing + r_index[['na']])
-    }
-  }
-
-  json_data[c('na', 'time')] |> jsonlite::toJSON(pretty=TRUE) |> writeLines(json_path)
-  cat(' \U2713')
-  return(TRUE)
 }
