@@ -44,7 +44,7 @@ time_fit = function(var_nm,
 
     # extract observed times, compute step size, set default n_max (all times)
     t_all = var_info[[nm]][['time_obs']]
-    step_hours = data.frame(posix_pred=t_all) |> my_detect_step()
+    step_hours = data.frame(posix_pred=t_all) |> time_step()
     cat('\nstep size:', step_hours, 'hours')
     freq_year = as.integer(24 * 365.25 / step_hours)
     if( is.na(n_max) ) n_max = length(t_all)
@@ -123,4 +123,32 @@ time_fit = function(var_nm,
     cat(' \U2713')
 
   }
+}
+
+
+# sample contiguous blocks of times at random, excluding sets with too many NAs
+my_sample_na = function(t_obs, n, p_max=0.5, step_hours=NULL, na_rm=TRUE, i_max=1e5) {
+
+  # extract completed time series and na index
+  df_pad = data.frame(time=t_obs) |> archive_pad(t='time', step_hours, quiet=TRUE)
+  all_times = df_pad[['time']]
+  is_na = df_pad[['interval']] |> is.na()
+  n_times = length(all_times)
+
+  # loop until a valid sample is found
+  i_max=1e3
+  i = 0
+  while(i < i_max) {
+
+    i = i + 1
+    idx_start = seq(n_times - n + 1) |> sample(1)
+    idx_sample = idx_start - 1 + seq(n)
+    n_na = sum( is_na[idx_sample] )
+    if( n_na <= ceiling( n * p_max ) ) i_max = 0
+  }
+
+  if(i == i_max) stop('i_max reached. Try decreasing n or increasing p_max')
+  t_out = all_times[seq(n) + idx_start - 1L]
+  if(na_rm) t_out = t_out[ !is_na[seq(n) + idx_start - 1L] ]
+  return(t_out)
 }

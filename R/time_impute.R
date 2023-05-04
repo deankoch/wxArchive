@@ -62,7 +62,7 @@ time_impute = function(var_nm,
 
     # extract observed times, compute step size, compute default n_max (2 years)
     t_obs = var_info[[nm]][['time_obs']]
-    step_hours = data.frame(posix_pred=t_obs) |> my_detect_step()
+    step_hours = data.frame(posix_pred=t_obs) |> time_step()
     freq_year = as.integer(24 * 365.25 / step_hours)
     if( is.null(n_max) ) n_max = 2 * freq_year
 
