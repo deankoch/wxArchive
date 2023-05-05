@@ -2,8 +2,11 @@
 #' Dean Koch
 #' April 2023
 #'
+#'
+#'
 
 library(devtools)
+#install_github('deankoch/snapKrig')
 load_all()
 document()
 
@@ -105,13 +108,21 @@ if(model_fitting_run) {
 
 # run these in any order
 
+  var_nm = nm_output_var
+  base_dir = base_dir_rap
+  dem_path = dem_path
+  input_nm = nm_src_rap[['fine']]
+  n_max = 1e3
+  model_nm = input_nm[[1]]
+  positive = NULL
+
+
 # part 5: fit spatial model to fine grid (don't use resampled layers)
 spatial_fit(var_nm = nm_output_var,
-               base_dir = base_dir_rap,
-               dem_path = dem_path,
-               input_nm = nm_src_rap[['fine']],
-               n_max = 1e3,
-               append = TRUE) |> invisible()
+            base_dir = base_dir_rap,
+            dem_path = dem_path,
+            input_nm = nm_src_rap[['fine']],
+            n_max = 1e3) |> invisible()
 
 # part 6: fit temporal model to fine grid (include all layers)
 time_fit(var_nm = nm_output_var,

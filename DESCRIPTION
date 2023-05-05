@@ -15,4 +15,5 @@ Imports:
     dplyr,
     jsonlite,
     sf,
+    splines,
     terra

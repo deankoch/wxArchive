@@ -9,9 +9,8 @@ spatial_fit(
   base_dir,
   dem_path,
   input_nm = "fine",
-  model_nm = input_nm,
+  model_nm = input_nm[[1]],
   n_max = 500,
-  append = TRUE,
   positive = NULL
 )
 }
@@ -28,8 +27,6 @@ spatial_fit(
 
 \item{n_max}{integer, maximum number of layers to sample for fitting}
 
-\item{append}{logical indicating to keep old model fits in the JSON}
-
 \item{positive}{logical indicating to exclude all-zero layers}
 }
 \value{
@@ -43,14 +40,14 @@ spline basis for lapse rate, and columns for geographic coordinates.
 }
 \details{
 This uses a purely spatial geo-statistical model with a nugget effect, and a
-stationary Gaussian covariogram with geometric anisotropy (oriented along the
-cardinal axes). Time layers are treated as mutually independent, and the function
+stationary Gaussian covariogram with geometric anisotropy oriented along the
+cardinal axes. Time layers are treated as mutually independent, and the function
 uses a random subsample (<=\code{n_max}) of times for model fitting.
 
 Subsampling excludes layers with any number of NAs. when \code{positive=TRUE}, it also
 excludes all-zero layers (useful for precipitation). When \code{positive=NULL} (the
-default), the function detects precipitation layers automatically (and sets
-\code{positive=TRUE}) by checking if any of the variable names begin with 'pcp'.
+default), the function attempts to detect precipitation layers automatically by
+setting \code{positive=TRUE} for variable names beginning with 'pcp'.
 
 \code{input_nc} can be a vector of sub-directories, and \code{var_nm} can be a list of
 character vectors (specifying sets of equivalent names), allowing users to specify
@@ -62,9 +59,7 @@ sub-directory listed in \code{input_nm}. Get the list of all output paths with:
 
 \verb{file_wx('spatial', base_dir, input_nm[1], as.list(names(var_nm))}
 
-If \code{append=FALSE} the function deletes any existing data in the JSON and replaces
-it with the new model fit. If \code{append=TRUE}, the new fit is appended to the bottom of
-the existing list in the file. The results include the output of helper function
-\code{run_spatial_fit}, along with the time of the function call, and the input files and
-variable names.
+Model fit information is appended to the bottom of the existing list in the JSON file.
+The results include the output of helper function \code{run_spatial_fit}, along with the
+time of the function call, and the input files and variable names.
 }

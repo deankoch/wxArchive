@@ -37,6 +37,7 @@ are centered and scaled by standard deviation, in that order.
 \details{
 The output matrix has a row for each (spatial) point in \code{r} and a column for
 every predictor (\code{1 + length(dem_knots)}, with default \code{intercept=FALSE}).
+
 Rows are in the column major ordering used by \code{snapKrig} (but not \code{terra}).
 
 The centering/scaling constants and the spline knots are provided in attributes

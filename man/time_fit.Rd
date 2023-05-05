@@ -8,7 +8,7 @@ time_fit(
   var_nm,
   base_dir,
   input_nm = "fine",
-  model_nm = sapply(input_nm, function(x) x[[1]]),
+  model_nm = input_nm[[1]],
   daily_n = 5L,
   yearly_n = 5L,
   knots_n = 5L

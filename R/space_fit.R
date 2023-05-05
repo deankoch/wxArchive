@@ -6,14 +6,14 @@
 #' spline basis for lapse rate, and columns for geographic coordinates.
 #'
 #' This uses a purely spatial geo-statistical model with a nugget effect, and a
-#' stationary Gaussian covariogram with geometric anisotropy (oriented along the
-#' cardinal axes). Time layers are treated as mutually independent, and the function
+#' stationary Gaussian covariogram with geometric anisotropy oriented along the
+#' cardinal axes. Time layers are treated as mutually independent, and the function
 #' uses a random subsample (<=`n_max`) of times for model fitting.
 #'
 #' Subsampling excludes layers with any number of NAs. when `positive=TRUE`, it also
 #' excludes all-zero layers (useful for precipitation). When `positive=NULL` (the
-#' default), the function detects precipitation layers automatically (and sets
-#' `positive=TRUE`) by checking if any of the variable names begin with 'pcp'.
+#' default), the function attempts to detect precipitation layers automatically by
+#' setting `positive=TRUE` for variable names beginning with 'pcp'.
 #'
 #' `input_nc` can be a vector of sub-directories, and `var_nm` can be a list of
 #' character vectors (specifying sets of equivalent names), allowing users to specify
@@ -25,11 +25,9 @@
 #'
 #' `file_wx('spatial', base_dir, input_nm[1], as.list(names(var_nm))`
 #'
-#' If `append=FALSE` the function deletes any existing data in the JSON and replaces
-#' it with the new model fit. If `append=TRUE`, the new fit is appended to the bottom of
-#' the existing list in the file. The results include the output of helper function
-#' `run_spatial_fit`, along with the time of the function call, and the input files and
-#' variable names.
+#' Model fit information is appended to the bottom of the existing list in the JSON file.
+#' The results include the output of helper function `run_spatial_fit`, along with the
+#' time of the function call, and the input files and variable names.
 #'
 #' @param var_nm character vector or list, the names of the variables to fit (in a loop)
 #' @param base_dir path to parent directory of GRIB storage subfolder
@@ -37,19 +35,17 @@
 #' @param input_nm character vector or list, subdirectories containing the .nc files to fit
 #' @param model_nm character name of sub-directory to write output files
 #' @param n_max integer, maximum number of layers to sample for fitting
-#' @param append logical indicating to keep old model fits in the JSON
 #' @param positive logical indicating to exclude all-zero layers
 #'
 #' @return returns nothing, but writes to JSON files in sub-directory `train_nm` of `base_dir`
 #' @export
 spatial_fit = function(var_nm,
-                          base_dir,
-                          dem_path,
-                          input_nm = 'fine',
-                          model_nm = input_nm,
-                          n_max = 5e2,
-                          append = TRUE,
-                          positive = NULL) {
+                       base_dir,
+                       dem_path,
+                       input_nm = 'fine',
+                       model_nm = input_nm[[1]],
+                       n_max = 5e2,
+                       positive = NULL) {
 
   # input and output paths
   input_nc = file_wx('nc', base_dir, input_nm, var_nm)
@@ -59,7 +55,7 @@ spatial_fit = function(var_nm,
   # get grid info from first nc file, and spatial covariates matrix from DEM and grid dimensions
   cat('\nconstructing covariates from', dem_path)
   r_grid = input_nc[[1]][1] |> terra::rast(lyrs=1) |> terra::rast()
-  X_space = space_X(r_grid, terra::rast(dem_path))
+  X_space = space_X(r=r_grid, dem=terra::rast(dem_path))
   cat(' \U2713')
 
   # load time coverage of each variable
@@ -71,15 +67,15 @@ spatial_fit = function(var_nm,
   cat('\nfitting spatial models...')
   for( v in seq_along(var_nm) ) {
 
-    # load existing JSON data as list (creates the file)
+    # load existing JSON data as list (or create the file)
     cat('\n\nprocessing', names(var_nm)[v])
     t1 = proc.time()
     json_exists = file.exists(output_path[[v]])
-    if( !json_exists | !append ) writeLines('[]', output_path[[v]])
+    if( !json_exists ) writeLines('[]', output_path[[v]])
     out_list = output_path[[v]] |> readLines() |> jsonlite::fromJSON()
 
     # fit the model and append results to existing list
-    fit_result = input_nc[[v]] |> my_sk_fit(X=X_space, n_max=n_max, positive=positive)
+    fit_result = input_nc[[v]] |> run_spatial_fit(X=X_space, n_max=n_max, positive=positive)
     append_list = list(var_nm = var_nm[[v]], sub_dir = input_nm) |> c(fit_result) |> list()
     out_list = out_list |> c(append_list)
     names(out_list) = paste0('fit_', seq_along(out_list))
@@ -140,10 +136,9 @@ run_spatial_fit = function(p, X, n_max=1e2, t_fit=NULL, positive=NULL) {
   }
 
   # copy non-NA layers and times into memory as sk object
-  msg_n = paste0('(subsample of ', length(t_obs), ')')
-  cat('\ncopying data from', n_fit, 'layers', msg_n)
+  msg_n = paste0('(sampled from ', length(t_obs), ')')
+  cat('\nloading', n_fit, 'layers', msg_n)
   g_fit = nc_layers(p, t_fit) |> snapKrig::sk()
-  cat(' \U2713')
 
   # filter to times where the grid had non-zero value
   if( positive ) {

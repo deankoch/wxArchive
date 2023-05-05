@@ -6,6 +6,7 @@
 #'
 #' The output matrix has a row for each (spatial) point in `r` and a column for
 #' every predictor (`1 + length(dem_knots)`, with default `intercept=FALSE`).
+#'
 #' Rows are in the column major ordering used by `snapKrig` (but not `terra`).
 #'
 #' The centering/scaling constants and the spline knots are provided in attributes
@@ -40,7 +41,7 @@ space_X = function(r, dem, dem_knots=NULL, X_center=NULL, X_scale=NULL, intercep
 
     bbox_crop = sf::st_bbox(r) |> sf::st_as_sfc() |> sf::st_transform(terra::crs(dem))
     dem_crop = dem |>  terra::crop(as(bbox_crop, 'Spatial')) |> snapKrig::sk()
-    dem_knots = dem_crop |> quantile()
+    dem_knots = dem_crop[] |> stats::quantile()
   }
 
   # make a spline basis for the DEM
