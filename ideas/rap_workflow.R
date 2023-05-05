@@ -115,7 +115,7 @@ if(model_fitting_run) {
 # run these in any order
 
 # part 5: fit spatial model to fine grid (don't use resampled layers)
-my_fit_spatial(var_nm = nm_output_var,
+spatial_fit(var_nm = nm_output_var,
                base_dir = base_dir_rap,
                dem_path = dem_path,
                input_nm = nm_src_rap[['fine']],
@@ -361,7 +361,7 @@ nc_layers()
 #' 2. `nc_update` exports the (many) GRIB files to (a few) monolithic nc files 
 #' 3. `pcp_update` fills gaps in "pcp_total" using component precipitation
 #' 3. `my_fine_from_coarse` fills gaps in fine resolution series using coarse grid data
-#' 3. `my_fit_spatial` fits a model of spatial covariance to assist with gap-filling
+#' 3. `spatial_fit` fits a model of spatial covariance to assist with gap-filling
 #' 4. `time_fit` fits an AR(2) model to residuals to assist with gap-filling
 #' 5. `my_fill_gaps` fills missing time points with imputed data
 #' 6. `my_aggregate` produces daily aggregate variables suitable for input to SWAT+
@@ -477,7 +477,7 @@ nc_layers()
 #' sub-folder. Layers with (any number of) negatives are set to NA here.
 #' 
 #' 
-#' ### PART 5 `my_fit_spatial` (creates or updates "/fine/model")
+#' ### PART 5 `spatial_fit` (creates or updates "/fine/model")
 #' 
 #' It will be useful later on to have a simple model for spatial trends and covariance.
 #' This part fits such a model to a random subsample of layers from each variable, saving

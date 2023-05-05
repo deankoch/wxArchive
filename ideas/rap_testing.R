@@ -105,7 +105,7 @@ nc_resample(var_nm = nm_output_var,
             output_nm = nm_resample) |> invisible()
 
 # part 5: fit spatial model to fine grid (don't use resampled layers)
-my_fit_spatial(var_nm = nm_output_var,
+spatial_fit(var_nm = nm_output_var,
                base_dir = base_dir,
                dem_path = dem_path,
                input_nm = nm_src_rap[['fine']],
@@ -169,7 +169,7 @@ nc_update(aoi = aoi,
 
 
 # part 5: fit spatial model to fine grid (don't use resampled layers)
-my_fit_spatial(var_nm = var_nm,
+spatial_fit(var_nm = var_nm,
                base_dir = base_dir_rap,
                dem_path = dem_path,
                train_nm = spatial_train_nm,

@@ -106,7 +106,7 @@ if(model_fitting_run) {
 # run these in any order
 
 # part 5: fit spatial model to fine grid (don't use resampled layers)
-my_fit_spatial(var_nm = nm_output_var,
+spatial_fit(var_nm = nm_output_var,
                base_dir = base_dir_rap,
                dem_path = dem_path,
                input_nm = nm_src_rap[['fine']],
@@ -115,9 +115,8 @@ my_fit_spatial(var_nm = nm_output_var,
 
 # part 6: fit temporal model to fine grid (include all layers)
 time_fit(var_nm = nm_output_var,
-                base_dir = base_dir_rap,
-                input_nm = nm_resample_rap,
-                n_max = NA) |> invisible()
+         base_dir = base_dir_rap,
+         input_nm = nm_resample_rap) |> invisible()
 
 }
 
@@ -179,6 +178,85 @@ nc_resample(var_nm = nm_gfs_var,
             input_nm = list(coarse='coarse'),
             output_nm = nm_resample,
             r_fine = r_fine) |> invisible()
+
+
+
+#
+##
+###
+##
+# TODO: put this stuff into helper functions
+#
+# nc_get()
+# nc_daily()
+#
+
+# merge datasets and prefer RAP archive over GFS
+rap_nc_path = file_wx('nc', base_dir_rap, nm_complete_rap, nm_output_var)
+gfs_nc_path = file_wx('nc', base_dir_gfs, nm_resample, as.list(nm_gfs_var))
+p_all = Map(\(rap, gfs) c(rap, gfs), rap = rap_nc_path, gfs = gfs_nc_path)
+
+# load example variable
+var_i = 2
+nm_gfs_var[var_i] |> print()
+p = p_all[[var_i]]
+p_attr = time_wx(p)
+range(p_attr[['time_obs']])
+
+# load all layers into RAM (~5GB)
+r = nc_layers(p, times=p_attr[['time_obs']], na_rm=TRUE)
+t_obs = terra::time(r)
+
+# xx = r |> terra::global('mean') |> as.matrix() |> as.numeric()
+# plot(xx ~ t_obs, type='l')
+
+# check for gaps
+ts_df = data.frame(posix_pred=t_obs) |> archive_pad()
+
+
+# step size in the data
+step_data = time_step(ts_df)
+
+# desired starting hour and time zone for alignment
+origin_hour = 0L
+tz = 'MST'
+
+# starting hour of the data in target time zone
+start_hour = as.integer( format(min(t_obs), '%H', tz=tz) )
+start_idx = ( (origin_hour - start_hour) %% 24 ) / step_data
+start_date = t_obs[start_idx] |> as.Date(tz=tz)
+
+# list of indices to aggregate in each step and corresponding dates
+n_per = 24L / step_data
+n_out = floor( ( length(t_obs) - start_idx + 1 ) / n_per )
+list_idx = seq(n_out) |> lapply(\(i) seq(n_per) + (i-1)*n_per )
+date_out = seq.Date(start_date, by='day', length.out=n_out)
+
+# aggregate
+library(terra)
+r_min = do.call(c, lapply(list_idx, \(j) min(r[[j]])) )
+r_mean = do.call(c, lapply(list_idx, \(j) mean(r[[j]])) )
+r_max = do.call(c, lapply(list_idx, \(j) max(r[[j]])) )
+#terra::time(r_mean) = date_out
+
+# pick a grid point at random
+k_test = sample(terra::ncell(r_mean), 1)
+
+# extract time series
+y_low = r_min[][k_test,] |> c()
+y = r_mean[][k_test,] |> c()
+y_high = r_max[][k_test,] |> c()
+
+all_len = length(y)
+show_len = 5e2
+idx_plot = all_len + seq(show_len) - 1
+
+idx_plot = idx_plot - show_len
+plot(y[idx_plot]~date_out[idx_plot], type='l', ylim=range(c(y_low, y_high)))
+lines(y_low[idx_plot]~date_out[idx_plot], col='grey')
+lines(y_high[idx_plot]~date_out[idx_plot], col='grey')
+
+
 
 #
 ##

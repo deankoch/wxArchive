@@ -8,11 +8,10 @@ time_fit(
   var_nm,
   base_dir,
   input_nm = "fine",
+  model_nm = sapply(input_nm, function(x) x[[1]]),
   daily_n = 5L,
   yearly_n = 5L,
-  knots_n = 5L,
-  p_max = 0.1,
-  n_max = NA
+  knots_n = 5L
 )
 }
 \arguments{
@@ -22,19 +21,35 @@ time_fit(
 
 \item{input_nm}{character vector or list, subdirectories containing the .nc files to fit}
 
-\item{daily_n}{integer number of Fourier term pairs for daily cycles}
+\item{model_nm}{character vector or list, sub-directories to write output files}
 
-\item{yearly_n}{integer number of Fourier term pairs for yearly cycles}
+\item{daily_n}{integer number of Fourier term pairs for daily cycles (passed to \code{time_X})}
 
-\item{knots_n}{integer number of knots to use for spline}
+\item{yearly_n}{integer number of Fourier term pairs for yearly cycles (passed to \code{time_X})}
 
-\item{p_max}{numeric the maximum proportion of missing points in the series}
-
-\item{n_max}{integer maximum number of points to sample (NA to select all)}
+\item{knots_n}{integer number of knots to use for spline (passed to \code{time_X})}
 }
 \value{
 returns nothing but modifies the files in "model" subdirectory of "input_nm"
 }
 \description{
-Fit a temporal model to a NetCDF time series
+This loops over \code{var_nm}, loading the time series data from disk in sub-folder(s)
+\code{input_nm} of \code{base_dir}, and a temporal model to it. The model first regresses on
+a matrix of seasonal predictors (see \code{?time_X}) by OLS before fitting an AR(2) model
+to the residuals.
+}
+\details{
+The model is fitted independently to each spatial grid point using all time points
+and a common covariates matrix. Fitted parameters are saved as raster layers in a NetCDF
+file named using \code{file_wx('temporal_nc', base_dir, model_nm, ...)}. This file name
+\itemize{
+\item which changes every time \code{file_wx} is called - is then appended to the JSON file
+\code{file_wx('temporal_index', base_dir, model_nm, ...)}. This JSON keeps track of all
+previous model fits.
+}
+
+Arguments \code{daily_n}, \code{yearly_n}, and \code{knots_n} are passed to \code{time_X} to make the
+seasonal predictors. These are also copied to the JSON, along with information about
+the knot locations. This information should all be loaded and passed to \code{time_X} when
+predicting on new times.
 }

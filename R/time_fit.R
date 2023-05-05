@@ -1,35 +1,50 @@
 #' Fit a temporal model to a NetCDF time series
 #'
+#' This loops over `var_nm`, loading the time series data from disk in sub-folder(s)
+#' `input_nm` of `base_dir`, and a temporal model to it. The model first regresses on
+#' a matrix of seasonal predictors (see `?time_X`) by OLS before fitting an AR(2) model
+#' to the residuals.
+#'
+#' The model is fitted independently to each spatial grid point using all time points
+#' and a common covariates matrix. Fitted parameters are saved as raster layers in a NetCDF
+#' file named using `file_wx('temporal_nc', base_dir, model_nm, ...)`. This file name
+#'  - which changes every time `file_wx` is called - is then appended to the JSON file
+#' `file_wx('temporal_index', base_dir, model_nm, ...)`. This JSON keeps track of all
+#' previous model fits.
+#'
+#' Arguments `daily_n`, `yearly_n`, and `knots_n` are passed to `time_X` to make the
+#' seasonal predictors. These are also copied to the JSON, along with information about
+#' the knot locations. This information should all be loaded and passed to `time_X` when
+#' predicting on new times.
+#'
 #' @param var_nm list of character vectors, the variable names to fit
 #' @param base_dir path to parent directory of GRIB storage subfolder
 #' @param input_nm character vector or list, subdirectories containing the .nc files to fit
-#' @param p_max numeric the maximum proportion of missing points in the series
-#' @param n_max integer maximum number of points to sample (NA to select all)
-#' @param daily_n integer number of Fourier term pairs for daily cycles
-#' @param yearly_n integer number of Fourier term pairs for yearly cycles
-#' @param knots_n integer number of knots to use for spline
+#' @param model_nm character vector or list, sub-directories to write output files
+#' @param daily_n integer number of Fourier term pairs for daily cycles (passed to `time_X`)
+#' @param yearly_n integer number of Fourier term pairs for yearly cycles (passed to `time_X`)
+#' @param knots_n integer number of knots to use for spline (passed to `time_X`)
 #'
 #' @return returns nothing but modifies the files in "model" subdirectory of "input_nm"
 #' @export
 time_fit = function(var_nm,
                     base_dir,
                     input_nm = 'fine',
+                    model_nm = sapply(input_nm, \(x) x[[1]]),
                     daily_n = 5L,
                     yearly_n = 5L,
-                    knots_n = 5L,
-                    p_max = 0.1,
-                    n_max = NA) {
+                    knots_n = 5L) {
 
   # input/output paths (var_nm is list to ensure output paths are in list)
   input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
   var_nm = var_nm |> stats::setNames(nm=names(input_nc))
   var_nm_list = names(var_nm) |> as.list()
-  output_json = file_wx('temporal_index', base_dir, input_nm[1], var_nm_list, make_dir=TRUE)
-  output_nc = file_wx('temporal_nc', base_dir, input_nm[1], var_nm_list, make_dir=TRUE)
+  output_json = file_wx('temporal_index', base_dir, model_nm, var_nm_list, make_dir=TRUE)
+  output_nc = file_wx('temporal_nc', base_dir, model_nm, var_nm_list, make_dir=TRUE)
 
   # load time coverage of each variable
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
-  var_info = input_nc |> lapply(\(p) my_nc_attributes(p, ch=TRUE))
+  var_info = input_nc |> lapply(\(p) time_wx(p))
   cat(' \U2713')
 
   # loop over variables
@@ -42,16 +57,15 @@ time_fit = function(var_nm,
     # add POSIXct time of function call to result
     call_time = Sys.time() |> as.character(tz='UTC')
 
-    # extract observed times, compute step size, set default n_max (all times)
+    # extract observed times, compute step size
     t_all = var_info[[nm]][['time_obs']]
     step_hours = data.frame(posix_pred=t_all) |> time_step()
     cat('\nstep size:', step_hours, 'hours')
     freq_year = as.integer(24 * 365.25 / step_hours)
-    if( is.na(n_max) ) n_max = length(t_all)
 
-    # select a subsample of times at random
-    n_fit = length(t_all) |> pmin(n_max)
-    t_fit = my_sample_na(t_all, n_fit, p_max=p_max, step_hours=step_hours)
+    # sample all observed times
+    t_fit = t_all
+    n_fit = length(t_fit)
 
     # copy data to memory as sk object
     cat('\nselected subset', as.character(min(t_fit)), 'to', as.character(max(t_fit)))
@@ -121,34 +135,5 @@ time_fit = function(var_nm,
     names(json_out) = paste0('fit_', seq_along(json_out))
     json_out |> jsonlite::toJSON(pretty=TRUE) |> writeLines( output_json[[nm]] )
     cat(' \U2713')
-
   }
-}
-
-
-# sample contiguous blocks of times at random, excluding sets with too many NAs
-my_sample_na = function(t_obs, n, p_max=0.5, step_hours=NULL, na_rm=TRUE, i_max=1e5) {
-
-  # extract completed time series and na index
-  df_pad = data.frame(time=t_obs) |> archive_pad(t='time', step_hours, quiet=TRUE)
-  all_times = df_pad[['time']]
-  is_na = df_pad[['interval']] |> is.na()
-  n_times = length(all_times)
-
-  # loop until a valid sample is found
-  i_max=1e3
-  i = 0
-  while(i < i_max) {
-
-    i = i + 1
-    idx_start = seq(n_times - n + 1) |> sample(1)
-    idx_sample = idx_start - 1 + seq(n)
-    n_na = sum( is_na[idx_sample] )
-    if( n_na <= ceiling( n * p_max ) ) i_max = 0
-  }
-
-  if(i == i_max) stop('i_max reached. Try decreasing n or increasing p_max')
-  t_out = all_times[seq(n) + idx_start - 1L]
-  if(na_rm) t_out = t_out[ !is_na[seq(n) + idx_start - 1L] ]
-  return(t_out)
 }
