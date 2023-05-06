@@ -60,7 +60,7 @@ spatial_fit = function(var_nm,
 
   # load time coverage of each variable
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
-  var_info = input_nc |> lapply(\(p) my_nc_attributes(p, ch=TRUE))
+  var_info = input_nc |> lapply(\(p) time_wx(p))
   cat(' \U2713')
 
   # fit spatial model for each variable in a loop
@@ -122,7 +122,7 @@ run_spatial_fit = function(p, X, n_max=1e2, t_fit=NULL, positive=NULL) {
   call_time = Sys.time() |> as.character(tz='UTC')
 
   # load attributes for the nc file(s)
-  nc_info = my_nc_attributes(p, ch=TRUE)
+  nc_info = time_wx(p)
   t_all = nc_info[['time']]
   t_obs = nc_info[['time_obs']]
 
