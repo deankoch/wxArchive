@@ -11,7 +11,15 @@ load_all()
 document()
 
 project_dir = 'G:'
+grib_dir = file_wx('grib', file.path(project_dir, 'rap'))
+grib_df = grib_dir |> grib_list()
 project_dir |> workflow_list()
+
+# is_zero = grib_df$hour_pred == 0
+# sum(is_zero)
+# sum( grib_df[['date_rel']][is_zero] > as.Date('2006-10-26') )
+
+grib_df[['date_rel']][is_zero] |> hist()
 
 
 

@@ -41,6 +41,14 @@ nc_resample = function(var_nm,
   var_nm = var_nm |> stats::setNames(nm=names(input_nc[[1]]))
   output_nc = file_wx('nc', base_dir, output_nm, as.list(names(var_nm)), make_dir=TRUE)
 
+  # get a template SpatRaster at fine resolution from first file
+  if( is.null(r_fine) ) {
+
+    r_fine_path = input_nc[['fine']][[1]][1]
+    if( !file.exists(r_fine_path) ) stop('no files found in "fine" sub-directory. Try supplying r_fine')
+    r_fine = r_fine_path |> terra::rast(lyrs=1) |> terra::rast()
+  }
+
   # find time coverage of each input variable at both resolutions
   cat('checking available times for', paste(names(var_nm), collapse=', '))
   var_info = lapply(input_nc, \(r) lapply(r, \(p) time_wx(p)) )
@@ -73,9 +81,6 @@ nc_resample = function(var_nm,
     cat('\nall variables are up to date \U2713\n')
     return(invisible())
   }
-
-  # get a template SpatRaster at fine resolution from first file
-  if( is.null(r_fine) ) r_fine = input_nc[['fine']][[1]][1] |> terra::rast(lyrs=1) |> terra::rast()
 
   # loop over variables
   for(nm in names(var_nm)) {

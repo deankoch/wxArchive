@@ -29,6 +29,10 @@
 #' servers are spaced out using `Sys.sleep` such that the request rate never exceeds
 #' 60 / minute.
 #'
+#' If `alternate=TRUE` and `hour_pred=1`, the function will attempt to download the
+#' 0-hour ahead forecast whenever the 1-hour file is missing from the NCEI server. Note
+#' that this has only been implemented for the default `hour_rel` and `hour_pred`
+#'
 #' @param model character, either 'rap_archive' or 'gfs_0p25'
 #' @param date_rel Date vector, the forecast release date(s)
 #' @param hour_rel integer vector, the forecast release hour
@@ -37,6 +41,7 @@
 #' @param grib_dir character, path to storage directory for GRIB/GRIB2 files
 #' @param quiet logical, prints progress information to console
 #' @param overwrite logical, whether to overwrite existing files found in `grib_dir`
+#' @param alternate logical, if TRUE and a file is not found, an alternate is attempted
 #'
 #' @return data frame with info about the requested times, and results of download attempts
 #' @export
@@ -47,7 +52,8 @@ archive_get = function(model,
                        aoi = NULL,
                        grib_dir = NULL,
                        quiet = FALSE,
-                       overwrite = FALSE)
+                       overwrite = FALSE,
+                       alternate = TRUE)
 {
   # time the whole thing
   t_outer = last_ping = proc.time()
@@ -98,58 +104,84 @@ archive_get = function(model,
     if( nrow(url_df) == 0 ) next
 
     # map URLs to requested times
-    request_df = request_df |>
+    available_df = request_df |>
       dplyr::select( all_of(hour_key) ) |>
-      dplyr::left_join(url_df, by=hour_key)
+      dplyr::left_join(url_df, by=hour_key) |>
+      dplyr::mutate( downloaded = FALSE )
 
     # loop over file requests
-    for( h in seq( nrow(request_df) ) ) {
+    for( h in seq( nrow(available_df) ) ) {
 
-      h_rel = request_df[['hour_rel']][h]
-      h_pred = request_df[['hour_pred']][h]
+      h_rel = available_df[['hour_rel']][h]
+      h_pred = available_df[['hour_pred']][h]
       if( !quiet ) cat('\nhour', sprintf('%02d', h_rel), '+', sprintf('%03d', h_pred))
 
       # skip if we couldn't locate a URL for the file
-      if( is.na( request_df[['url']][h] ) ) {
+      if( is.na( available_df[['url']][h] ) ) {
 
         # no file was found for this release hour
         if( !quiet ) cat(' : not found!')
         next
+      }
+
+      # prevents pinging the servers more than once a second
+      t_since = (proc.time() - last_ping)['elapsed']
+      if(t_since < 1) Sys.sleep(1 - t_since)
+      last_ping = proc.time()
+
+      # download the file and catch failures
+      if( !quiet ) cat(' : file', available_df[['file']][h], 'downloading ... ')
+      path_dl = file.path(grib_dir, available_df[['file']][h])
+      download_failed = tryCatch({
+
+        available_df[['url']][h] |> download.file(path_dl, mode='wb', quiet=TRUE)
+
+      }, error = function(err) err) |> is('error')
+
+      # report and clean up after failed downloads
+      if(download_failed) {
+
+        # file is probably corrupt if it exists
+        if( file.exists(path_dl) ) unlink(path_dl)
+        if( !quiet ) cat('failed!')
+        next
 
       } else {
 
-        # prevents pinging the servers more than once a second
-        t_since = (proc.time() - last_ping)['elapsed']
-        if(t_since < 1) Sys.sleep(1 - t_since)
-        last_ping = proc.time()
-
-        # download the file and catch failures
-        if( !quiet ) cat(' : file', request_df[['file']][h], 'downloading ... ')
-        path_dl = file.path(grib_dir, request_df[['file']][h])
-        download_failed = tryCatch({
-
-          request_df[['url']][h] |> download.file(path_dl, mode='wb', quiet=TRUE)
-
-        }, error = function(err) err) |> is('error')
-
-        # report and clean up after failed downloads
-        if(download_failed) {
-
-          # file is probably corrupt if it exists
-          if( file.exists(path_dl) ) unlink(path_dl)
-          if( !quiet ) cat('failed!')
-          next
-
-        } else {
-
-          request_df[['downloaded']][h] = TRUE
-          cat('done')
-        }
+        available_df[['downloaded']][h] = TRUE
+        cat('done')
       }
     }
 
+    # attempt alternate prediction hour if the first attempt failed
+    if( alternate & any( !available_df[['downloaded']] ) ) {
+
+      # maps 0 -> 1 and vice versa
+      hour_pred_alt = ( hour_pred - 1 ) %% 2
+
+      # shift release hour so that the valid forecast hour is the same
+      hour_rel_req = available_df |> dplyr::filter(!downloaded) |> dplyr::pull(hour_rel)
+      hour_rel_alt = hour_rel_req - (hour_pred_alt - hour_pred)
+
+      # recursive call to attempt download from alternate time(s)
+      alternate_df = archive_get(model,
+                                 date_rel = date_rel[d],
+                                 hour_rel = hour_rel_alt,
+                                 hour_pred = hour_pred_alt,
+                                 aoi = aoi,
+                                 grib_dir = grib_dir,
+                                 quiet = quiet,
+                                 overwrite = overwrite,
+                                 alternate = FALSE)
+
+      # append results
+      available_df = available_df |> rbind(alternate_df)
+    }
+
+
+
     # data frame detailing downloads and failed requests
-    list_out[[d]] = request_df
+    list_out[[d]] = available_df
   }
 
   # collapse list output

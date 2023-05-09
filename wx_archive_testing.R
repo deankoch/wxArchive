@@ -7,6 +7,51 @@ library(devtools)
 load_all()
 document()
 
+project_dir = 'G:/weather_db'
+project_dir |> workflow_list()
+project_dir |> workflow_update_rap()
+#project_dir |> workflow_impute_rap()
+#project_dir |> workflow_update_gfs()
+
+message('\nupdating NetCDF files')
+aoi_path = project_dir |> file.path('aoi.geojson')
+aoi = sf::st_read(aoi_path)
+base_dir_rap = project_dir |> file.path('rap')
+nc_update(aoi = aoi,
+          base_dir = base_dir_rap,
+          output_nm = .nm_src_rap,
+          regex = .rap_regex) |> invisible()
+
+# copy precip from components (applies to early years)
+message('\nprocessing precipitation layers')
+pcp_update(base_dir = base_dir_rap,
+           pcp_nm = .var_pcp,
+           input_nm = .nm_src_rap,
+           output_nm = .nm_rap) |> invisible()
+
+# resampled coarse to fine
+message('\nresampling')
+nc_resample(var_nm = .nm_output_var,
+            base_dir = base_dir_rap,
+            input_nm = .nm_src_rap,
+            output_nm = .nm_resample) |> invisible()
+
+hour_rel
+hour_pred
+
+
+xx = c(NA, 2, NA, NA)
+for(i in 1:4) {
+
+  if( is.na(xx[i]) ) next
+  cat('test i =', i)
+
+
+}
+
+
+
+
 # project directories, an area of interest in North America and a fine-resolution DEM covering it
 base_dir_rap = 'G:/rap'
 base_dir_gfs = 'G:/gfs'

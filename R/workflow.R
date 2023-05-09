@@ -28,22 +28,33 @@ workflow_list = function(project_dir) {
   message('\nchecking available times for ', length(p_all), ' variable(s)')
   for( i in seq_along(p_all) ) {
 
+    # check existence of source files
+    p = p_all[[i]]
+    p = p[ file.exists(p) ]
+
+    # check number of source files
+    n_file = p |> length()
+    if( n_file == 0 ) {
+
+      paste0('\n', nm_fix_wid[[i]], ' | 0 files') |> cat()
+      next
+    }
+
     # count times and find their range
-    n_file = p_all[[i]] |> length()
-    time_all = p_all[[i]] |> time_wx()
+    time_all = p |> time_wx()
     time_min = time_all[['time_obs']] |> min()
     time_max = time_all[['time_obs']] |> max()
     n = time_all[['time_obs']] |> length()
 
     # print stats to console
-    paste0('\n', nm_all[[i]], ' | ',
+    paste0('\n', nm_fix_wid[[i]], ' | ',
            n_file, ' files | ',
            n, ' times | ',
            time_min, ' to ', time_max) |> cat()
 
     # print file paths to console
     c('\n', rep('-', nm_len-1)) |> paste(collapse='') |> cat()
-    paste0('\n > ', p_all[[i]]) |> cat()
+    paste0('\n > ', p) |> cat()
     cat('\n')
   }
 
@@ -206,7 +217,8 @@ workflow_update_gfs = function(project_dir) {
                               hour_pred = .hour_pred_gfs,
                               hour_rel = .hour_rel_gfs,
                               aoi = aoi,
-                              model = 'gfs_0p25')
+                              model = 'gfs_0p25',
+                              alternate = FALSE)
 
   # delete the old GFS NetCDF directories
   base_dir_gfs |> file.path('coarse') |> unlink(recursive=TRUE)

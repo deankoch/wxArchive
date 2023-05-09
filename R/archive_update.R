@@ -26,12 +26,15 @@
 #' to select sequences on every date. See `?archive_get` (which does all the work)
 #' for details on availability, and how multiple versions of forecasts are handled.
 #'
+#' `alternate` is passed to `archive_get` and has no effect when `model='gfs_0p25'`
+#'
 #' @param base_dir path for the GRIB storage subfolder
 #' @param from Date, the first date in the sequence
 #' @param to Date, the last date in the sequence
 #' @param hour_rel integer vector, the release hours
 #' @param hour_pred integer vector, the prediction hours
 #' @param model character, either 'rap_archive' or 'gfs_0p25'
+#' @param alternate logical, if TRUE and a file is not found, an alternate is attempted
 #'
 #' @return a data frame of information about the files downloaded
 #' @export
@@ -41,7 +44,8 @@ archive_update = function(base_dir,
                           hour_rel = 0L,
                           hour_pred = 1L,
                           model = 'rap_archive',
-                          aoi = NULL) {
+                          aoi = NULL,
+                          alternate = TRUE) {
 
   # get the current date
   date_today = as.Date(Sys.time(), tz='UTC')
@@ -52,16 +56,15 @@ archive_update = function(base_dir,
   date_rel = NULL
 
   # set up times to fetch from RAP
-  if(model == 'rap_archive') {
+  if( model == 'rap_archive' ) {
 
     # fetch only the most recent additions by default
-    end_existing = max(grib_df[['date_rel']])
     if( is.null(to) ) to = date_today - 2
-    if( is.null(from) ) from = if( nrow(grib_df) == 0 ) .from_def else end_existing
+    if( is.null(from) ) from = if( nrow(grib_df) == 0 ) .from_def else max(grib_df[['date_rel']])
   }
 
   # set up times to fetch from GFS
-  if(model == 'gfs_0p25') {
+  if( model == 'gfs_0p25' ) {
 
     # typically the past 10 days are available
     if( is.null(to) ) to = date_today
@@ -78,6 +81,7 @@ archive_update = function(base_dir,
               hour_rel = hour_rel,
               hour_pred = hour_pred,
               aoi = aoi,
-              grib_dir = grib_dir)
+              grib_dir = grib_dir,
+              alternate = alternate)
 
 }

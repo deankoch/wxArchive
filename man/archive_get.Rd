@@ -12,7 +12,8 @@ archive_get(
   aoi = NULL,
   grib_dir = NULL,
   quiet = FALSE,
-  overwrite = FALSE
+  overwrite = FALSE,
+  alternate = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ archive_get(
 \item{quiet}{logical, prints progress information to console}
 
 \item{overwrite}{logical, whether to overwrite existing files found in \code{grib_dir}}
+
+\item{alternate}{logical, if TRUE and a file is not found, an alternate is attempted}
 }
 \value{
 data frame with info about the requested times, and results of download attempts
@@ -66,4 +69,8 @@ download errors. If an error occurs in the middle of a download, the function wi
 the (probably corrupt) file and continue on to the next. Multiple requests to NCEI/NCEP
 servers are spaced out using \code{Sys.sleep} such that the request rate never exceeds
 60 / minute.
+
+If \code{alternate=TRUE} and \code{hour_pred=1}, the function will attempt to download the
+0-hour ahead forecast whenever the 1-hour file is missing from the NCEI server. Note
+that this has only been implemented for the default \code{hour_rel} and \code{hour_pred}
 }

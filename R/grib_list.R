@@ -44,6 +44,7 @@ grib_list = function(grib_dir, csv=NULL, dupe=NA, quiet=FALSE) {
   empty_df = data.frame(name = character(0),
                         grib2 = logical(0),
                         posix_pred = character(0) |> as.POSIXct(),
+                        posix_rel = character(0) |> as.POSIXct(),
                         hour_pred = integer(0),
                         hour_rel = integer(0),
                         date_rel = character(0) |> as.Date(),

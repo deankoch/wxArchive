@@ -11,7 +11,8 @@ archive_update(
   hour_rel = 0L,
   hour_pred = 1L,
   model = "rap_archive",
-  aoi = NULL
+  aoi = NULL,
+  alternate = TRUE
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ archive_update(
 \item{hour_pred}{integer vector, the prediction hours}
 
 \item{model}{character, either 'rap_archive' or 'gfs_0p25'}
+
+\item{alternate}{logical, if TRUE and a file is not found, an alternate is attempted}
 }
 \value{
 a data frame of information about the files downloaded
@@ -57,4 +60,6 @@ The time at which a forecast becomes/became valid is equal to the release time
 \code{hour_rel} plus the prediction hour \code{hour_pred}. These can be vectors if you want
 to select sequences on every date. See \code{?archive_get} (which does all the work)
 for details on availability, and how multiple versions of forecasts are handled.
+
+\code{alternate} is passed to \code{archive_get} and has no effect when \code{model='gfs_0p25'}
 }
