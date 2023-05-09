@@ -86,7 +86,7 @@ archive_get = function(model,
     if( nrow(request_df) == 0 ) {
 
       # we have all the necessary files already for this date
-      cat('completed \U2713')
+      cat('completed')
       next
     }
 

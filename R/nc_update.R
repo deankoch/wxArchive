@@ -169,7 +169,7 @@ nc_update = function(aoi,
       }
 
       # slow writing part starts
-      if( n_new == 0 ) { cat('\nup to date \U2713') } else {
+      if( n_new == 0 ) { cat('\nup to date') } else {
 
         cat('\nupdating .nc files:')
         for( nm in names(r_from_gribs) ) {

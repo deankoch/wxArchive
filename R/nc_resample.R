@@ -78,7 +78,7 @@ nc_resample = function(var_nm,
   needs_update = sapply(time_add, length) > 0
   if( !any(needs_update) ) {
 
-    cat('\nall variables are up to date \U2713\n')
+    cat('\nall variables are up to date\n')
     return(invisible())
   }
 
@@ -99,7 +99,7 @@ nc_resample = function(var_nm,
       t2 = proc.time()
       cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.\n')
 
-    } else { cat(paste0('\n', nm), 'is up to date \U2713\n') }
+    } else { cat(paste0('\n', nm), 'is up to date\n') }
   }
 }
 

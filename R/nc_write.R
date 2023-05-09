@@ -93,7 +93,6 @@ nc_write = function(r, p) {
   }
 
   # update attributes on disk
-  cat(' \U2713')
   if( is_appended ) r_add = r_out
   p_dest |> write_time_json(r=r_add, append=is_appended)
 
@@ -185,6 +184,5 @@ write_time_json = function(nc_path, r=NULL, append=TRUE) {
   }
 
   json_data[c('na', 'time')] |> jsonlite::toJSON(pretty=TRUE) |> writeLines(json_path)
-  cat(' \U2713')
   return(TRUE)
 }

@@ -70,7 +70,7 @@ pcp_update = function(base_dir,
     # if there's nothing to add then we are finished
     if( length(time_add) == 0 ) {
 
-      cat('\nup to date \U2713')
+      cat('\nup to date')
       next
     }
 

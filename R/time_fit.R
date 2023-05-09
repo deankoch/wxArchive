@@ -45,7 +45,6 @@ time_fit = function(var_nm,
   # load time coverage of each variable
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
   var_info = input_nc |> lapply(\(p) time_wx(p))
-  cat(' \U2713')
 
   # loop over variables
   for(v in seq_along(var_nm)) {
@@ -76,7 +75,6 @@ time_fit = function(var_nm,
     cat('\ncomputing temporal covariates')
     X_time = time_X(t_fit, daily_n=daily_n, yearly_n=yearly_n, knots_n=knots_n, na_rm=FALSE)
     X_time_obs_qr = qr(X_time[attr(X_time, 'idx_obs'),])
-    cat(' \U2713')
 
     # make storage matrix for results, then loop over pixels
     n_g = prod(dim(g_obs))
@@ -112,7 +110,6 @@ time_fit = function(var_nm,
     # write all parameter data to nc on disk
     cat('\nwriting results to', output_nc[[nm]])
     g_obs |> sk(gval=fit_mat) |> sk_export() |> terra::writeCDF(output_nc[[nm]])
-    cat(' \U2713')
 
     # load any existing model fitting info and compile the new addition
     json_exists = file.exists(output_json[[nm]])
@@ -134,6 +131,5 @@ time_fit = function(var_nm,
     json_out = json_old |> c(list(json_add))
     names(json_out) = paste0('fit_', seq_along(json_out))
     json_out |> jsonlite::toJSON(pretty=TRUE) |> writeLines( output_json[[nm]] )
-    cat(' \U2713')
   }
 }

@@ -76,7 +76,7 @@ time_impute = function(var_nm,
     # no gaps found in input
     if( !any(ts_df[['missing']]) ) {
 
-      cat('\ntime series is complete \U2713')
+      cat('\ntime series is complete')
       next
     }
 
@@ -93,7 +93,7 @@ time_impute = function(var_nm,
     t_update = ts_df |> dplyr::filter(missing) |> dplyr::filter(!done) |> dplyr::pull(posix_pred)
     if( length(t_update) == 0 ) {
 
-      cat('\nup to date \U2713')
+      cat('\nup to date')
       next
     }
 
@@ -117,7 +117,6 @@ time_impute = function(var_nm,
     cat('\nloading observed data into memory')
     r_obs = input_nc[[nm]] |> nc_layers(t_pre)
     mat_both = r_obs[][, match(t_both, t_pre)]
-    cat(' \U2713')
 
     # loop over gaps
     if(n_gap > 1) {

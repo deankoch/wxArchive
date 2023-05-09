@@ -179,11 +179,10 @@ archive_url = function(date_rel, model='rap_archive', aoi=NULL, quiet=FALSE) {
   is_error = is(links, 'error')
   if( is_error ) {
 
-    msg_fail = ' \U2713 \nno GRIBs found on the requested date'
+    msg_fail = ' \nno GRIBs found on the requested date'
     if( !quiet ) cat(msg_fail, format(date_rel, '%Y/%m/%d'))
     return(empty_df)
   }
-  cat(' \U2713')
 
   # add a column for date-time of prediction and publication
   df_out = df_out |>

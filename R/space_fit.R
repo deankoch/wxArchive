@@ -56,12 +56,11 @@ spatial_fit = function(var_nm,
   cat('\nconstructing covariates from', dem_path)
   r_grid = input_nc[[1]][1] |> terra::rast(lyrs=1) |> terra::rast()
   X_space = space_X(r=r_grid, dem=terra::rast(dem_path))
-  cat(' \U2713')
 
   # load time coverage of each variable
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
   var_info = input_nc |> lapply(\(p) time_wx(p))
-  cat(' \U2713')
+
 
   # fit spatial model for each variable in a loop
   cat('\nfitting spatial models...')
@@ -83,7 +82,7 @@ spatial_fit = function(var_nm,
     # write to existing JSON
     cat('\nwriting results to', output_path[[v]])
     out_list |> jsonlite::toJSON(pretty=TRUE) |> writeLines(output_path[[v]])
-    cat(' \U2713')
+
     t2 = proc.time()
     cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.')
   }
@@ -152,14 +151,12 @@ run_spatial_fit = function(p, X, n_max=1e2, t_fit=NULL, positive=NULL) {
     g_fit = snapKrig::sk(g_fit, vals=FALSE) |> snapKrig::sk(gval=g_fit[][, !is_zero])
     t_fit = t_fit[!is_zero]
     n_fit = length(t_fit)
-    cat(' \U2713')
   }
 
   # fit a model
   cat('\nfitting spatial covariance to', n_fit, 'layers')
   pars = g_fit |> snapKrig::sk_fit(pars='gau', X=X, iso=FALSE, quiet=TRUE)
   gls = g_fit |> snapKrig::sk_GLS(pars, X=X, out='b')
-  cat(' \U2713')
 
   # reshape bounds matrix as list of vectors
   bds = as.matrix(attr(pars, 'bds')) |> apply(1, identity, simplify=FALSE)

@@ -72,15 +72,6 @@ grib_list = function(grib_dir, csv=NULL, dupe=NA, quiet=FALSE) {
 
   } else { grib_df = empty_df }
 
-  # # remove nonexistent files
-  # is_still_there = grib_df[['file']] %in% files_existing
-  # any_dropped = any(!is_still_there)
-  # if( any_dropped ) {
-  #
-  #   cat('\nomitting', sum(!is_still_there), 'missing files \U2713')
-  #   grib_df = grib_df[is_still_there,]
-  # }
-
   # process any new GRIBs found in storage directory
   any_changes = length(files_new) > 0
   if( any_changes ) {
@@ -157,7 +148,6 @@ grib_list = function(grib_dir, csv=NULL, dupe=NA, quiet=FALSE) {
 
     if( !quiet ) cat('\nupdating', csv)
     write.csv(grib_df, csv_path, row.names=FALSE)
-    if( !quiet ) cat(' \U2713')
   }
 
   # remove or return only the duplicates as requested
