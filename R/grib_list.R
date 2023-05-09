@@ -50,7 +50,6 @@ grib_list = function(grib_dir, csv=NULL, dupe=NA, quiet=FALSE) {
                         date_rel = character(0) |> as.Date(),
                         size = numeric(0) |> units::set_units('MB'),
                         file = character(0),
-                        path = character(0),
                         coarse = logical(0))
 
   # compare to existing data frame loaded from CSV file on disk (if any)
@@ -80,14 +79,12 @@ grib_list = function(grib_dir, csv=NULL, dupe=NA, quiet=FALSE) {
     file_df = data.frame(file = files_new) |>
       dplyr::filter(grepl('\\.grb2*$', file)) |>
       dplyr::mutate(grib2 = grepl('\\.grb2$', file)) |>
-      dplyr::mutate(path = file.path(grib_dir, file)) |>
       dplyr::mutate(size = file.size(file.path(grib_dir, file))) |>
       dplyr::mutate(size = units::set_units(units::set_units(size, bytes), megabytes))
 
     if(nrow(file_df) == 0) {
 
       cat('\nno changes detected')
-      #cat(ifelse(any_dropped, '\nno further', '\nno'), 'changes detected')
       return(file_df)
     }
 
@@ -118,8 +115,7 @@ grib_list = function(grib_dir, csv=NULL, dupe=NA, quiet=FALSE) {
                     hour_rel,
                     date_rel,
                     size,
-                    file,
-                    path)
+                    file)
 
     # match file name prefix with expected grid dimensions
     new_grib_df[['coarse']] = new_grib_df[['name']] |> strsplit('_') |>
@@ -133,7 +129,6 @@ grib_list = function(grib_dir, csv=NULL, dupe=NA, quiet=FALSE) {
     # either the CSV is up to date or there were no GRIBs in the directory
     if( has_csv ) {
 
-      #if( !quiet ) cat(ifelse(any_dropped, '\nno further', '\nno'), 'changes detected')
       if( !quiet ) cat('\nno changes detected')
 
     } else { if( !quiet ) { message('\nno gribs found in ', grib_dir) } }
@@ -144,7 +139,6 @@ grib_list = function(grib_dir, csv=NULL, dupe=NA, quiet=FALSE) {
 
   # write changes to csv on disk
   if( !is.na(csv) & any_changes ) {
-    # if( !is.na(csv) & ( any_changes | any_dropped ) ) {
 
     if( !quiet ) cat('\nupdating', csv)
     write.csv(grib_df, csv_path, row.names=FALSE)
@@ -164,5 +158,8 @@ grib_list = function(grib_dir, csv=NULL, dupe=NA, quiet=FALSE) {
     if( !quiet & any(is_dupe) ) cat(msg_verb, n_dupe, 'duplicate prediction time(s)')
     grib_df = grib_df |> dplyr::slice( which(!is_dupe) )
   }
+
+  # append local path to result before returning
+  grib_df = grib_df |> dplyr::mutate(path = file.path(grib_dir, file))
   return(grib_df)
 }

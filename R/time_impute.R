@@ -40,6 +40,7 @@ time_impute = function(var_nm,
     t1 = proc.time()
 
     # get daily_n and yearly_n from JSON
+    pars_dir = dirname(pars_json[[nm]]) |> file.path('temporal')
     pars_info = pars_json[[nm]] |> readLines() |> jsonlite::fromJSON()
     daily_n = pars_info |> sapply(\(x) x[['daily_n']]) |> unique()
     yearly_n = pars_info |> sapply(\(x) x[['yearly_n']]) |> unique()
@@ -48,8 +49,8 @@ time_impute = function(var_nm,
 
     # load latest fitted parameter matrices
     #pars_r = Reduce('+', lapply(pars_nc, terra::rast)) / length(pars_info)
-    pars_nc = pars_info |> sapply(\(x) x[['file']])
-    pars_r = tail(pars_info, 1)[[1]][['file']] |> terra::rast()
+    pars_nc = pars_info |> sapply(\(x) file.path(pars_dir, x[['file']]))
+    pars_r = file.path(pars_dir, tail(pars_info, 1)[[1]][['file']]) |> terra::rast()
     t_knots = tail(pars_info, 1)[[1]][['knots']] |> as.POSIXct(tz='UTC')
     gdim = dim( pars_r[[1]] )[1:2]
 
