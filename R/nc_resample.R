@@ -1,7 +1,5 @@
 #' Create/update a NetCDF archive of resampled coarse resolution grids
 #'
-#' TODO: add back ... (commented out below)
-#'
 #' This resamples the coarse resolution time series to get data at fine resolution,
 #' writing results to NetCDF files in subdirectory `output_nm`. Only times found in
 #' the coarse series but not the fine series are processed
@@ -44,7 +42,7 @@ nc_resample = function(var_nm,
   output_nc = file_wx('nc', base_dir, output_nm, as.list(names(var_nm)), make_dir=TRUE)
 
   # find time coverage of each input variable at both resolutions
-  cat('\nchecking available times for', paste(names(var_nm), collapse=', '))
+  cat('checking available times for', paste(names(var_nm), collapse=', '))
   var_info = lapply(input_nc, \(r) lapply(r, \(p) time_wx(p)) )
 
   # loop over variable names to check for existing resampled data
@@ -72,7 +70,7 @@ nc_resample = function(var_nm,
   needs_update = sapply(time_add, length) > 0
   if( !any(needs_update) ) {
 
-    cat('\nall variables are up to date \U2713')
+    cat('\nall variables are up to date \U2713\n')
     return(invisible())
   }
 
@@ -96,7 +94,7 @@ nc_resample = function(var_nm,
       t2 = proc.time()
       cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.\n')
 
-    } else { cat(paste0('\n', nm), 'is up to date \U2713') }
+    } else { cat(paste0('\n', nm), 'is up to date \U2713\n') }
   }
 }
 

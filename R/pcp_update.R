@@ -43,13 +43,13 @@ pcp_update = function(base_dir,
   output_nc_path = file_wx('nc', base_dir, as.list(output_nm), var_nm=pcp_nm)
 
   # find time coverage of each variable at both resolutions (creating JSON as needed)
-  cat('\nchecking available times for', paste(nm_var_all, collapse=', '))
+  cat('checking available times for', paste(nm_var_all, collapse=', '))
   var_info = lapply(input_path, \(r) lapply(r, \(p) time_wx(p)) )
 
   # loop over resolutions
   for( nm_res in output_nm ) {
 
-    cat('\n\n', nm_res, 'grids...')
+    paste0('\n\n', nm_res, ' grids...') |> cat()
     t1 = proc.time()
 
     # check for available times by variable
@@ -98,6 +98,7 @@ pcp_update = function(base_dir,
     # append to existing data file (or create the file and write to it)
     r_add |> nc_write(p_out)
     t2 = proc.time()
-    cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.\n')
+    cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.')
   }
+  cat('\n')
 }

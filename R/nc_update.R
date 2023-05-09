@@ -96,7 +96,7 @@ nc_update = function(aoi,
   # files at different resolutions processed separately
   for( nm_res in c('coarse', 'fine') ) {
 
-    cat('\n\n', nm_res, 'grids')
+    paste0('\n\n', nm_res, ' grids...') |> cat()
     path_nc = output_path[[nm_res]]
 
     # identify all files at this resolution
@@ -180,13 +180,14 @@ nc_update = function(aoi,
 
         # finished the slow part
         t3 = proc.time()
-        cat('\nfinished in', round((t3-t2)['elapsed'] / 60, 2), 'minutes.\n')
+        cat('\nfinished in', round((t3-t2)['elapsed'] / 60, 2), 'minutes.')
       }
 
       # update counters
       is_new_mat[file_idx,] = FALSE
     }
   }
+  cat('\n')
 }
 
 

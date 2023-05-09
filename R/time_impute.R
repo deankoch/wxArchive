@@ -30,7 +30,7 @@ time_impute = function(var_nm,
   pars_json = file_wx('temporal_index', base_dir, model_nm[1], var_nm_list)
 
   # load time coverage of each variable
-  cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
+  cat('reading times and grid information for', paste(names(var_nm), collapse=', '))
   var_info = input_nc |> lapply(\(p) time_wx(p))
 
   # loop over variable names

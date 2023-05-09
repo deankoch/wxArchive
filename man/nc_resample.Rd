@@ -31,13 +31,11 @@ nc_resample(
 nothing, but possibly modifies the nc and JSON files in \code{file.path(base_dir, output_nm)}
 }
 \description{
-TODO: add back ... (commented out below)
-}
-\details{
 This resamples the coarse resolution time series to get data at fine resolution,
 writing results to NetCDF files in subdirectory \code{output_nm}. Only times found in
 the coarse series but not the fine series are processed
-
+}
+\details{
 Specify the coarse and fine sub-directories as named elements in list \code{input_nm}. Each
 should be a character vector of sub-directories. These are checked for time series files
 named \code{var_nm} (see \code{?nc_layers})
