@@ -1,4 +1,4 @@
-# wx_archive: a database of weather forecasts from RAP/RUC/GFS 
+# wxArchive: a database of weather forecasts from RAP/RUC/GFS 
 Dean Koch, May 02 2023
 
 ## Overview

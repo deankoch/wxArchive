@@ -1,4 +1,4 @@
-Package: wx_archive
+Package: wxArchive
 Title: Create and Maintain an Archive of 2-hourly Data from Three NOAA Forecast Models
 Version: 0.0.0.9000
 Authors@R: 
