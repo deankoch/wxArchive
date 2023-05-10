@@ -79,7 +79,7 @@ workflow_list = function(project_dir) {
 #'
 #' @return Returns nothing but possible writes to `project_dir`
 #' @export
-workflow_update_rap = function(project_dir) {
+workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
 
   # path to area of interest polygon
   aoi_path = project_dir |> file.path('aoi.geojson')
@@ -94,6 +94,8 @@ workflow_update_rap = function(project_dir) {
   message('\nupdating RAP/RUC GRIB archive')
   archive_update(base_dir = base_dir_rap,
                  hour_rel = .hour_rel_rap,
+                 from = from,
+                 to = to,
                  model = 'rap_archive') |> invisible()
 
   # export to nc

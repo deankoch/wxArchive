@@ -10,8 +10,12 @@ library(devtools)
 load_all()
 document()
 
+
+
+
+
 project_dir = 'G:'
-grib_dir = file_wx('grib', file.path(project_dir, 'rap'))
+grib_dir = file_wx('grib', file.path(project_dir, 'gfs'))
 grib_df = grib_dir |> grib_list()
 project_dir |> workflow_list()
 

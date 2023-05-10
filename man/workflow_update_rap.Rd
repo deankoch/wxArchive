@@ -4,7 +4,7 @@
 \alias{workflow_update_rap}
 \title{Update the RUC/RAP archive}
 \usage{
-workflow_update_rap(project_dir)
+workflow_update_rap(project_dir, from = NULL, to = NULL)
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}

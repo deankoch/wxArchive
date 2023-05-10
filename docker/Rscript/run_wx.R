@@ -16,8 +16,8 @@ if( !dir.exists(data_dir) ) stop('data directory ', data_dir, ' not found')
 # list stats about recognized files in the project directory
 if( command == 'list' ) data_dir |> wxArchive::workflow_list()
 
-# update RAP/RUC archive
-if( command %in% c('update_rap', 'update_all') ) data_dir |> workflow_update_rap()
+# update RAP/RUC archive (temporarily set this to )
+if( command %in% c('update_rap', 'update_all') ) data_dir |> workflow_update_rap(to=as.Date('2005-02-01'))
 
 # impute missing values in RAP/RUC archive
 if( command %in% c('impute_rap', 'update_all') ) data_dir |> workflow_impute_rap()
