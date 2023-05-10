@@ -29,8 +29,8 @@ if( !file.exists(ext_path) ) {
   file.copy(local_path, ext_path)
 }
 
-# dates to download. NULL sets earliest/latest available
-from = NULL
+# temporarily set late start date (NULL sets earliest/latest available)
+from = as.Date('2023-05-03')
 to = NULL
 
 # TODO: this will write a copy of the completed time series in one file
