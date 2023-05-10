@@ -8,11 +8,11 @@ NetCDF. It is currently set up to download RAP data from the past week but it ca
 go as far back as 2005.
 
 All output files are written to the directory /home/wxarchive/data in the container. To make this
-persistent you will need to map a local volume to this location. In the examples below I map
-G:/test/ on my local machine to /home/wxarchive/data with the -v argument.
+persistent you will need to map a local volume to this location. In the examples below I map the
+empty directory G:/test/ on my local machine to /home/wxarchive/data with the -v argument.
 
 The image contains a default area of interest polygon (the Yellowstone area). Change this by putting
-a file named "aoi.geojson" in the directory mapped above (eg G:/test/aoi.geojson).
+a file named "aoi.geojson" in the directory mapped above (eg in G:/test/aoi.geojson).
 
 
 OPERATIONS
