@@ -56,8 +56,9 @@ if( operation %in% c('fit_rap', 'update_all') ) {
 if( operation %in% c('impute_rap', 'update_all') ) {
 
   # check if a temporal model has been fitted to the data yet
-  model_exists = data_dir |> file.path('rap', .nm_resample_rap[1], 'model') |> dir.exists()
-  if( !model_exists ) stop('directory ', model_exists, ' not found. Run operation "fit_rap" first')
+  model_dir = data_dir |> file.path('rap', wxArchive:::.nm_resample_rap[1], 'model')
+  model_exists = model_dir |> dir.exists()
+  if( !model_exists ) stop('directory ', model_dir, ' not found. Run operation "fit_rap" first')
   data_dir |> workflow_impute_rap()
 }
 
