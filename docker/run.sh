@@ -1,1 +1,1 @@
-docker run --rm -e OPERATION=update_all -v G:/:/home/wxarchive/data deankoch/wxarchive
+docker run --rm -e WX_OPERATION=update_rap -v G:/test/:/home/wxarchive/data deankoch/wxarchive
