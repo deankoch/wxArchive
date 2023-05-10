@@ -29,8 +29,8 @@ if( !file.exists(ext_path) ) {
   file.copy(local_path, ext_path)
 }
 
-# temporarily set late start date (NULL sets earliest/latest available)
-from = as.Date('2023-05-03')
+# dates to download. NULL sets earliest/latest available
+from = NULL
 to = NULL
 
 # TODO: this will write a copy of the completed time series in one file
@@ -46,7 +46,7 @@ if( operation %in% c('update_rap', 'update_all') ) data_dir |> workflow_update_r
 if( operation %in% c('fit_rap', 'update_all') ) {
 
   # check if a temporal model has been fitted to the data yet
-  model_exists = data_dir |> file.path('rap', .nm_resample_rap[1], 'model') |> dir.exists()
+  model_exists = data_dir |> file.path('rap', wxArchive:::.nm_resample_rap[1], 'model') |> dir.exists()
 
   # in "update_all" mode we fit the model only if it doesn't exist yet
   if( !model_exists | (operation == 'fit_rap') ) data_dir |> workflow_fit_temporal()
