@@ -20,15 +20,15 @@ a file named "aoi.geojson" in the directory mapped above (eg in G:/test/aoi.geoj
 
 Set the "WX_OPERATION" environmental variable to select a task:
 
-"list"           : (the default) lists all available times in the archive at fine resolution
-"update_all"     : runs the four steps below in sequence
+* "list"           : (the default) lists all available times in the archive at fine resolution
+* "update_all"     : runs the four steps below in sequence
 
-"update_rap"     : downloads from RAP/RUC and does some transformation
-"fit_rap"        : fits a temporal model to the data at fine resolution
-"impute_rap"     : fills missing time points at fine resolution
-"update_gfs"     : downloads from GFS and does some transformation
+* "update_rap"     : downloads from RAP/RUC and does some transformation
+* "fit_rap"        : fits a temporal model to the data at fine resolution
+* "impute_rap"     : fills missing time points at fine resolution
+* "update_gfs"     : downloads from GFS and does some transformation
 
-"extract"        : (not yet implemented) writes a copy of the data to CSV or NetCDF
+* "extract"        : (not yet implemented) writes a copy of the data to CSV or NetCDF
 
 
 ### NOTES
