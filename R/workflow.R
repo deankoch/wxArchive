@@ -58,6 +58,7 @@ workflow_list = function(project_dir) {
     cat('\n')
   }
 
+  cat('\n')
   return(invisible(p_all))
 }
 
