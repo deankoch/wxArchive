@@ -2,18 +2,15 @@ FROM rocker/geospatial
 
 # working directory in container
 ENV WX_PATH=/home/wxarchive
-WORKDIR ${WX_PATH}
 
 # mount your local storage volume to this location
 ENV WX_DATA_DIR=/home/wxarchive/data
 
 # source tarball for wxArchive
 ENV PKG_NAME=wxArchive_0.0.0.9000.tar.gz
-COPY ${PKG_NAME} ${PKG_NAME}
 
 # area of interest polygon
 ARG AOI_NAME=aoi.geojson
-COPY ${AOI_NAME} ${AOI_NAME}
 
 # get CRAN packages (skip any installed already)
 RUN install2.r -e -s \
@@ -27,6 +24,9 @@ terra \
 && rm -rf /tmp/downloaded_packages
 
 # install wxArchive
+WORKDIR ${WX_PATH}
+COPY ${AOI_NAME} ${AOI_NAME}
+COPY ${PKG_NAME} ${PKG_NAME}
 RUN R -q -e "install.packages('${WX_PATH}/${PKG_NAME}', repo=NULL, type='source')"
 
 # copy Rscript(s)
