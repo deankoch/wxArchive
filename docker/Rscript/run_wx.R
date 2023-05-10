@@ -1,29 +1,66 @@
-library(wxArchive)
+# usage: Rscript list_all [operation] [data_dir]
+#
+# [data_dir] a directory with sub-folders "rap" and gfs". All weather data is written here
+# [operation] one of "list", "update_all", "update_rap", "fit_rap", "impute_rap", "update_gfs", "extract"
 
-# usage: Rscript list_all [command] [data_dir]
-command = commandArgs(trailingOnly=TRUE)[1]
+# put your own version of this file in data_dir to change the AOI
+aoi_nm = 'aoi.geojson'
+local_path = file.path('/home/wxarchive', aoi_nm)
+
+library(wxArchive)
+operation = commandArgs(trailingOnly=TRUE)[1]
 data_dir = commandArgs(trailingOnly=TRUE)[2]
 
 # first argument specifies the operation
-command_valid =  c("list", "update_all", "update_rap", "impute_rap", "update_gfs", "extract")
-command_info = paste(command_valid, collapse=', ')
-if( !(command %in% command_valid) ) stop('first argument must be one of: ', command_info)
+operation_valid =  c("list", "update_all", "update_rap", "fit_rap", "impute_rap", "update_gfs", "extract")
+operation_info = paste(operation_valid, collapse=', ')
+if( !(operation %in% operation_valid) ) stop('first argument must be one of: ', operation_info)
 
 # optional second argument should point to parent directory of "rap" and "gfs"
-if( length(data_dir) == 0 ) data_dir = 'home/wxarchive/data'
-if( !dir.exists(data_dir) ) stop('data directory ', data_dir, ' not found')
+data_dir_exists = data_dir |> normalizePath(winslash='/') |> dir.exists()
+if( ( length(data_dir) == 0 ) | !data_dir_exists ) stop('data directory "', data_dir, '" not found')
+
+# copy default AOI polygon file if it's not in the expected location
+ext_path = file.path(data_dir, aoi_nm)
+if( !file.exists(ext_path) ) {
+
+  message('copying', aoi_nm, 'to', dirname(ext_path))
+  if( !file.exists(local_path) ) stop('file ', local_path, ' not found')
+  file.copy(local_path, ext_path)
+}
+
+# temporarily set early end date (NULL sets earliest/latest available)
+from = NULL
+to = as.Date('2005-02-01')
+
+# TODO: this will write a copy of the completed time series in one file
+if( operation %in% c('extract') ) stop('not yet implemented')
 
 # list stats about recognized files in the project directory
-if( command == 'list' ) data_dir |> wxArchive::workflow_list()
+if( operation == 'list' ) data_dir |> wxArchive::workflow_list()
 
-# update RAP/RUC archive (temporarily set this to )
-if( command %in% c('update_rap', 'update_all') ) data_dir |> workflow_update_rap(to=as.Date('2005-02-01'))
+# update RAP/RUC archive
+if( operation %in% c('update_rap', 'update_all') ) data_dir |> workflow_update_rap(from=from, to=to)
+
+# fit temporal model to RAP/RUC archive
+if( operation %in% c('fit_rap', 'update_all') ) {
+
+  # check if a temporal model has been fitted to the data yet
+  model_exists = data_dir |> file.path('rap', .nm_resample_rap[1], 'model') |> dir.exists()
+
+  # in "update_all" mode we fit the model only if it doesn't exist yet
+  if( !model_exists | (operation == 'fit_rap') ) data_dir |> workflow_fit_temporal()
+}
 
 # impute missing values in RAP/RUC archive
-if( command %in% c('impute_rap', 'update_all') ) data_dir |> workflow_impute_rap()
+if( operation %in% c('impute_rap', 'update_all') ) {
+
+  # check if a temporal model has been fitted to the data yet
+  model_exists = data_dir |> file.path('rap', .nm_resample_rap[1], 'model') |> dir.exists()
+  if( !model_exists ) stop('directory ', model_exists, ' not found. Run operation "fit_rap" first')
+  data_dir |> workflow_impute_rap()
+}
 
 # update GFS archive
-if( command %in% c('update_gfs', 'update_all') ) data_dir |> workflow_update_gfs()
+if( operation %in% c('update_gfs', 'update_all') ) data_dir |> workflow_update_gfs()
 
-# update GFS archive
-if( command %in% c('extract', 'update_all') ) stop('not yet implemented')
