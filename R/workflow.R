@@ -48,8 +48,8 @@ workflow_list = function(project_dir) {
 
     # print stats to console
     paste0('\n', nm_fix_wid[[i]], ' | ',
-           n_file, ' files | ',
-           n, ' times | ',
+           n_file, ' file(s) | ',
+           n, ' time(s) | ',
            time_min, ' to ', time_max) |> cat()
 
     # print file paths to console

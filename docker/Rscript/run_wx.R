@@ -29,9 +29,9 @@ if( !file.exists(ext_path) ) {
   file.copy(local_path, ext_path)
 }
 
-# temporarily set early end date (NULL sets earliest/latest available)
-from = NULL
-to = as.Date('2005-02-01')
+# temporarily set late start date (NULL sets earliest/latest available)
+from = as.Date('2023-05-03')
+to = NULL
 
 # TODO: this will write a copy of the completed time series in one file
 if( operation %in% c('extract') ) stop('not yet implemented')
