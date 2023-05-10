@@ -70,7 +70,8 @@ nc_resample = function(var_nm,
     time_pending = time_coarse[ !( time_coarse %in% c(time_fine, time_done) ) ]
 
     # filter to supplied start time (default includes all)
-    from_i = if( is.null(from[nm]) ) min(time_coarse) else as.POSIXct(from[nm], tz='UTC')
+    time_coarse_start = if( length(time_coarse) == 0 ) Inf else min(time_coarse)
+    from_i = if( is.null(from[nm]) ) time_coarse_start else as.POSIXct(from[nm], tz='UTC')
     time_pending = time_pending[ time_pending >= from_i ]
   })
 
