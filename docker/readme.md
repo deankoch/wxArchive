@@ -47,4 +47,5 @@ You must download at least one fine resolution grid before running "update_gfs"
 ### EXAMPLES
 
 docker run --rm -e WX_OPERATION=list -v G:/test/:/home/wxarchive/data deankoch/wxarchive
+
 docker run --rm -e WX_OPERATION=update_rap -v G:/test/:/home/wxarchive/data deankoch/wxarchive
