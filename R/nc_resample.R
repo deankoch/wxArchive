@@ -41,11 +41,11 @@ nc_resample = function(var_nm,
   var_nm = var_nm |> stats::setNames(nm=names(input_nc[[1]]))
   output_nc = file_wx('nc', base_dir, output_nm, as.list(names(var_nm)), make_dir=TRUE)
 
-  # get a template SpatRaster at fine resolution from first file
+  # get a template SpatRaster at fine resolution from first available file
   if( is.null(r_fine) ) {
 
-    r_fine_path = input_nc[['fine']][[1]][1]
-    if( !file.exists(r_fine_path) ) stop('no files found in "fine" sub-directory. Try supplying r_fine')
+    r_fine_path = input_nc[['fine']][[1]][file.exists(input_nc[['fine']][[1]])]
+    if( length(r_fine_path) == 0 ) stop('no files found in "fine" sub-directory. Try supplying r_fine')
     r_fine = r_fine_path |> terra::rast(lyrs=1) |> terra::rast()
   }
 
