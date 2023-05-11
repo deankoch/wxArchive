@@ -5,10 +5,11 @@
 #' to the console
 #'
 #' @param project_dir character path to the project root directory
+#' @param quiet logical suppresses console messages
 #'
 #' @return a list of character vectors, paths to individual NetCDF files
 #' @export
-workflow_list = function(project_dir) {
+workflow_list = function(project_dir, quiet=FALSE) {
 
   # base directories for all NetCDF and GRIB files from RAP/RUC and GFS
   base_dir_rap = project_dir |> file.path('rap')
@@ -18,6 +19,7 @@ workflow_list = function(project_dir) {
   rap_nc_path = file_wx('nc', base_dir_rap, .nm_complete_rap, .nm_output_var)
   gfs_nc_path = file_wx('nc', base_dir_gfs, .nm_resample, as.list(.nm_gfs_var))
   p_all = Map(\(rap, gfs) c(rap, gfs), rap = rap_nc_path, gfs = gfs_nc_path)
+  if( quiet ) return(p_all)
 
   # fixed width names for printout
   nm_all = names(p_all)
@@ -46,20 +48,27 @@ workflow_list = function(project_dir) {
     time_max = time_all[['time_obs']] |> max()
     n = time_all[['time_obs']] |> length()
 
+    # check if time series is complete
+    ts_df = data.frame(posix_pred=time_all[['time_obs']]) |> archive_pad(quiet=TRUE)
+    n_miss = ts_df[['ts_hours']] |> is.na() |> sum()
+    msg_miss = ifelse(n_miss==0, ' (complete)', paste0(' (', n_miss, ' missing)'))
+
     # print stats to console
     paste0('\n', nm_fix_wid[[i]], ' | ',
            n_file, ' file(s) | ',
            n, ' time(s) | ',
-           time_min, ' to ', time_max) |> cat()
+           time_min, ' to ', time_max,
+           msg_miss) |> cat()
 
     # print file paths to console
     c('\n', rep('-', nm_len-1)) |> paste(collapse='') |> cat()
     paste0('\n > ', p) |> cat()
     cat('\n')
+
   }
 
   cat('\n')
-  return(invisible(p_all))
+  return( invisible(p_all) )
 }
 
 
@@ -201,7 +210,7 @@ workflow_update_gfs = function(project_dir) {
 
   # path to area of interest polygon
   aoi_path = project_dir |> file.path('aoi.geojson')
-  aoi = sf::st_read(aoi_path)
+  aoi = sf::st_read(aoi_path, quiet=TRUE)
 
   # all the output files go here
   base_dir_gfs = project_dir |> file.path('gfs')
@@ -247,4 +256,26 @@ workflow_update_gfs = function(project_dir) {
 
 }
 
+#' Exported completed time series to CSV or NetCDF
+#'
+#'
+#' @param project_dir character path to the project root directory
+#'
+#' @return Returns nothing but possible writes to `project_dir`
+#' @export
+workflow_export = function(project_dir, ext='nc', daily=TRUE) {
+
+  # collect all source file names
+  p_all = project_dir |> workflow_list(quiet=TRUE)
+
+
+
+
+
+
+
+
+
+
+}
 

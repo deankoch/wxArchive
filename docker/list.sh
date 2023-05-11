@@ -1,2 +1,2 @@
-docker run --rm -e WX_OPERATION=list -v G:/:/home/wxarchive/data deankoch/wxarchive
+docker run --rm -e WX_OPERATION=list -v G:/:/home/wxarchive/data deankoch/wxarchive-dev
 read

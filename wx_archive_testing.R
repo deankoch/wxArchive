@@ -7,11 +7,19 @@ library(devtools)
 load_all()
 document()
 
-project_dir = 'G:/weather_db'
-project_dir |> workflow_list()
+project_dir = 'G:'
+#project_dir |> workflow_list()
+p_all = project_dir |> workflow_list(quiet=TRUE)
+p = p_all[[2]]
+r = nc_aggregate(p)
+
+
+
+
 project_dir |> workflow_update_rap()
-#project_dir |> workflow_impute_rap()
-#project_dir |> workflow_update_gfs()
+project_dir |> workflow_impute_rap()
+project_dir |> workflow_update_gfs()
+
 
 message('\nupdating NetCDF files')
 aoi_path = project_dir |> file.path('aoi.geojson')

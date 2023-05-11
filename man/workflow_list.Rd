@@ -4,10 +4,12 @@
 \alias{workflow_list}
 \title{List all times and variables available locally in the RAP/RUC/GFS archive}
 \usage{
-workflow_list(project_dir)
+workflow_list(project_dir, quiet = FALSE)
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}
+
+\item{quiet}{logical suppresses console messages}
 }
 \value{
 a list of character vectors, paths to individual NetCDF files
