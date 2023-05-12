@@ -40,6 +40,7 @@ wnd_update = function(base_dir,
   output_nc_path = file_wx('nc', base_dir, output_nm, var_nm=wnd_nm, make_dir=TRUE)
 
   # find common time coverage (creating JSON as needed)
+  t1 = proc.time()
   cat('checking available times for', paste(nm_var_all, collapse=', '))
   var_info = lapply(input_path, \(p) time_wx(p) )
   if( any( sapply(var_info, length) == 0 ) ) stop('one or both variables had no observed data')

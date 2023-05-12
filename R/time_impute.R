@@ -173,6 +173,7 @@ time_impute = function(var_nm,
     t2 = proc.time()
     cat('\n\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.')
   }
+  cat('\n')
 }
 
 
