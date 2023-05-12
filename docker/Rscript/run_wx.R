@@ -29,6 +29,9 @@ if( !file.exists(ext_path) ) {
   file.copy(local_path, ext_path)
 }
 
+# expected location of temporal model directory
+model_dir = data_dir |> file.path('rap', wxArchive:::.nm_resample_rap[1], 'model')
+
 # dates to download. NULL sets earliest/latest available
 from = NULL
 to = NULL
@@ -45,22 +48,20 @@ if( operation %in% c('update_rap', 'update_all') ) data_dir |> workflow_update_r
 # fit temporal model to RAP/RUC archive
 if( operation %in% c('fit_rap', 'update_all') ) {
 
-  # check if a temporal model has been fitted to the data yet
-  model_exists = data_dir |> file.path('rap', wxArchive:::.nm_resample_rap[1], 'model') |> dir.exists()
-
   # in "update_all" mode we fit the model only if it doesn't exist yet
-  if( !model_exists | (operation == 'fit_rap') ) data_dir |> workflow_fit_temporal()
+  if( !dir.exists(model_dir) | (operation == 'fit_rap') ) data_dir |> workflow_fit_temporal()
 }
 
 # impute missing values in RAP/RUC archive
 if( operation %in% c('impute_rap', 'update_all') ) {
 
   # check if a temporal model has been fitted to the data yet
-  model_dir = data_dir |> file.path('rap', wxArchive:::.nm_resample_rap[1], 'model')
-  model_exists = model_dir |> dir.exists()
-  if( !model_exists ) stop('directory ', model_dir, ' not found. Run operation "fit_rap" first')
+  if( !dir.exists(model_dir) ) stop('directory ', model_dir, ' not found. Run operation "fit_rap" first')
   data_dir |> workflow_impute_rap()
 }
+
+# add wind speed variable
+if( operation %in% c('update_all') ) data_dir |> workflow_wnd_rap()
 
 # update GFS archive
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> workflow_update_gfs()
