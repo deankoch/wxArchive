@@ -3,15 +3,75 @@
 #' April 2023
 #'
 
+library(terra)
 library(devtools)
 load_all()
 document()
 
 project_dir = 'G:'
+project_dir |> nc_list()
+
+project_dir |> workflow_list()
+project_dir |> workflow_wnd_rap()
+
+
+file.path(project_dir, 'rap') |> wnd_update()
+
+###
+base_dir = file.path(project_dir, 'rap')
+wnd_nm = 'wnd'
+uv_nm = c('wnd_u', 'wnd_v')
+input_nm = .nm_complete_rap
+output_nm = wnd_nm
+
+
+
+
+
+input_path = file_wx('nc', base_dir, input_nm, var_nm=as.list(uv_nm))
+p = input_path[[1]]
+vinfo = time_wx(p)
+vinfo[['time_obs']]
+vinfo[['time_na']]
+
+
+r = p |> nc_layers(vinfo[['time_obs']], na_rm=TRUE)
+x = r[]
+xx = x |> apply(2, anyNA)
+xx |> which()
+
+
+
+times = time(r)[xx]
+
+p
+times
+
+
+
+
+
+###
+
+#base_dir |> nc_export()
+
+
+
+##
+
+
+
+
+
+##
+
 #project_dir |> workflow_list()
 p_all = project_dir |> workflow_list(quiet=TRUE)
 p = p_all[[2]]
 r = nc_aggregate(p)
+
+r[[1]] |> plot()
+
 
 
 

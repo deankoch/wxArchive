@@ -6,7 +6,7 @@
 #'
 
 library(devtools)
-#install_github('deankoch/snapKrig')
+#install_github('deankoch/wxArchive')
 load_all()
 document()
 
@@ -41,10 +41,11 @@ base_dir_rap = 'G:/rap'
 base_dir_gfs = 'G:/gfs'
 
 dem_path = 'G:/weather_db/NAM_elv_msk.tif'
-aoi_path = 'G:/weather_db/aoi.geojson'
-
+aoi_path = 'G:/aoi.geojson'
+aoi_path2 = 'G:/aoi2.geojson'
 # build an AOI polygon
 aoi = sf::st_read(aoi_path)
+#aoi |> sf::st_transform(4326) |> sf::st_write(aoi_path2)
 
 #
 ##
