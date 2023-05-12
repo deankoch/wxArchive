@@ -33,14 +33,19 @@
 # output variable names from GFS
 .nm_gfs_var = names(.gfs_regex)
 
-# output names for precipitation variables split from the others
+# output names for precipitation variables
 .var_pcp = 'pcp'
 .var_pcp_old = c('pcp_large', 'pcp_small', 'pcp_total')
-.var_not_pcp = names(.rap_regex)[ !( names(.rap_regex) %in% .var_pcp_old ) ]
+.var_not_pcp = names(.rap_regex) |> setdiff(.var_pcp_old)
 
-# list of names to consider equivalent
+# list of names to consider equivalent (eg pcp and pcp_total refer to same variable)
 .nm_output_var = c(list(c(.var_pcp, 'pcp_total')), as.list(.var_not_pcp))
 
+# list of variables available for export (wind speed is added last)
+.var_wnd = 'wnd'
+.var_wnd_uv = c('wnd_u', 'wnd_v')
+.var_rap_export = .nm_output_var |> c( list(.var_wnd) )
+.var_gfs_export = .nm_gfs_var |> c( list(.var_wnd) )
 
 ## DIRECTORIES
 
@@ -64,4 +69,8 @@
 
 # set of sub-directories forming completed time series
 .nm_complete_rap = c(.nm_resample_rap, .nm_complete)
+
+# set of sub-directories to use for building exports
+.nm_rap_export = .nm_complete_rap |> c(.var_wnd)
+.nm_gfs_export = .nm_resample |> c(.var_wnd)
 

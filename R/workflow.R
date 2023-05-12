@@ -2,7 +2,10 @@
 #'
 #' This checks the sub-directories of `project_dir` (both 'rap' and 'gfs') for
 #' NetCDF data on the variables named in `.nm_output_var`, and reports some stats
-#' to the console
+#' to the console. All file paths are returned in a list but only the existing files
+#' are reported on.
+#'
+#' With `quiet=TRUE`, this is essentially just a wrapper for `nc_list`
 #'
 #' @param project_dir character path to the project root directory
 #' @param quiet logical suppresses console messages
@@ -11,14 +14,8 @@
 #' @export
 workflow_list = function(project_dir, quiet=FALSE) {
 
-  # base directories for all NetCDF and GRIB files from RAP/RUC and GFS
-  base_dir_rap = project_dir |> file.path('rap')
-  base_dir_gfs = project_dir |> file.path('gfs')
-
   # make a list of all datasets with preference for RAP archive over GFS
-  rap_nc_path = file_wx('nc', base_dir_rap, .nm_complete_rap, .nm_output_var)
-  gfs_nc_path = file_wx('nc', base_dir_gfs, .nm_resample, as.list(.nm_gfs_var))
-  p_all = Map(\(rap, gfs) c(rap, gfs), rap = rap_nc_path, gfs = gfs_nc_path)
+  p_all = project_dir |> nc_list()
   if( quiet ) return(p_all)
 
   # fixed width names for printout
@@ -64,7 +61,6 @@ workflow_list = function(project_dir, quiet=FALSE) {
     c('\n', rep('-', nm_len-1)) |> paste(collapse='') |> cat()
     paste0('\n > ', p) |> cat()
     cat('\n')
-
   }
 
   cat('\n')
@@ -87,7 +83,7 @@ workflow_list = function(project_dir, quiet=FALSE) {
 #'
 #' @param project_dir character path to the project root directory
 #'
-#' @return Returns nothing but possible writes to `project_dir`
+#' @return returns nothing but possible writes to `project_dir`
 #' @export
 workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
 
@@ -141,7 +137,7 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
 #'
 #' @param project_dir character path to the project root directory
 #'
-#' @return Returns nothing but possible writes to `project_dir`
+#' @return returns nothing but possible writes to `project_dir`
 #' @export
 workflow_fit_temporal = function(project_dir) {
 
@@ -159,7 +155,7 @@ workflow_fit_temporal = function(project_dir) {
 #'
 #' This creates the `.nm_complete` sub-directory of `project_dir` and
 #' fills it with NetCDF files containing imputed layers for times missing
-#' from the time series named in in `.nm_resample_rap`.
+#' from the time series named in `.nm_resample_rap`.
 #'
 #' Users must first run `workflow_update_rap` and `workflow_fit_temporal` at
 #' least once before calling this function.
@@ -170,7 +166,7 @@ workflow_fit_temporal = function(project_dir) {
 #'
 #' @param project_dir character path to the project root directory
 #'
-#' @return Returns nothing but possible writes to `project_dir`
+#' @return returns nothing but possible writes to `project_dir`
 #' @export
 workflow_impute_rap = function(project_dir) {
 
@@ -183,6 +179,31 @@ workflow_impute_rap = function(project_dir) {
               base_dir = base_dir_rap,
               input_nm = .nm_resample_rap,
               output_nm = .nm_complete) |> invisible()
+}
+
+#' Create wind speed layer
+#'
+#' This creates the `wnd` sub-directory of `project_dir` and writes a NetCDF file
+#' for variable "wnd" after computing it from components "wnd_u" and "wnd_v".
+#'
+#' Users should either call this function after running the workflow up to
+#' (and including) `workflow_impute_rap` to get a complete wind speed time series
+#' from the gap-filled components.
+#'
+#' @param project_dir character path to the project root directory
+#'
+#' @return returns nothing but possible writes to `project_dir`
+#' @export
+workflow_wnd_rap = function(project_dir) {
+
+  # all the output files go here
+  base_dir_rap = project_dir |> file.path('rap')
+
+  # create/update the file
+  message('\ncomputing wind speed from u/v components')
+  base_dir_rap |> wnd_update(wnd_nm = .var_wnd,
+                             uv_nm = .var_wnd_uv,
+                             input_nm = .nm_complete_rap) |> invisible()
 }
 
 
@@ -204,7 +225,7 @@ workflow_impute_rap = function(project_dir) {
 #'
 #' @param project_dir character path to the project root directory
 #'
-#' @return Returns nothing but possible writes to `project_dir`
+#' @return returns nothing but possible writes to `project_dir`
 #' @export
 workflow_update_gfs = function(project_dir) {
 
@@ -236,7 +257,7 @@ workflow_update_gfs = function(project_dir) {
   base_dir_gfs |> file.path('coarse') |> unlink(recursive=TRUE)
   base_dir_gfs |> file.path(.nm_resample) |> unlink(recursive=TRUE)
 
-  # part 8: export latest GFS data to nc (creates "coarse" subdirectory)
+  # export latest GFS data to nc (creates "coarse" subdirectory)
   nc_update(aoi = aoi,
             base_dir = base_dir_gfs,
             output_nm = list(coarse=.nm_gfs),
@@ -247,12 +268,19 @@ workflow_update_gfs = function(project_dir) {
   r_fine = file_wx('nc', base_dir_rap, .nm_spatial, names(.rap_regex)[[1]]) |>
     terra::rast() |> terra::rast()
 
-  # part 9: resample to match RAP grid
+  # resample to match RAP grid
+  message('\nresampling')
   nc_resample(var_nm = .nm_gfs_var,
               base_dir = base_dir_gfs,
               input_nm = list(coarse=.nm_gfs),
               output_nm = .nm_resample,
               r_fine = r_fine) |> invisible()
+
+  # create wind speed layers
+  message('\ncomputing wind speed')
+  base_dir_gfs |> wnd_update(wnd_nm = 'wnd',
+                             uv_nm = c('wnd_u', 'wnd_v'),
+                             input_nm = .nm_resample) |> invisible()
 
 }
 
@@ -261,7 +289,7 @@ workflow_update_gfs = function(project_dir) {
 #'
 #' @param project_dir character path to the project root directory
 #'
-#' @return Returns nothing but possible writes to `project_dir`
+#' @return returns nothing but possible writes to `project_dir`
 #' @export
 workflow_export = function(project_dir, ext='nc', daily=TRUE) {
 
