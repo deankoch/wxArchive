@@ -179,14 +179,11 @@ archive_get = function(model,
       available_df = available_df |> rbind(alternate_df)
     }
 
-
-
-    # data frame detailing downloads and failed requests
+    # details about downloads and failed requests
     list_out[[d]] = available_df
   }
 
   # collapse list output
-  cat('\n\ntotal time elapsed:', round((proc.time() - t_outer)['elapsed'] / 60, 2), 'minutes\n')
   do.call(rbind, list_out) |> dplyr::tibble()
 }
 
