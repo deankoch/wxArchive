@@ -33,8 +33,18 @@ nc_export(
 vector of file paths written to the \code{output_nm} directory
 }
 \description{
-The last two arguments are passed to \code{nc_aggregate} to control the alignment of
+This exports all data each of the variables named in \code{var_nm} to their own (single)
+NetCDF file in \code{output_nm}. \code{var_nm} should be a subset of the names returned by
+\code{nc_list(base_dir)}.
+}
+\details{
+If \code{write_csv=TRUE}, the function additionally writes a CSV file containing the
+matrix of data associated with each variable, and a time column with a character
+string giving the date/time in UTC.
+
+The last three arguments are passed to \code{nc_aggregate} to control the alignment of
 the aggregation window. \code{fun} specifies the function (one of "mean", "min", or "max")
 to use for combining times within the window. If \code{fun=NA}, the function does no
-aggregation and writes all time points.
+aggregation and writes all time points. Set \code{tz} to the desired output time zone, and
+leave \code{origin_hour=0} to have each day begin at 12AM (in time zone \code{tz}).
 }
