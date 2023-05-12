@@ -49,6 +49,8 @@ problems with file operations when there are a large number of times
 (layers) in the file.
 
 When \code{na_rm=TRUE}, only layers with all grid points observed (non-NA) are
-searched. In this case times that match a layers labelled as NA are reported
-as "unmatched" (and no NA layers are returned).
+searched. In this case, times that only match NA layers are reported
+as "unmatched", and none of the NA layers are returned. When \code{na_rm=FALSE}
+the first matching layer in \code{p} is returned for each time, and this may be
+an NA layer (depending on the order of \code{p} and the contents of its files).
 }

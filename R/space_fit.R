@@ -137,17 +137,17 @@ run_spatial_fit = function(p, X, n_max=1e2, t_fit=NULL, positive=NULL) {
   # copy non-NA layers and times into memory as sk object
   msg_n = paste0('(sampled from ', length(t_obs), ')')
   cat('\nloading', n_fit, 'layers', msg_n)
-  g_fit = nc_layers(p, t_fit) |> snapKrig::sk()
+  g_fit = p |> nc_layers(t_fit, na_rm=TRUE) |> snapKrig::sk()
 
   # filter to times where the grid had non-zero value
   if( positive ) {
 
-    # check for all-zero layers (or NAs) - this loads all layers into memory
+    # check for layers with no nonzero values
     cat('\nchecking for all-zero layers')
     is_zero = g_fit[] |> apply(2, \(x) all(x == 0))
     if( all(is_zero) ) stop('no non-zero layers!')
 
-    # filter to analyze only non-zero layers
+    # filter to analyze only nonzero layers
     g_fit = snapKrig::sk(g_fit, vals=FALSE) |> snapKrig::sk(gval=g_fit[][, !is_zero])
     t_fit = t_fit[!is_zero]
     n_fit = length(t_fit)

@@ -17,5 +17,9 @@ a list of character vectors, paths to individual NetCDF files
 \description{
 This checks the sub-directories of \code{project_dir} (both 'rap' and 'gfs') for
 NetCDF data on the variables named in \code{.nm_output_var}, and reports some stats
-to the console
+to the console. All file paths are returned in a list but only the existing files
+are reported on.
+}
+\details{
+With \code{quiet=TRUE}, this is essentially just a wrapper for \code{nc_list}
 }

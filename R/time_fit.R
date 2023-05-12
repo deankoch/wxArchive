@@ -69,7 +69,7 @@ time_fit = function(var_nm,
     # copy data to memory as sk object
     cat('\nselected subset', as.character(min(t_fit)), 'to', as.character(max(t_fit)))
     cat('\ncopying', n_fit, 'layers to memory')
-    g_obs = input_nc[[nm]] |> nc_layers(t_fit) |> snapKrig::sk()
+    g_obs = input_nc[[nm]] |> nc_layers(t_fit, na_rm=TRUE) |> snapKrig::sk()
 
     # build matrix of seasonal predictors and compute QR decomposition
     cat('\ncomputing temporal covariates')

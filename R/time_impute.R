@@ -116,7 +116,7 @@ time_impute = function(var_nm,
 
     # load all observed data into a matrix with NAs for unobserved to be filled below
     cat('\nloading observed data into memory')
-    r_obs = input_nc[[nm]] |> nc_layers(t_pre)
+    r_obs = input_nc[[nm]] |> nc_layers(t_pre, na_rm=TRUE)
     mat_both = r_obs[][, match(t_both, t_pre)]
 
     # loop over gaps

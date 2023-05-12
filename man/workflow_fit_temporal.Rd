@@ -10,7 +10,7 @@ workflow_fit_temporal(project_dir)
 \item{project_dir}{character path to the project root directory}
 }
 \value{
-Returns nothing but possible writes to \code{project_dir}
+returns nothing but possible writes to \code{project_dir}
 }
 \description{
 A wrapper for \code{time_fit}. This reads its input from the sub-directories

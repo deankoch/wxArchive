@@ -79,8 +79,8 @@ pcp_update = function(base_dir,
     if( length(time_add) > 0 ) {
 
       cat('\ncopying sum of pcp_large and pcp_small')
-      r_large = input_path[[nm_res]][['pcp_large']] |> nc_layers(time_add)
-      r_small = input_path[[nm_res]][['pcp_small']] |> nc_layers(time_add)
+      r_large = input_path[[nm_res]][['pcp_large']] |> nc_layers(time_add, na_rm=TRUE)
+      r_small = input_path[[nm_res]][['pcp_small']] |> nc_layers(time_add, na_rm=TRUE)
       r_add = r_large + r_small
     }
 

@@ -10,7 +10,7 @@ workflow_update_rap(project_dir, from = NULL, to = NULL)
 \item{project_dir}{character path to the project root directory}
 }
 \value{
-Returns nothing but possible writes to \code{project_dir}
+returns nothing but possible writes to \code{project_dir}
 }
 \description{
 Download the latest files, convert to NetCDF and replace some of the

@@ -22,22 +22,22 @@
 #' 5. 'temporal_index' : character, path to a JSON file storing information about temporal fit
 #' 6. 'temporal_nc' : character, path to a new .nc file for storing fitted temporal parameters
 #'
-#' With options (1) and (5-6) the function returns a character path, whereas with (2-5) it
+#' With options (1) and (5-6) the function returns a character path, whereas with (2-4) it
 #' returns a list of character path vectors - one list entry per resolution, and one vector
 #' entry per variable name. If `sub_dir` has length 1 (one resolution only) then the result is
 #' automatically unlisted and the function returns a character vector.
 #'
 #' With option (6), the file name will contain the current system time - use this only when
-#' creating a new file, then append that file name to the JSON using (5) for later use.
+#' creating a new file, then append that file name to the JSON from (5) for later use.
 #'
 #' When `collapse=TRUE`, the top level of the list result is collapsed by concatenating
-#' its contents using the names in the first list entry. Note that this has no effect when
+#' its contents using the names from the first list entry. This has no effect when
 #' the output would otherwise have length 1, or when `sub_dir` has length 1.
 #'
 #' Both `sub_dir` and `var_nm` can be vectors or a lists of vectors. Lists are used to group
 #' like subdirectories (eg different pieces of the same time series) or variable names that
 #' should be viewed as equivalent. The function loops over lists, passing each element to itself
-#' in a recursive call and collapsing the results. This makes a list (possibly nested) of
+#' in a recursive call and collapsing the results. This makes a (possibly nested) list of
 #' vectors, the result of looping over `sub_dir` first (outer), then `var_nm` (inner).
 #'
 #' @param base_dir character path the parent directory for RAP file storage

@@ -2,18 +2,39 @@
 % Please edit documentation in R/nc_aggregate.R
 \name{nc_export}
 \alias{nc_export}
-\title{Export completed time series, optionally aggregating to daily}
+\title{Export completed time series and (optionally) aggregate to daily}
 \usage{
-nc_export(base_dir, p_all = NULL, output_nm = fun, agg = NULL)
+nc_export(
+  base_dir,
+  var_nm = NULL,
+  output_nm = "export",
+  write_csv = FALSE,
+  fun = "mean",
+  tz = "UTC",
+  origin_hour = 0L
+)
 }
 \arguments{
-\item{agg}{list with entries "fun", "tz", "origin_hour" to pass to \code{nc_aggregate}}
+\item{base_dir}{path to parent directory of GRIB storage subfolder}
 
-\item{var_nm}{character vector, the variable(s) to export}
+\item{var_nm}{character vector, the variable(s) to export (NULL to export all)}
+
+\item{output_nm}{character, the sub-directory name for output}
+
+\item{write_csv}{logical, Writes a CSV copy of the data, and point locations to geojson}
+
+\item{fun}{function, one of "mean", "min", or "max"}
+
+\item{tz}{character time zone for \code{origin_hour}}
+
+\item{origin_hour}{integer, steps are aligned to start at this hour of the day}
 }
 \value{
-returns nothing but writes to the \code{output_nm} directory
+vector of file paths written to the \code{output_nm} directory
 }
 \description{
-Export completed time series, optionally aggregating to daily
+The last two arguments are passed to \code{nc_aggregate} to control the alignment of
+the aggregation window. \code{fun} specifies the function (one of "mean", "min", or "max")
+to use for combining times within the window. If \code{fun=NA}, the function does no
+aggregation and writes all time points.
 }

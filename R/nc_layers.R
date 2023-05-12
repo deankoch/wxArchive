@@ -29,8 +29,10 @@
 #' (layers) in the file.
 #'
 #' When `na_rm=TRUE`, only layers with all grid points observed (non-NA) are
-#' searched. In this case times that match a layers labelled as NA are reported
-#' as "unmatched" (and no NA layers are returned).
+#' searched. In this case, times that only match NA layers are reported
+#' as "unmatched", and none of the NA layers are returned. When `na_rm=FALSE`
+#' the first matching layer in `p` is returned for each time, and this may be
+#' an NA layer (depending on the order of `p` and the contents of its files).
 #'
 #' @param p character vector path to the nc file(s)
 #' @param times vector of unique POSIXct times to match in the file(s)
@@ -72,7 +74,7 @@ nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE) {
   msg_unmatched = as.character(times, tz='UTC') |> paste(collapse=', ')
   if( length(times) > 0 ) cat('\nunmatched times:', msg_unmatched)
 
-  # remove unmatched files outputs and sort by time
+  # remove unmatched file outputs and sort by time
   r_out = r_out_list[!sapply(r_out_list, is.null)] |> terra::rast()
   r_out = r_out[[ order(terra::time(r_out)) ]]
   return(r_out)

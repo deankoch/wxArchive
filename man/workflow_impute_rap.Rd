@@ -10,12 +10,12 @@ workflow_impute_rap(project_dir)
 \item{project_dir}{character path to the project root directory}
 }
 \value{
-Returns nothing but possible writes to \code{project_dir}
+returns nothing but possible writes to \code{project_dir}
 }
 \description{
 This creates the \code{.nm_complete} sub-directory of \code{project_dir} and
 fills it with NetCDF files containing imputed layers for times missing
-from the time series named in in \code{.nm_resample_rap}.
+from the time series named in \code{.nm_resample_rap}.
 }
 \details{
 Users must first run \code{workflow_update_rap} and \code{workflow_fit_temporal} at

@@ -134,8 +134,8 @@ nc_resample = function(var_nm,
 #' @export
 nc_project = function(nc_path, target, times=NULL, ...) {
 
-  # load all data into memory and project with GDAL via terra (fast)
-  r_resampled = nc_path |> nc_layers(times) |> terra::project(target, ...)
+  # load all non-NA data into memory and project with GDAL via terra (fast)
+  r_resampled = nc_path |> nc_layers(times, na_rm=TRUE) |> terra::project(target, ...)
 
   # check for problem layers
   not_na = r_resampled |> terra::global('notNA') |> as.matrix() |> as.numeric()

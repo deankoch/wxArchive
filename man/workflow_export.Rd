@@ -10,7 +10,7 @@ workflow_export(project_dir, ext = "nc", daily = TRUE)
 \item{project_dir}{character path to the project root directory}
 }
 \value{
-Returns nothing but possible writes to \code{project_dir}
+returns nothing but possible writes to \code{project_dir}
 }
 \description{
 Exported completed time series to CSV or NetCDF

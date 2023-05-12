@@ -10,7 +10,7 @@ workflow_update_gfs(project_dir)
 \item{project_dir}{character path to the project root directory}
 }
 \value{
-Returns nothing but possible writes to \code{project_dir}
+returns nothing but possible writes to \code{project_dir}
 }
 \description{
 Download the latest files, convert the times needed to NetCDF. This is a wrapper
