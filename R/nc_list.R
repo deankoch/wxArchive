@@ -28,7 +28,7 @@ nc_list = function(base_dir,
   if( is_rap ) {
 
     # base directories for all NetCDF and GRIB files from RAP/RUC
-    base_dir_rap = project_dir |> file.path('rap')
+    base_dir_rap = base_dir |> file.path('rap')
     rap_nc_path = file_wx('nc', base_dir_rap, rap, var_rap)
   }
 
@@ -36,7 +36,7 @@ nc_list = function(base_dir,
   is_gfs = !is.null(gfs)
   if( is_gfs ) {
 
-    base_dir_gfs = project_dir |> file.path('gfs')
+    base_dir_gfs = base_dir |> file.path('gfs')
     gfs_nc_path = file_wx('nc', base_dir_gfs, gfs, var_gfs)
   }
 
