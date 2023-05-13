@@ -60,7 +60,7 @@ wnd_update = function(base_dir,
   # if there's nothing to add then we are finished
   if( length(t_add) == 0 ) {
 
-    cat('\nup to date')
+    cat('\nup to date\n')
     return( invisible() )
   }
 
@@ -69,7 +69,7 @@ wnd_update = function(base_dir,
   r_u = nc_layers(input_path[[ uv_nm[1] ]], t_add, na_rm=TRUE)
   r_v = nc_layers(input_path[[ uv_nm[2] ]], t_add, na_rm=TRUE)
 
-  cat('\ncomputing wind speed')
+  cat('\nctransforming')
   r = sqrt(r_u^2 + r_v^2)
 
   # append to existing data file (or create the file and write to it)
