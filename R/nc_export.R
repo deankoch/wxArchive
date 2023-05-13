@@ -154,10 +154,10 @@ nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
   #
 
   # setting class explicitly to ensure the correct (terra) method is used for the generic
-  my_aggregate = \(f) do.call(c, lapply(list_idx, \(j) f( as(r[[j]], 'SpatRaster') ) ) )
-  if( fun == 'mean' ) r_result = my_aggregate(mean)
-  if( fun == 'min' ) r_result =  my_aggregate(min)
-  if( fun == 'max' ) r_result =  my_aggregate(max)
+  #my_aggregate = \(f) do.call(c, lapply(list_idx, \(j) f( as(r[[j]], 'SpatRaster') ) ) )
+  if( fun == 'mean' ) r_result = do.call(c, lapply(list_idx, \(j) mean( as(r[[j]], 'SpatRaster') ) ) )
+  if( fun == 'min' ) r_result = do.call(c, lapply(list_idx, \(j) min( as(r[[j]], 'SpatRaster') ) ) )
+  if( fun == 'max' ) r_result = do.call(c, lapply(list_idx, \(j) max( as(r[[j]], 'SpatRaster') ) ) )
   terra::time(r_result) = date_out
   return(r_result)
 }
