@@ -57,7 +57,7 @@ nc_export = function(base_dir,
   # define output files and create the directory then loop over files
   for( i in seq_along(p_fetch) ) {
 
-    cat('\n\nprocessing', names(p_fetch)[[i]], '...')
+    cat('\nprocessing', names(p_fetch)[[i]], '...')
     t1 = proc.time()
 
     # make a SpatRaster of output layers

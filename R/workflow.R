@@ -304,13 +304,14 @@ workflow_update_gfs = function(project_dir) {
 #' @export
 workflow_export = function(project_dir, write_csv=TRUE) {
 
-  #
+  cat('\n')
+  message('resampling')
+
+  # chosen to match SWAT inputs: each of these has a specifically chosen aggregation function
   tmp_max_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='max', tz='MST')
   tmp_min_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='min', tz='MST')
   hum_mean_path = project_dir |> nc_export('hum', write_csv=write_csv, fun='mean', tz='MST')
   pcp_mean_path = project_dir |> nc_export('pcp', write_csv=write_csv, fun='mean', tz='MST')
   wnd_mean_path = project_dir |> nc_export('wnd', write_csv=write_csv, fun='mean', tz='MST')
-
-
 }
 
