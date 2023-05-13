@@ -29,7 +29,7 @@ downloaded from github if you are building the image repeatedly.
 ### OPERATIONS
 
 To run a task in the container, set the WX_OPERATION environmental variable in your docker run call
-by appending "-e WX_OPERATION=<name>", where <name> is one of:
+by appending "-e WX_OPERATION=name", where name is one of:
 
 * "list"           : (the default) lists all available times in the archive at fine resolution
 * "update_all"     : runs the five steps below in sequence
