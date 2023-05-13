@@ -6,9 +6,6 @@ ENV WX_PATH=/home/wxarchive
 # mount your local storage volume to this location
 ENV WX_DATA_DIR=/home/wxarchive/data
 
-# source tarball for wxArchive
-ENV PKG_NAME=wxArchive_0.0.0.9000.tar.gz
-
 # area of interest polygon
 ARG AOI_NAME=aoi.geojson
 
@@ -23,11 +20,10 @@ sf \
 terra \
 && rm -rf /tmp/downloaded_packages
 
-# install wxArchive
+# copy the AOI file and install wxArchive
 WORKDIR ${WX_PATH}
 COPY ${AOI_NAME} ${AOI_NAME}
-COPY ${PKG_NAME} ${PKG_NAME}
-RUN R -q -e "install.packages('${WX_PATH}/${PKG_NAME}', repo=NULL, type='source')"
+RUN R -q -e "devtools::install_github('deankoch/wxArchive')"
 
 # copy Rscript(s)
 COPY Rscript/* ${WX_PATH}/
