@@ -99,7 +99,7 @@ nc_export = function(base_dir,
     sf::st_multipoint() |>
     sf::st_sfc(crs=terra::crs(r_i)) |>
     sf::st_cast('POINT') |>
-    sf::st_transform(4326L)
+    sf::st_transform(4326)
 
   # add key and write to disk as geojson
   unlink(output_geojson)

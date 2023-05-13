@@ -5,20 +5,31 @@ May 10 2023
 ### INTRODUCTION
 
 This uses the wxArchive R package to download GRIB files for weather forecasts and convert them to
-NetCDF. It is currently set up to download RAP data from the past week but it can be configured to
-go as far back as 2005.
+NetCDF. It is currently set up to download RAP/RUC data as far back as 2005, as well as current
+GFS forecasts up to 5 days ahead. These are stitched together and gap-filled to produce a complete
+time series.
 
 All output files are written to the directory /home/wxarchive/data in the container. To make this
-persistent you will need to map a local volume to this location. In the examples below I map the
-empty directory G:/test/ on my local machine to /home/wxarchive/data with the -v argument.
+persistent you will need to map a local volume (some empty directory) to this location. In the
+examples below I map the directory G:/ on my local machine using the -v argument.
 
-The image contains a default area of interest polygon (the Yellowstone area). Change this by putting
-a file named "aoi.geojson" in the directory mapped above (eg in G:/test/aoi.geojson).
+The docker image contains a default area of interest polygon (the Yellowstone area). Change this
+by putting a file named "aoi.geojson" in the directory mapped above (eg in G:/aoi.geojson).
 
+### SET-UP
+
+To build the image you will need "dockerfile", "aoi.geojson", and "Rscript/run_wx.R" in your
+dockerfile directory (the same as they are laid out on github). Then, from this directory call
+
+docker build . --no-cache -t deankoch/wxarchive
+
+The --no-cache argument causes the latest version of the `wxArchive` R package to be
+downloaded from github if you are building the image repeatedly. 
 
 ### OPERATIONS
 
-Set the "WX_OPERATION" environmental variable to select a task:
+To run a task in the container, set the WX_OPERATION environmental variable in your docker run call
+by appending "-e WX_OPERATION=<name>", where <name> is one of:
 
 * "list"           : (the default) lists all available times in the archive at fine resolution
 * "update_all"     : runs the five steps below in sequence
@@ -43,7 +54,7 @@ the coarse data to match the fine resolution grids.
 You must download at least one fine resolution grid before running "update_gfs"
 
 "export" does some further transformation (max, min, mean) to produce daily output, creating
-five variables and saving them (as .csv and .nc) to your "export" subdirectory
+five variables and saving them (as CSV and NetCDF) to your "export" subdirectory
 
 * tmp_daily_max
 * tmp_daily_min
@@ -51,7 +62,8 @@ five variables and saving them (as .csv and .nc) to your "export" subdirectory
 * hum_daily_mean
 * wnd_daily_mean
 
-CSV files can be joined to (WGS84) point coordinates using "export/grid_points.geojson"
+The CSV files have a time/date column and a column of data for each grid point. Coordinates
+(in WGS84) for these points are saved to "export/grid_points.geojson".
 
 ### EXAMPLES
 

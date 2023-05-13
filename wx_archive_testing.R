@@ -14,12 +14,12 @@ from = NULL
 to = NULL
 data_dir = project_dir
 
-# TODO: export the following:
-tmp_max
-tmp_min
-hum_mean
-pcp_mean
-wnd_mean
+# # TODO: export the following:
+# tmp_max
+# tmp_min
+# hum_mean
+# pcp_mean
+# wnd_mean
 
 
 
@@ -34,8 +34,13 @@ data_dir |> workflow_impute_rap()
 data_dir |> workflow_wnd_rap()
 data_dir |> workflow_update_gfs()
 
-
-
+base_dir = data_dir
+var_nm = 'hum'
+output_nm = 'export'
+write_csv = TRUE
+fun = 'mean'
+tz = 'MST'
+origin_hour = 0L
 
 
 ###
