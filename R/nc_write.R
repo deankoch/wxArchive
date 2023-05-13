@@ -43,7 +43,7 @@ nc_write = function(r, p) {
   if( !any(is_new) ) {
 
     # compute index JSON if it's not there
-    cat('\nup to date')
+    cat('\nup to date\n')
     return( as.POSIXct(integer(0), tz='UTC') )
   }
 
@@ -95,8 +95,7 @@ nc_write = function(r, p) {
   # update attributes on disk
   if( is_appended ) r_add = r_out
   p_dest |> write_time_json(r=r_add, append=is_appended)
-
-
+  cat('\n')
   return( r_time[is_new] )
 }
 
