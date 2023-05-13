@@ -50,7 +50,6 @@ wnd_update = function(base_dir,
   t_relevant = Reduce(intersect, lapply(var_info, \(x) x[['time_obs']])) |> as.POSIXct(tz='UTC')
 
   # check for existing data (creating JSON as needed)
-  cat('\nchecking for existing file', output_nc_path)
   t_done = character(0) |> as.POSIXct()
   if( file.exists(output_nc_path) ) t_done = time_wx(output_nc_path)[['time']]
 
@@ -69,7 +68,7 @@ wnd_update = function(base_dir,
   r_u = nc_layers(input_path[[ uv_nm[1] ]], t_add, na_rm=TRUE)
   r_v = nc_layers(input_path[[ uv_nm[2] ]], t_add, na_rm=TRUE)
 
-  cat('\nctransforming')
+  cat('\ntransforming to wnd')
   r = sqrt(r_u^2 + r_v^2)
 
   # append to existing data file (or create the file and write to it)
