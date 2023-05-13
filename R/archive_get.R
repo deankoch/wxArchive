@@ -164,7 +164,7 @@ archive_get = function(model,
       hour_rel_alt = hour_rel_req - (hour_pred_alt - hour_pred)
 
       # recursive call to attempt download from alternate time(s)
-      if( !quiet ) cat('\n\nattempting alternate(s) for', length(hour_rel_req), 'failed request(s)')
+      if( !quiet ) cat('\n\nattempting alternate for', length(hour_rel_req), 'failed request(s)')
       alternate_df = archive_get(model,
                                  date_rel = date_rel[d],
                                  hour_rel = hour_rel_alt,
