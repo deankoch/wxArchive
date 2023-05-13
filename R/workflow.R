@@ -259,7 +259,7 @@ workflow_update_gfs = function(project_dir) {
   base_dir_gfs |> file.path(.var_wnd) |> unlink(recursive=TRUE)
 
   # export latest GFS data to nc (creates "coarse" subdirectory)
-  cat('\n\n')
+  cat('\n')
   nc_update(aoi = aoi,
             base_dir = base_dir_gfs,
             output_nm = list(coarse=.nm_gfs),

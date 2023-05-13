@@ -84,4 +84,5 @@ archive_update = function(base_dir,
               grib_dir = grib_dir,
               alternate = alternate)
 
+  cat('\n')
 }
