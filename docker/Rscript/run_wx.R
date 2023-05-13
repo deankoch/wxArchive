@@ -67,5 +67,7 @@ if( operation %in% c('update_all') ) data_dir |> workflow_wnd_rap()
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> workflow_update_gfs()
 
 # quit the session
+cat('\n')
+message('finished')
 q()
 
