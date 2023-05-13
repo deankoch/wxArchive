@@ -12,8 +12,22 @@ document()
 project_dir = 'G:'
 from = NULL
 to = NULL
-
 data_dir = project_dir
+
+# TODO: export the following:
+tmp_max
+tmp_min
+hum_mean
+pcp_mean
+wnd_mean
+
+
+
+data_dir |> workflow_export()
+
+
+
+
 data_dir |> wxArchive::workflow_list()
 data_dir |> workflow_update_rap(from=from, to=to)
 data_dir |> workflow_impute_rap()
