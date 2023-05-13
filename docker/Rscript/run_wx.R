@@ -36,9 +36,6 @@ model_dir = data_dir |> file.path('rap', wxArchive:::.nm_resample_rap[1], 'model
 from = NULL
 to = NULL
 
-# TODO: this will write a copy of the completed time series in one file
-if( operation %in% c('extract') ) stop('not yet implemented')
-
 # list stats about recognized files in the project directory
 if( operation == 'list' ) data_dir |> wxArchive::workflow_list()
 
@@ -65,6 +62,9 @@ if( operation %in% c('update_all') ) data_dir |> workflow_wnd_rap()
 
 # update GFS archive
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> workflow_update_gfs()
+
+# for each variable this will write a copy of the completed time series in one file
+if( operation %in% c('export', 'update_all') ) data_dir |> wxArchive::workflow_export()
 
 # a clue that you can close the bash terminal now
 cat('\n')

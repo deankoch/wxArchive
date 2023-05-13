@@ -21,14 +21,13 @@ a file named "aoi.geojson" in the directory mapped above (eg in G:/test/aoi.geoj
 Set the "WX_OPERATION" environmental variable to select a task:
 
 * "list"           : (the default) lists all available times in the archive at fine resolution
-* "update_all"     : runs the four steps below in sequence
+* "update_all"     : runs the five steps below in sequence
 
 * "update_rap"     : downloads from RAP/RUC and does some transformation
 * "fit_rap"        : fits a temporal model to the data at fine resolution
 * "impute_rap"     : fills missing time points at fine resolution
 * "update_gfs"     : downloads from GFS and does some transformation
-
-* "extract"        : (not yet implemented) writes a copy of the data to CSV or NetCDF
+* "export"         : writes a copy of daily aggregate data to NetCDF and CSV
 
 
 ### NOTES
@@ -43,9 +42,20 @@ the coarse data to match the fine resolution grids.
 
 You must download at least one fine resolution grid before running "update_gfs"
 
+"export" does some further transformation (max, min, mean) to produce daily output, creating
+five variables and saving them (as .csv and .nc) to your "export" subdirectory:
+
+* tmp_daily_max
+* tmp_daily_min
+* pcp_daily_mean
+* hum_daily_mean
+* wnd_daily_mean
+
 
 ### EXAMPLES
 
 docker run --rm -e WX_OPERATION=list -v G:/test/:/home/wxarchive/data deankoch/wxarchive
 
-docker run --rm -e WX_OPERATION=update_rap -v G:/test/:/home/wxarchive/data deankoch/wxarchive
+docker run --rm -e WX_OPERATION=export -v G:/test/:/home/wxarchive/data deankoch/wxarchive
+
+docker run --rm -e WX_OPERATION=update_all -v G:/test/:/home/wxarchive/data deankoch/wxarchive
