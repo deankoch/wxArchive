@@ -147,9 +147,17 @@ nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
 
   # compute stats in loop over days
   cat('\ncomputing', fun, 'of', n_per, 'steps on', n_out, 'day(s)')
-  if( fun == 'mean' ) r_result = do.call(c, lapply(list_idx, \(j) terra::mean(r[[j]])) )
-  if( fun == 'min' ) r_result = do.call(c, lapply(list_idx, \(j) terra::min(r[[j]])) )
-  if( fun == 'max' ) r_result = do.call(c, lapply(list_idx, \(j) terra::max(r[[j]])) )
+
+  #rrr = r[[ list_idx[[1]] ]]
+  # g_mat = snapKrig::sk(r)[]
+  # g_mat_agg = do.call(cbind, lapply(list_idx, \(j) apply(g_mat[, j], 1, mean)))
+  #
+
+  # setting class explicitly to ensure the correct (terra) method is used for the generic
+  my_aggregate = \(f) do.call(c, lapply(list_idx, \(j) f( as(r[[j]], 'SpatRaster') ) ) )
+  if( fun == 'mean' ) r_result = my_aggregate(mean)
+  if( fun == 'min' ) r_result =  my_aggregate(min)
+  if( fun == 'max' ) r_result =  my_aggregate(max)
   terra::time(r_result) = date_out
   return(r_result)
 }

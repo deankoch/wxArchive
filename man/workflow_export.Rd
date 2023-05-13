@@ -13,5 +13,5 @@ workflow_export(project_dir, write_csv = TRUE)
 returns nothing but possible writes to \code{project_dir}
 }
 \description{
-Exported completed time series to daily aggregate values and write to disk
+This prepares five output variables aggregated to daily average, or maximum or minimum
 }
