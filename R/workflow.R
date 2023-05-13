@@ -305,7 +305,7 @@ workflow_update_gfs = function(project_dir) {
 workflow_export = function(project_dir, write_csv=TRUE) {
 
   cat('\n')
-  message('resampling')
+  message('merging data and exporting to file')
 
   # chosen to match SWAT inputs: each of these has a specifically chosen aggregation function
   tmp_max_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='max', tz='MST')
