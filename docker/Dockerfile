@@ -23,7 +23,7 @@ terra \
 # copy the AOI file and install wxArchive
 WORKDIR ${WX_PATH}
 COPY ${AOI_NAME} ${AOI_NAME}
-RUN R -q -e "devtools::install_github('deankoch/wxArchive')"
+RUN R -q -e "devtools::install_github('deankoch/wxArchive', force=TRUE)"
 
 # copy Rscript(s)
 COPY Rscript/* ${WX_PATH}/
