@@ -147,9 +147,9 @@ nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
 
   # compute stats in loop over days
   cat('\ncomputing', fun, 'of', n_per, 'steps on', n_out, 'day(s)')
-  if( fun == 'mean' ) r_result = do.call(c, lapply(list_idx, \(j) terra::mean(r[[j]])) )
-  if( fun == 'min' ) r_result = do.call(c, lapply(list_idx, \(j) terra::min(r[[j]])) )
-  if( fun == 'max' ) r_result = do.call(c, lapply(list_idx, \(j) terra::max(r[[j]])) )
+  if( fun == 'mean' ) r_result = do.call(c, lapply(list_idx, \(j) mean(r[[j]])) )
+  if( fun == 'min' ) r_result = do.call(c, lapply(list_idx, \(j) min(r[[j]])) )
+  if( fun == 'max' ) r_result = do.call(c, lapply(list_idx, \(j) max(r[[j]])) )
   terra::time(r_result) = date_out
   return(r_result)
 }
