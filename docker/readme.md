@@ -43,7 +43,7 @@ the coarse data to match the fine resolution grids.
 You must download at least one fine resolution grid before running "update_gfs"
 
 "export" does some further transformation (max, min, mean) to produce daily output, creating
-five variables and saving them (as .csv and .nc) to your "export" subdirectory:
+five variables and saving them (as .csv and .nc) to your "export" subdirectory
 
 * tmp_daily_max
 * tmp_daily_min
@@ -51,6 +51,7 @@ five variables and saving them (as .csv and .nc) to your "export" subdirectory:
 * hum_daily_mean
 * wnd_daily_mean
 
+CSV files can be joined to (WGS84) point coordinates using "export/grid_points.geojson"
 
 ### EXAMPLES
 
