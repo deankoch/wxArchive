@@ -19,7 +19,7 @@ wnd_update(
 
 \item{input_nm}{list of character vectors, naming input subdirectories in \code{base_dir}}
 
-\item{output_nm}{character vectors, naming an output subdirectory for each \code{input_nm} vector}
+\item{output_nm}{character vector, naming the output subdirectories}
 }
 \value{
 nothing, but possibly modifies the nc and JSON files in \code{file.path(base_dir, output_nm)}
@@ -31,10 +31,14 @@ be found in the length-2 names vector \code{uv_nm}. Specify the directory names 
 which to look for these variables with \code{input_nm} (see also \code{?pcp_update}).
 }
 \details{
-The function writes a single NetCDF file to the directory named in \code{output_nm}.
-This file is named \code{paste0(wnd_nm, '.nc')} like the other variables, so the
+\code{output_nm} may contain more than one directory, so that the output can be split
+into a long-term storage file and a recent updates file. The first directory named
+in \code{output_nm} is always used for writing changes.
+
+The function creates/modifies a NetCDF file in the directory named \code{output_nm[1]}.
+This file is named \code{paste0(wnd_nm, '.nc')} similar the other variables, so the
 function will not allow you to set \code{wnd_nm} to any of the (in-use) variable
-names (list them with \code{file_wx('nc', base_dir, output_nm)})
+names (list them with \code{file_wx('nc', base_dir, output_nm)}).
 
 An output time (layer) is generated for each time in which both wind component
 variables are observed in at least one the files in \code{input_nm}. The function only
