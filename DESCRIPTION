@@ -1,6 +1,6 @@
 Package: wxArchive
 Title: Create and Maintain an Archive of 2-hourly Data from Three NOAA Forecast Models
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: 
     person("Dean", "Koch", , "koch@yellowstoneresearch.org", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-8849-859X"))
