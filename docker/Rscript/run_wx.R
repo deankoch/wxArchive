@@ -10,9 +10,15 @@ local_path = file.path('/home/wxarchive', aoi_nm)
 library(wxArchive)
 operation = commandArgs(trailingOnly=TRUE)[1]
 data_dir = commandArgs(trailingOnly=TRUE)[2]
+operation_valid =  c('list',
+                     'update_all',
+                     'update_rap',
+                     'fit_rap',
+                     'impute_rap',
+                     'update_gfs',
+                     'export')
 
 # first argument specifies the operation
-operation_valid =  c("list", "update_all", "update_rap", "fit_rap", "impute_rap", "update_gfs", "extract")
 operation_info = paste(operation_valid, collapse=', ')
 if( !(operation %in% operation_valid) ) stop('first argument must be one of: ', operation_info)
 
