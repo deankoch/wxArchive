@@ -66,6 +66,6 @@ if( operation %in% c('update_all') ) data_dir |> workflow_wnd_rap()
 # update GFS archive
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> workflow_update_gfs()
 
-cat('\n')
-message('finished!')
+# quit the session
+q()
 
