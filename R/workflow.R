@@ -97,7 +97,8 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
   ## RAP/RUC
 
   # download RUC/RAP files
-  message('\nupdating RAP/RUC GRIB archive')
+  cat('\n')
+  message('updating RAP/RUC GRIB archive')
   archive_update(base_dir = base_dir_rap,
                  hour_rel = .hour_rel_rap,
                  from = from,
@@ -105,21 +106,24 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
                  model = 'rap_archive') |> invisible()
 
   # export to nc
-  message('\nupdating NetCDF files')
+  cat('\n')
+  message('updating NetCDF files')
   nc_update(aoi = aoi,
             base_dir = base_dir_rap,
             output_nm = .nm_src_rap,
             regex = .rap_regex) |> invisible()
 
   # copy precip from components (applies to early years)
-  message('\nprocessing precipitation layers')
+  cat('\n')
+  message('processing precipitation layers')
   pcp_update(base_dir = base_dir_rap,
              pcp_nm = .var_pcp,
              input_nm = .nm_src_rap,
              output_nm = .nm_rap) |> invisible()
 
   # resampled coarse to fine
-  message('\nresampling')
+  cat('\n')
+  message('resampling')
   nc_resample(var_nm = .nm_output_var,
               base_dir = base_dir_rap,
               input_nm = .nm_src_rap,
@@ -174,7 +178,8 @@ workflow_impute_rap = function(project_dir) {
   base_dir_rap = project_dir |> file.path('rap')
 
   # fill gaps
-  message('\nimputing missing times')
+  cat('\n')
+  message('imputing missing times')
   time_impute(var_nm = .nm_output_var,
               base_dir = base_dir_rap,
               input_nm = .nm_resample_rap,
@@ -200,7 +205,8 @@ workflow_wnd_rap = function(project_dir) {
   base_dir_rap = project_dir |> file.path('rap')
 
   # create/update the file
-  message('\ncomputing wind speed from u/v components')
+  cat('\n')
+  message('computing wind speed from u/v components')
   base_dir_rap |> wnd_update(wnd_nm = .var_wnd,
                              uv_nm = .var_wnd_uv,
                              input_nm = .nm_complete_rap) |> invisible()
@@ -245,7 +251,8 @@ workflow_update_gfs = function(project_dir) {
   from = do.call(c, lapply(rap_time, \(x) max(x[['time_obs']]) ))
 
   # download GFS files
-  message('\nupdating GFS GRIB archive')
+  cat('\n')
+  message('updating GFS GRIB archive')
   gfs_result = archive_update(base_dir = base_dir_gfs,
                               hour_pred = .hour_pred_gfs,
                               hour_rel = .hour_rel_gfs,
@@ -271,7 +278,8 @@ workflow_update_gfs = function(project_dir) {
     terra::rast() |> terra::rast()
 
   # resample to match RAP grid
-  message('\nresampling')
+  cat('\n')
+  message('resampling')
   nc_resample(var_nm = .nm_gfs_var,
               base_dir = base_dir_gfs,
               input_nm = list(coarse=.nm_gfs),
@@ -279,7 +287,8 @@ workflow_update_gfs = function(project_dir) {
               r_fine = r_fine) |> invisible()
 
   # create wind speed layers
-  message('\ncomputing wind speed')
+  cat('\n')
+  message('computing wind speed')
   base_dir_gfs |> wnd_update(wnd_nm = 'wnd',
                              uv_nm = c('wnd_u', 'wnd_v'),
                              input_nm = .nm_resample) |> invisible()
