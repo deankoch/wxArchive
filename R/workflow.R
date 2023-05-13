@@ -297,6 +297,9 @@ workflow_update_gfs = function(project_dir) {
 
 #' Exported completed time series to daily aggregate values and write to disk
 #'
+#' This prepares five output variables aggregated to daily average, or maximum or minimum
+#'
+#'
 #'
 #' @param project_dir character path to the project root directory
 #'
@@ -307,7 +310,7 @@ workflow_export = function(project_dir, write_csv=TRUE) {
   cat('\n')
   message('merging data and exporting to file')
 
-  # chosen to match SWAT inputs: each of these has a specifically chosen aggregation function
+  # each of these has a specifically chosen aggregation function
   tmp_max_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='max', tz='MST')
   tmp_min_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='min', tz='MST')
   hum_mean_path = project_dir |> nc_export('hum', write_csv=write_csv, fun='mean', tz='MST')
