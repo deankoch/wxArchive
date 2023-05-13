@@ -8,7 +8,23 @@ library(devtools)
 load_all()
 document()
 
+
 project_dir = 'G:'
+from = NULL
+to = NULL
+
+data_dir = project_dir
+data_dir |> wxArchive::workflow_list()
+data_dir |> workflow_update_rap(from=from, to=to)
+data_dir |> workflow_impute_rap()
+data_dir |> workflow_wnd_rap()
+data_dir |> workflow_update_gfs()
+
+
+
+
+
+###
 project_dir |> nc_list()
 
 project_dir |> workflow_list()

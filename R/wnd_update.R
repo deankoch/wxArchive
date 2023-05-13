@@ -5,10 +5,14 @@
 #' be found in the length-2 names vector `uv_nm`. Specify the directory names in
 #' which to look for these variables with `input_nm` (see also `?pcp_update`).
 #'
-#' The function writes a single NetCDF file to the directory named in `output_nm`.
-#' This file is named `paste0(wnd_nm, '.nc')` like the other variables, so the
+#' `output_nm` may contain more than one directory, so that the output can be split
+#' into a long-term storage file and a recent updates file. The first directory named
+#' in `output_nm` is always used for writing changes.
+#'
+#' The function creates/modifies a NetCDF file in the directory named `output_nm[1]`.
+#' This file is named `paste0(wnd_nm, '.nc')` similar the other variables, so the
 #' function will not allow you to set `wnd_nm` to any of the (in-use) variable
-#' names (list them with `file_wx('nc', base_dir, output_nm)`)
+#' names (list them with `file_wx('nc', base_dir, output_nm)`).
 #'
 #' An output time (layer) is generated for each time in which both wind component
 #' variables are observed in at least one the files in `input_nm`. The function only
@@ -18,7 +22,7 @@
 #' @param base_dir path to parent directory of GRIB storage subfolder
 #' @param wnd_nm a name for the output variable and file
 #' @param input_nm list of character vectors, naming input subdirectories in `base_dir`
-#' @param output_nm character vectors, naming an output subdirectory for each `input_nm` vector
+#' @param output_nm character vector, naming the output subdirectories
 #'
 #' @return nothing, but possibly modifies the nc and JSON files in `file.path(base_dir, output_nm)`
 #' @export

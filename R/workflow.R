@@ -256,8 +256,10 @@ workflow_update_gfs = function(project_dir) {
   # delete the old GFS NetCDF directories
   base_dir_gfs |> file.path('coarse') |> unlink(recursive=TRUE)
   base_dir_gfs |> file.path(.nm_resample) |> unlink(recursive=TRUE)
+  base_dir_gfs |> file.path(.var_wnd) |> unlink(recursive=TRUE)
 
   # export latest GFS data to nc (creates "coarse" subdirectory)
+  cat('\n\n')
   nc_update(aoi = aoi,
             base_dir = base_dir_gfs,
             output_nm = list(coarse=.nm_gfs),
