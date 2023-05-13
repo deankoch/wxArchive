@@ -295,17 +295,21 @@ workflow_update_gfs = function(project_dir) {
 
 }
 
-#' Exported completed time series to CSV or NetCDF
+#' Exported completed time series to daily aggregate values and write to disk
 #'
 #'
 #' @param project_dir character path to the project root directory
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
-workflow_export = function(project_dir, ext='nc', daily=TRUE) {
+workflow_export = function(project_dir, write_csv=TRUE) {
 
-  # collect all source file names
-  p_all = project_dir |> workflow_list(quiet=TRUE)
+  #
+  tmp_max_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='max', tz='MST')
+  tmp_min_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='min', tz='MST')
+  hum_mean_path = project_dir |> nc_export('hum', write_csv=write_csv, fun='mean', tz='MST')
+  pcp_mean_path = project_dir |> nc_export('pcp', write_csv=write_csv, fun='mean', tz='MST')
+  wnd_mean_path = project_dir |> nc_export('wnd', write_csv=write_csv, fun='mean', tz='MST')
 
 
 }

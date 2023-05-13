@@ -2,9 +2,9 @@
 % Please edit documentation in R/workflow.R
 \name{workflow_export}
 \alias{workflow_export}
-\title{Exported completed time series to CSV or NetCDF}
+\title{Exported completed time series to daily aggregate values and write to disk}
 \usage{
-workflow_export(project_dir, ext = "nc", daily = TRUE)
+workflow_export(project_dir, write_csv = TRUE)
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}
@@ -13,5 +13,5 @@ workflow_export(project_dir, ext = "nc", daily = TRUE)
 returns nothing but possible writes to \code{project_dir}
 }
 \description{
-Exported completed time series to CSV or NetCDF
+Exported completed time series to daily aggregate values and write to disk
 }

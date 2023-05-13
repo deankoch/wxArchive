@@ -4,15 +4,20 @@
 #' NetCDF file in `output_nm`. `var_nm` should be a subset of the names returned by
 #' `nc_list(base_dir)`.
 #'
-#' If `write_csv=TRUE`, the function additionally writes a CSV file containing the
-#' matrix of data associated with each variable, and a time column with a character
-#' string giving the date/time in UTC.
+#' If `write_csv=TRUE`, the function additionally writes, for each variable, a CSV file
+#' containing the matrix of data associated with each variable, and a time column with a
+#' character string giving the date/time in UTC. These files have the same file-names as
+#' the NetCDF versions (up to file extension).
 #'
-#' The last three arguments are passed to `nc_aggregate` to control the alignment of
-#' the aggregation window. `fun` specifies the function (one of "mean", "min", or "max")
-#' to use for combining times within the window. If `fun=NA`, the function does no
-#' aggregation and writes all time points. Set `tz` to the desired output time zone, and
-#' leave `origin_hour=0` to have each day begin at 12AM (in time zone `tz`).
+#' If `fun=NA`, the function does no aggregation and writes all time points.
+#'
+#' If `fun` is not `NA` then the last three arguments are passed to `nc_aggregate` to control
+#' the alignment of the aggregation window. `fun` specifies the function (one of "mean", "min",
+#' or "max") to use for combining times within the window.  Set `tz` to the desired output time
+#' zone, and leave `origin_hour=0` to have each day begin at 12AM (in time zone `tz`).
+#'
+#' File names for aggregate data are given the suffix `_daily_<fun>` - eg with `fun='mean'`,
+#' the output "tmp.nc" becomes "tmp_daily_mean.nc".
 #'
 #' @param base_dir path to parent directory of GRIB storage subfolder
 #' @param var_nm character vector, the variable(s) to export (NULL to export all)

@@ -38,13 +38,18 @@ NetCDF file in \code{output_nm}. \code{var_nm} should be a subset of the names r
 \code{nc_list(base_dir)}.
 }
 \details{
-If \code{write_csv=TRUE}, the function additionally writes a CSV file containing the
-matrix of data associated with each variable, and a time column with a character
-string giving the date/time in UTC.
+If \code{write_csv=TRUE}, the function additionally writes, for each variable, a CSV file
+containing the matrix of data associated with each variable, and a time column with a
+character string giving the date/time in UTC. These files have the same file-names as
+the NetCDF versions (up to file extension).
 
-The last three arguments are passed to \code{nc_aggregate} to control the alignment of
-the aggregation window. \code{fun} specifies the function (one of "mean", "min", or "max")
-to use for combining times within the window. If \code{fun=NA}, the function does no
-aggregation and writes all time points. Set \code{tz} to the desired output time zone, and
-leave \code{origin_hour=0} to have each day begin at 12AM (in time zone \code{tz}).
+If \code{fun=NA}, the function does no aggregation and writes all time points.
+
+If \code{fun} is not \code{NA} then the last three arguments are passed to \code{nc_aggregate} to control
+the alignment of the aggregation window. \code{fun} specifies the function (one of "mean", "min",
+or "max") to use for combining times within the window.  Set \code{tz} to the desired output time
+zone, and leave \code{origin_hour=0} to have each day begin at 12AM (in time zone \code{tz}).
+
+File names for aggregate data are given the suffix \verb{_daily_<fun>} - eg with \code{fun='mean'},
+the output "tmp.nc" becomes "tmp_daily_mean.nc".
 }
