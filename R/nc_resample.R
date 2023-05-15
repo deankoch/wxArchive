@@ -46,8 +46,8 @@ nc_resample = function(var_nm,
 
     r_fine_path = input_nc[['fine']][[1]][file.exists(input_nc[['fine']][[1]])]
     if( length(r_fine_path) == 0 ) stop('no files found in "fine" sub-directory. Try supplying r_fine')
-    cat('loading', r_fine_path, 'to get grid information\n')
-    r_fine = r_fine_path |> terra::rast(lyrs=1) |> terra::rast()
+    cat('loading', r_fine_path[1], 'to get grid information\n')
+    r_fine = r_fine_path[1] |> terra::rast(lyrs=1) |> terra::rast()
   }
 
   # find time coverage of each input variable at both resolutions
