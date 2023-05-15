@@ -311,7 +311,7 @@ workflow_export = function(project_dir, write_csv=TRUE) {
   message('merging data and exporting to file')
 
   # delete the old export directory
-  base_dir_gfs |> file.path('export') |> unlink(recursive=TRUE)
+  project_dir |> file.path('export') |> unlink(recursive=TRUE)
 
   # each of these has a specifically chosen aggregation function
   tmp_max_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='max', tz='MST')
