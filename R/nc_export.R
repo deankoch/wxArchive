@@ -103,7 +103,9 @@ nc_export = function(base_dir,
 
   # add key and write to disk as geojson
   unlink(output_geojson)
-  sf::st_sf(data.frame(id=cell_id), geometry=pts) |> sf::st_write(output_geojson)
+  sf::st_sf(data.frame(id=cell_id), geometry=pts) |>
+    sf::st_write(output_geojson) |>
+    suppressWarnings() # GDAL generates spurious warnings on linux
 
   # report all files written
   output_paths = output_nc
