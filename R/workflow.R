@@ -313,12 +313,15 @@ workflow_export = function(project_dir, write_csv=TRUE) {
   # delete the old export directory
   project_dir |> file.path('export') |> unlink(recursive=TRUE)
 
-  # each of these has a specifically chosen aggregation function
-  wnd_mean_path = project_dir |> nc_export('wnd', write_csv=write_csv, fun='mean', tz='MST')
+  # each of these has a specifically chosen aggregation function, gc to free memory in between
   tmp_max_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='max', tz='MST')
+  gc()
   tmp_min_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='min', tz='MST')
+  gc()
   hum_mean_path = project_dir |> nc_export('hum', write_csv=write_csv, fun='mean', tz='MST')
+  gc()
   pcp_mean_path = project_dir |> nc_export('pcp', write_csv=write_csv, fun='mean', tz='MST')
-  print(warnings())
+  gc()
+  wnd_mean_path = project_dir |> nc_export('wnd', write_csv=write_csv, fun='mean', tz='MST')
 }
 
