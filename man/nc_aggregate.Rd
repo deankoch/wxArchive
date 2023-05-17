@@ -19,5 +19,9 @@ nc_aggregate(p, fun = "mean", tz = "UTC", origin_hour = 0L)
 SpatRaster, the aggregated data
 }
 \description{
-Aggregate sub-daily data to daily
+Returns a list of SpatRasters, one for each day in the time series
+\code{p}.
+}
+\details{
+day, using function \code{fun}
 }

@@ -75,6 +75,7 @@ nc_export = function(base_dir,
 
     # create the output nc file and write to it
     r_i |> nc_write(output_nc[[i]])
+
     if( write_csv ) {
 
       # export to data frame
@@ -88,24 +89,24 @@ nc_export = function(base_dir,
 
       # write the CSV to disk
       df_i |> write.csv(output_csv[i], row.names=FALSE)
+
+      # grid point locations as st POINT collection in WGS84 coordinates
+      pts = terra::crds(r_i) |>
+        sf::st_multipoint() |>
+        sf::st_sfc(crs=terra::crs(r_i)) |>
+        sf::st_cast('POINT') |>
+        sf::st_transform(4326)
+
+      # add key and write to disk as geojson
+      unlink(output_geojson)
+      sf::st_sf(data.frame(id=cell_id), geometry=pts) |>
+        sf::st_write(output_geojson) |>
+        suppressWarnings() # GDAL generates spurious warnings on linux
     }
 
     t2 = proc.time()
     cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.\n')
   }
-
-  # grid point locations as st POINT collection in WGS84 coordinates
-  pts = terra::crds(r_i) |>
-    sf::st_multipoint() |>
-    sf::st_sfc(crs=terra::crs(r_i)) |>
-    sf::st_cast('POINT') |>
-    sf::st_transform(4326)
-
-  # add key and write to disk as geojson
-  unlink(output_geojson)
-  sf::st_sf(data.frame(id=cell_id), geometry=pts) |>
-    sf::st_write(output_geojson) |>
-    suppressWarnings() # GDAL generates spurious warnings on linux
 
   # report all files written
   output_paths = output_nc
@@ -116,6 +117,11 @@ nc_export = function(base_dir,
 
 
 #' Aggregate sub-daily data to daily
+#'
+#' Returns a list of SpatRasters, one for each day in the time series
+#' `p`.
+#'
+#' day, using function `fun`
 #'
 #' @param p character vector path to the nc file(s)
 #' @param fun function, one of "mean", "min", or "max"
@@ -149,21 +155,9 @@ nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
 
   # compute stats in loop over days
   cat('\ncomputing', fun, 'of', n_per, 'steps on', n_out, 'day(s)')
-
-  #rrr = r[[ list_idx[[1]] ]]
-  # g_mat = snapKrig::sk(r)[]
-  # g_mat_agg = do.call(cbind, lapply(list_idx, \(j) apply(g_mat[, j], 1, mean)))
-  #
-
   if( fun == 'mean' ) r_result = do.call(c, lapply(list_idx, \(j) terra::app(r[[j]], mean) ) )
   if( fun == 'min' ) r_result = do.call(c, lapply(list_idx, \(j) terra::app(r[[j]], min) ) )
   if( fun == 'max' ) r_result = do.call(c, lapply(list_idx, \(j) terra::app(r[[j]], max) ) )
-
-  # setting class explicitly to ensure the correct (terra) method is used for the generic
-  # #my_aggregate = \(f) do.call(c, lapply(list_idx, \(j) f( as(r[[j]], 'SpatRaster') ) ) )
-  # if( fun == 'mean' ) r_result = do.call(c, lapply(list_idx, \(j) terra::mean( as(r[[j]], 'SpatRaster') ) ) )
-  # if( fun == 'min' ) r_result = do.call(c, lapply(list_idx, \(j) min( as(r[[j]], 'SpatRaster') ) ) )
-  # if( fun == 'max' ) r_result = do.call(c, lapply(list_idx, \(j) max( as(r[[j]], 'SpatRaster') ) ) )
   terra::time(r_result) = date_out
   return(r_result)
 }
