@@ -38,7 +38,7 @@ by appending "-e WX_OPERATION=name", where name is one of:
 * "fit_rap"        : fits a temporal model to the data at fine resolution
 * "impute_rap"     : fills missing time points at fine resolution
 * "update_gfs"     : downloads from GFS and does some transformation
-* "export"         : writes a copy of daily aggregate data to NetCDF and CSV
+* "export"         : writes a copy of daily aggregate data to NetCDF
 
 
 ### NOTES
@@ -54,7 +54,7 @@ the coarse data to match the fine resolution grids.
 You must download at least one fine resolution grid before running "update_gfs"
 
 "export" does some further transformation (max, min, mean) to produce daily output, creating
-five variables and saving them (as CSV and NetCDF) to your "export" subdirectory
+five variables and saving them to your "export" subdirectory
 
 * tmp_daily_max
 * tmp_daily_min
@@ -62,8 +62,6 @@ five variables and saving them (as CSV and NetCDF) to your "export" subdirectory
 * hum_daily_mean
 * wnd_daily_mean
 
-The CSV files have a time/date column and a column of data for each grid point. Coordinates
-(in WGS84) for these points are saved to "export/grid_points.geojson".
 
 ### EXAMPLES
 

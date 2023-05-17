@@ -305,7 +305,7 @@ workflow_update_gfs = function(project_dir) {
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
-workflow_export = function(project_dir, write_csv=TRUE) {
+workflow_export = function(project_dir, write_csv=FALSE) {
 
   cat('\n')
   message('merging data and exporting to file')

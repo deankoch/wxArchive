@@ -4,7 +4,7 @@
 \alias{workflow_export}
 \title{Exported completed time series to daily aggregate values and write to disk}
 \usage{
-workflow_export(project_dir, write_csv = TRUE)
+workflow_export(project_dir, write_csv = FALSE)
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}
