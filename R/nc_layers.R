@@ -74,8 +74,13 @@ nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE) {
   msg_unmatched = as.character(times, tz='UTC') |> paste(collapse=', ')
   if( length(times) > 0 ) cat('\nunmatched times:', msg_unmatched)
 
-  # remove unmatched file outputs and sort by time
+  # remove unmatched files (NULL entries in the list)
   r_out = r_out_list[!sapply(r_out_list, is.null)] |> terra::rast()
+
+  # remove the large list from memory
+  rm(r_out_list)
+
+  # sort times to be safe
   r_out = r_out[[ order(terra::time(r_out)) ]]
   return(r_out)
 }
