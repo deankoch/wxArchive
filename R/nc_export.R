@@ -54,7 +54,7 @@ nc_export = function(base_dir,
   output_csv = gsub('.nc$', '.csv', output_nc)
   output_geojson = base_dir |> file.path(output_nm, 'grid_points.geojson')
 
-  # define output files and create the directory then loop over files
+  # loop over files
   for( i in seq_along(p_fetch) ) {
 
     cat('\nprocessing', names(p_fetch)[[i]], '...')
@@ -69,7 +69,7 @@ nc_export = function(base_dir,
 
       r_list = p_fetch[[i]] |> nc_aggregate(fun=fun, tz=tz, origin_hour=origin_hour)
       r_out = do.call(c, r_list)
-      terra::time(r_out) = names(r_list)
+      terra::time(r_out) = as.Date(names(r_list))
 
     } else {
 
