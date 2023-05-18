@@ -63,13 +63,13 @@ nc_export = function(base_dir,
     # make a SpatRaster of output layers
     r_i = if( is_agg ) {
 
+      # *********DEBUGGING
       cat('\n\n**', terra::free_RAM()/1e6, 'GB free RAM for terra before aggregate**\n\n')
+
       # aggregate to daily
-
-
-      r_list = p_fetch[[i]] |> nc_aggregate(fun=fun, tz=tz, origin_hour=origin_hour)
-      r_out = do.call(c, r_list)
-      terra::time(r_out) = as.Date(names(r_list))
+      r_out = p_fetch[[i]] |> nc_aggregate(fun=fun, tz=tz, origin_hour=origin_hour) |> terra::rast()
+      terra::time(r_out) = as.Date(names(r_out))
+      r_out
 
     } else {
 
@@ -78,8 +78,10 @@ nc_export = function(base_dir,
       p_fetch[[i]] |> nc_layers(times=time_i, na_rm=TRUE)
     }
 
+    # *********DEBUGGING
     gc(verbose=TRUE)
     cat('\n\n**', terra::free_RAM()/1e6, 'GB free RAM for terra before write**\n\n')
+
     # create the output nc file and write to it
     r_i |> nc_write(output_nc[[i]])
 
