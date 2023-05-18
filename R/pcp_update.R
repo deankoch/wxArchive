@@ -82,6 +82,10 @@ pcp_update = function(base_dir,
       r_large = input_path[[nm_res]][['pcp_large']] |> nc_layers(time_add, na_rm=TRUE)
       r_small = input_path[[nm_res]][['pcp_small']] |> nc_layers(time_add, na_rm=TRUE)
       r_add = r_large + r_small
+
+      # remove temporary rasters from memory
+      rm(r_large, r_small)
+      gc()
     }
 
     # handle NAs encoded as negatives
@@ -97,6 +101,10 @@ pcp_update = function(base_dir,
 
     # append to existing data file (or create the file and write to it)
     r_add |> nc_write(p_out)
+
+    # remove the large raster from memory before returning
+    rm(r_add)
+    gc()
     t2 = proc.time()
     cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.')
   }

@@ -157,12 +157,14 @@ time_impute = function(var_nm,
     }
     if(n_gap > 1) close(pb)
 
-    # export stack to SpatRaster in memory
+    # export stack to SpatRaster in memory then remove source raster from memory
     cat('\nexporting', length(t_gap), 'imputed layer(s) to SpatRaster')
     r_pred = r_obs |> terra::rast(nlyrs=length(t_both))
     r_cells = terra::ncell(r_pred) |> prod() |> seq()
     terra::set.values(r_pred, cells=r_cells, values=mat_both)
     terra::time(r_pred) = t_both
+    rm(r_obs)
+    gc()
 
     # omit observed times
     r_pred = r_pred[[ (t_both %in% t_gap) ]]
@@ -170,6 +172,10 @@ time_impute = function(var_nm,
 
     # append to nc file
     r_pred |> nc_write(output_nc[[nm]])
+
+    # remove output raster from memory
+    rm(r_pred)
+    gc()
     t2 = proc.time()
     cat('\n\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.')
   }

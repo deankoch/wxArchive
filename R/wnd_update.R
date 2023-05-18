@@ -63,16 +63,23 @@ wnd_update = function(base_dir,
     return( invisible() )
   }
 
-  # load into RAM as matrix and compute wind speed (m/s) as norm of vector
+  # load components data into RAM
   cat('\nloading', length(t_add), 'layers from', uv_nm[1], 'and', uv_nm[2])
   r_u = nc_layers(input_path[[ uv_nm[1] ]], t_add, na_rm=TRUE)
   r_v = nc_layers(input_path[[ uv_nm[2] ]], t_add, na_rm=TRUE)
 
+  # compute wind speed (m/s) as norm of vector then remove components from memory
   cat('\ntransforming to wnd')
   r = sqrt(r_u^2 + r_v^2)
+  rm(r_u, r_v)
+  gc()
 
   # append to existing data file (or create the file and write to it)
   r |> nc_write(output_nc_path)
+
+  # remove output data from memory
+  rm(r)
+  gc()
   cat('\n')
   return( invisible() )
 }

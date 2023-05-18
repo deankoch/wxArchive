@@ -57,6 +57,8 @@ nc_write = function(r, p) {
     cat('\nmerging with', length(p_time_fetch), 'existing nc layer(s)')
     r_existing = p |> nc_layers(times=p_time_fetch, preload=TRUE)
     r_out = c(r_existing, r_add)
+    rm(r_existing)
+    gc()
   }
 
   # sort and name output layers
@@ -97,8 +99,8 @@ nc_write = function(r, p) {
   p_dest |> write_time_json(r=r_add, append=is_appended)
   cat('\n')
 
-  # remove unused SpatRaster objects from memory
-  rm(r_add, r_existing, r_out)
+  # remove all remaining SpatRaster objects from memory
+  rm(r_add, r_out)
   gc()
 
   return( r_time[is_new] )

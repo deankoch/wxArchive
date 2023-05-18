@@ -111,6 +111,10 @@ time_fit = function(var_nm,
     cat('\nwriting results to', output_nc[[nm]])
     g_obs |> sk(gval=fit_mat) |> sk_export() |> terra::writeCDF(output_nc[[nm]])
 
+    # remove temporary raster data from memory
+    rm(g_obs)
+    gc()
+
     # load any existing model fitting info and compile the new addition
     json_exists = file.exists(output_json[[nm]])
     json_old = if(!json_exists) NULL else output_json[[nm]] |> readLines() |> jsonlite::fromJSON()
