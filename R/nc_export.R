@@ -78,12 +78,14 @@ nc_export = function(base_dir,
       p_fetch[[i]] |> nc_layers(times=time_i, na_rm=TRUE)
     }
 
+    gc()
+
     # *********DEBUGGING
-    gc(verbose=TRUE)
     cat('\n\n**', terra::free_RAM()/1e6, 'GB free RAM for terra before write**\n\n')
 
     # create the output nc file and write to it
     r_i |> nc_write(output_nc[[i]])
+    gc()
 
     if( write_csv ) {
 
