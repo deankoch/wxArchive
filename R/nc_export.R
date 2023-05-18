@@ -63,6 +63,7 @@ nc_export = function(base_dir,
     # make a SpatRaster of output layers
     r_i = if( is_agg ) {
 
+      cat('\n\n**', terra::free_RAM()/1e6, 'GB free RAM for terra before aggregate**\n\n')
       # aggregate to daily
       p_fetch[[i]] |> nc_aggregate(fun=fun, tz=tz, origin_hour=origin_hour)
 
@@ -73,6 +74,7 @@ nc_export = function(base_dir,
       p_fetch[[i]] |> nc_layers(times=time_i, na_rm=TRUE)
     }
 
+    cat('\n\n**', terra::free_RAM()/1e6, 'GB free RAM for terra before write**\n\n')
     # create the output nc file and write to it
     r_i |> nc_write(output_nc[[i]])
 
