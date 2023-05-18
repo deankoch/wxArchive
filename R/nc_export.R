@@ -65,7 +65,11 @@ nc_export = function(base_dir,
 
       cat('\n\n**', terra::free_RAM()/1e6, 'GB free RAM for terra before aggregate**\n\n')
       # aggregate to daily
-      p_fetch[[i]] |> nc_aggregate(fun=fun, tz=tz, origin_hour=origin_hour)
+
+
+      r_list = p_fetch[[i]] |> nc_aggregate(fun=fun, tz=tz, origin_hour=origin_hour)
+      r_out = do.call(c, r_list)
+      terra::time(r_out) = names(r_list)
 
     } else {
 
@@ -74,6 +78,7 @@ nc_export = function(base_dir,
       p_fetch[[i]] |> nc_layers(times=time_i, na_rm=TRUE)
     }
 
+    gc(verbose=TRUE)
     cat('\n\n**', terra::free_RAM()/1e6, 'GB free RAM for terra before write**\n\n')
     # create the output nc file and write to it
     r_i |> nc_write(output_nc[[i]])
@@ -157,9 +162,9 @@ nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
 
   # compute stats in loop over days
   cat('\ncomputing', fun, 'of', n_per, 'steps on', n_out, 'day(s)')
-  if( fun == 'mean' ) r_result = do.call(c, lapply(list_idx, \(j) terra::app(r[[j]], mean) ) )
-  if( fun == 'min' ) r_result = do.call(c, lapply(list_idx, \(j) terra::app(r[[j]], min) ) )
-  if( fun == 'max' ) r_result = do.call(c, lapply(list_idx, \(j) terra::app(r[[j]], max) ) )
-  terra::time(r_result) = date_out
+  if( fun == 'mean' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], mean) )
+  if( fun == 'min' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], min) )
+  if( fun == 'max' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], max) )
+  names(r_result) = date_out
   return(r_result)
 }
