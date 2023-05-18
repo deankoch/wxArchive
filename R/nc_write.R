@@ -96,6 +96,11 @@ nc_write = function(r, p) {
   if( is_appended ) r_add = r_out
   p_dest |> write_time_json(r=r_add, append=is_appended)
   cat('\n')
+
+  # remove unused SpatRaster objects from memory
+  rm(r_add, r_existing, r_out)
+  gc()
+
   return( r_time[is_new] )
 }
 

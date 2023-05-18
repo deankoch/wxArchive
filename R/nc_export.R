@@ -114,6 +114,7 @@ nc_export = function(base_dir,
 
     # remove the large source raster from memory
     rm(r_i)
+    gc()
     t2 = proc.time()
     cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.\n')
   }
@@ -169,6 +170,7 @@ nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
   if( fun == 'min' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], min) )
   if( fun == 'max' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], max) )
   rm(r)
+  gc()
 
   names(r_result) = date_out
   return(r_result)
