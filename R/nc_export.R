@@ -78,14 +78,11 @@ nc_export = function(base_dir,
       p_fetch[[i]] |> nc_layers(times=time_i, na_rm=TRUE)
     }
 
-    gc()
-
     # *********DEBUGGING
     cat('\n\n**', terra::free_RAM()/1e6, 'GB free RAM for terra before write**\n\n')
 
     # create the output nc file and write to it
     r_i |> nc_write(output_nc[[i]])
-    gc()
 
     if( write_csv ) {
 
@@ -115,6 +112,8 @@ nc_export = function(base_dir,
         suppressWarnings() # GDAL generates spurious warnings on linux
     }
 
+    # remove the large source raster from memory
+    rm(r_i)
     t2 = proc.time()
     cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.\n')
   }
@@ -164,11 +163,13 @@ nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
   list_idx = seq(n_out) |> lapply(\(i) seq(n_per) + (i-1)*n_per )
   date_out = seq.Date(start_date, by='day', length.out=n_out)
 
-  # compute stats in loop over days
+  # compute stats in loop over days then remove the large source raster from memory
   cat('\ncomputing', fun, 'of', n_per, 'steps on', n_out, 'day(s)')
   if( fun == 'mean' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], mean) )
   if( fun == 'min' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], min) )
   if( fun == 'max' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], max) )
+  rm(r)
+
   names(r_result) = date_out
   return(r_result)
 }
