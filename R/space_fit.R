@@ -61,7 +61,6 @@ spatial_fit = function(var_nm,
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
   var_info = input_nc |> lapply(\(p) time_wx(p))
 
-
   # fit spatial model for each variable in a loop
   cat('\nfitting spatial models...')
   for( v in seq_along(var_nm) ) {
@@ -153,10 +152,12 @@ run_spatial_fit = function(p, X, n_max=1e2, t_fit=NULL, positive=NULL) {
     n_fit = length(t_fit)
   }
 
-  # fit a model
+  # fit a model then remove observed layers from memory
   cat('\nfitting spatial covariance to', n_fit, 'layers')
   pars = g_fit |> snapKrig::sk_fit(pars='gau', X=X, iso=FALSE, quiet=TRUE)
   gls = g_fit |> snapKrig::sk_GLS(pars, X=X, out='b')
+  rm(g_fit)
+  gc()
 
   # reshape bounds matrix as list of vectors
   bds = as.matrix(attr(pars, 'bds')) |> apply(1, identity, simplify=FALSE)

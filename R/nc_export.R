@@ -12,8 +12,8 @@
 #' If `fun=NA`, the function does no aggregation and writes all time points.
 #'
 #' If `fun` is not `NA` then the last three arguments are passed to `nc_aggregate` to control
-#' the alignment of the aggregation window. `fun` specifies the function (one of "mean", "min",
-#' or "max") to use for combining times within the window.  Set `tz` to the desired output time
+#' the alignment of the aggregation window. `fun` specifies the function to use for combining
+#' times within the window (see `?nc_aggregate`).  Set `tz` to the desired output time
 #' zone, and leave `origin_hour=0` to have each day begin at 12AM (in time zone `tz`).
 #'
 #' File names for aggregate data are given the suffix `_daily_<fun>` - eg with `fun='mean'`,
@@ -63,9 +63,6 @@ nc_export = function(base_dir,
     # make a SpatRaster of output layers
     r_i = if( is_agg ) {
 
-      # *********DEBUGGING
-      cat('\n\n**', terra::free_RAM()/1e6, 'GB free RAM for terra before aggregate**\n\n')
-
       # aggregate to daily
       r_out = p_fetch[[i]] |> nc_aggregate(fun=fun, tz=tz, origin_hour=origin_hour) |> terra::rast()
       terra::time(r_out) = as.Date(names(r_out))
@@ -77,9 +74,6 @@ nc_export = function(base_dir,
       time_i = time_wx(p_fetch[[i]])[['time_obs']]
       p_fetch[[i]] |> nc_layers(times=time_i, na_rm=TRUE)
     }
-
-    # *********DEBUGGING
-    cat('\n\n**', terra::free_RAM()/1e6, 'GB free RAM for terra before write**\n\n')
 
     # create the output nc file and write to it
     r_i |> nc_write(output_nc[[i]])
@@ -130,9 +124,11 @@ nc_export = function(base_dir,
 #' Aggregate sub-daily data to daily
 #'
 #' Returns a list of SpatRasters, one for each day in the time series
-#' `p`.
+#' `p`. Times within a given day are aggregated using the function
+#' `fun` should be a function (not a string naming it), such as `mean`
+#' or `max` (see `?terra::app`).
 #'
-#' day, using function `fun`
+#' This has not been tested on incomplete data
 #'
 #' @param p character vector path to the nc file(s)
 #' @param fun function, one of "mean", "min", or "max"
@@ -166,9 +162,7 @@ nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
 
   # compute stats in loop over days then remove the large source raster from memory
   cat('\ncomputing', fun, 'of', n_per, 'steps on', n_out, 'day(s)')
-  if( fun == 'mean' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], mean) )
-  if( fun == 'min' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], min) )
-  if( fun == 'max' ) r_result = lapply(list_idx, \(j) terra::app(r[[j]], max) )
+  r_result = lapply(list_idx, \(j) terra::app(r[[j]], mean) )
   rm(r)
   gc()
 

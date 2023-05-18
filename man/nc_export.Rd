@@ -46,8 +46,8 @@ the NetCDF versions (up to file extension).
 If \code{fun=NA}, the function does no aggregation and writes all time points.
 
 If \code{fun} is not \code{NA} then the last three arguments are passed to \code{nc_aggregate} to control
-the alignment of the aggregation window. \code{fun} specifies the function (one of "mean", "min",
-or "max") to use for combining times within the window.  Set \code{tz} to the desired output time
+the alignment of the aggregation window. \code{fun} specifies the function to use for combining
+times within the window (see \code{?nc_aggregate}).  Set \code{tz} to the desired output time
 zone, and leave \code{origin_hour=0} to have each day begin at 12AM (in time zone \code{tz}).
 
 File names for aggregate data are given the suffix \verb{_daily_<fun>} - eg with \code{fun='mean'},

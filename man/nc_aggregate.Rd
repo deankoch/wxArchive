@@ -20,8 +20,10 @@ SpatRaster, the aggregated data
 }
 \description{
 Returns a list of SpatRasters, one for each day in the time series
-\code{p}.
+\code{p}. Times within a given day are aggregated using the function
+\code{fun} should be a function (not a string naming it), such as \code{mean}
+or \code{max} (see \code{?terra::app}).
 }
 \details{
-day, using function \code{fun}
+This has not been tested on incomplete data
 }
