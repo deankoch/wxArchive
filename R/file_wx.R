@@ -77,10 +77,11 @@ file_wx = function(what,
 
     # loop over sub-directory lists and collapse result
     out_list = sub_dir |> lapply(\(s) file_wx(what = what,
-                                                   base_dir = base_dir,
-                                                   sub_dir = s,
-                                                   var_nm = var_nm,
-                                                   make_dir = make_dir))
+                                              base_dir = base_dir,
+                                              sub_dir = s,
+                                              var_nm = var_nm,
+                                              make_dir = make_dir))
+
 
   } else {
 
@@ -88,10 +89,11 @@ file_wx = function(what,
     if( is.list(var_nm) ) {
 
       out_list = var_nm |> lapply(\(v) file_wx(what = what,
-                                                    base_dir = base_dir,
-                                                    sub_dir = sub_dir,
-                                                    var_nm = v,
-                                                    make_dir = make_dir))
+                                               base_dir = base_dir,
+                                               sub_dir = sub_dir,
+                                               var_nm = v,
+                                               make_dir = make_dir))
+
 
     } else {
 
