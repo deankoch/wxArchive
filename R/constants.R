@@ -62,10 +62,11 @@
 # sub-directory names for transformed layers
 .nm_resample = 'coarse_resampled'
 .nm_complete = 'completed'
+.nm_export = 'export'
 
 # set of sub-directories to use for fitting temporal model and spatial model
 .nm_resample_rap = c(.nm_src_rap[['fine']], .nm_resample)
-.nm_spatial = 'fine'
+.nm_spatial_daily = 'spatial_daily'
 
 # set of sub-directories forming completed time series
 .nm_complete_rap = c(.nm_resample_rap, .nm_complete)

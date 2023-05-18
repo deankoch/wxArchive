@@ -31,7 +31,7 @@
 #' @export
 nc_export = function(base_dir,
                      var_nm = NULL,
-                     output_nm = 'export',
+                     output_nm = .nm_export,
                      write_csv = FALSE,
                      fun = 'mean',
                      tz = 'UTC',
