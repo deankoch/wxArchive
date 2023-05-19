@@ -359,7 +359,7 @@ workflow_update_gfs = function(project_dir) {
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
-workflow_export = function(project_dir, write_csv=FALSE) {
+workflow_aggregate = function(project_dir, write_csv=FALSE) {
 
   cat('\n')
   message('merging data and exporting to file')
@@ -368,17 +368,10 @@ workflow_export = function(project_dir, write_csv=FALSE) {
   project_dir |> file.path(.nm_export) |> unlink(recursive=TRUE)
 
   # export all in a loop
-  export_paths = .var_export_pairs |> lapply(\(x) nc_export(base_dir = project_dir,
-                                                            var_nm = x['var'],
-                                                            write_csv = write_csv,
-                                                            fun = x['fun'],
-                                                            tz = 'MST'))
-
-  # # each of these has a specifically chosen aggregation function, gc to free memory in between
-  # tmp_max_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='max', tz='MST')
-  # tmp_min_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='min', tz='MST')
-  # hum_mean_path = project_dir |> nc_export('hum', write_csv=write_csv, fun='mean', tz='MST')
-  # pcp_mean_path = project_dir |> nc_export('pcp', write_csv=write_csv, fun='mean', tz='MST')
-  # wnd_mean_path = project_dir |> nc_export('wnd', write_csv=write_csv, fun='mean', tz='MST')
+  export_paths = .var_export_pairs |> lapply(\(x) nc_aggregate(base_dir = project_dir,
+                                                               var_nm = x['var'],
+                                                               write_csv = write_csv,
+                                                               fun = x['fun'],
+                                                               tz = 'MST'))
 }
 

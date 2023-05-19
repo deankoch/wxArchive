@@ -2,16 +2,14 @@
 % Please edit documentation in R/nc_export.R
 \name{nc_export}
 \alias{nc_export}
-\title{Export completed time series and (optionally) aggregate to daily}
+\title{Downscale and export completed time series by aggregating over areas}
 \usage{
 nc_export(
   base_dir,
   var_nm = NULL,
   output_nm = .nm_export,
   write_csv = FALSE,
-  fun = "mean",
-  tz = "UTC",
-  origin_hour = 0L
+  fun = "mean"
 )
 }
 \arguments{
@@ -23,11 +21,7 @@ nc_export(
 
 \item{write_csv}{logical, Writes a CSV copy of the data, and point locations to geojson}
 
-\item{fun}{function, a function name like "mean", "min", or "max" (see \code{?nc_aggregate})}
-
-\item{tz}{character time zone for \code{origin_hour}}
-
-\item{origin_hour}{integer, steps are aligned to start at this hour of the day}
+\item{fun}{character, a function name like "mean", "min", or "max"}
 }
 \value{
 vector of file paths written to the \code{output_nm} directory
@@ -36,20 +30,4 @@ vector of file paths written to the \code{output_nm} directory
 This exports all data each of the variables named in \code{var_nm} to their own (single)
 NetCDF file in \code{output_nm}. \code{var_nm} should be a subset of the names returned by
 \code{nc_list(base_dir)}.
-}
-\details{
-If \code{write_csv=TRUE}, the function additionally writes, for each variable, a CSV file
-containing the matrix of data associated with each variable, and a time column with a
-character string giving the date/time in UTC. These files have the same file-names as
-the NetCDF versions (up to file extension).
-
-If \code{fun=NULL}, the function does no aggregation and writes all time points.
-
-If \code{fun} is not \code{NULL} then the last three arguments are passed to \code{nc_aggregate} to control
-the alignment of the aggregation window. \code{fun} specifies the function to use for combining
-times within the window (see \code{?nc_aggregate}).  Set \code{tz} to the desired output time
-zone, and leave \code{origin_hour=0} to have each day begin at 12AM (in time zone \code{tz}).
-
-File names for aggregate data are given the suffix \verb{_daily_<fun>} - eg with \code{fun='mean'},
-the output "tmp.nc" becomes "tmp_daily_mean.nc".
 }

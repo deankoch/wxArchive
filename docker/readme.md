@@ -32,13 +32,16 @@ To run a task in the container, set the WX_OPERATION environmental variable in y
 by appending "-e WX_OPERATION=name", where name is one of:
 
 * "list"           : (the default) lists all available times in the archive at fine resolution
-* "update_all"     : runs the five steps below in sequence
+* "update_all"     : runs the seven steps below in sequence
 
 * "update_rap"     : downloads from RAP/RUC and does some transformation
 * "fit_rap"        : fits a temporal model to the data at fine resolution
 * "impute_rap"     : fills missing time points at fine resolution
 * "update_gfs"     : downloads from GFS and does some transformation
-* "export"         : writes a copy of daily aggregate data to NetCDF
+
+* "daily"          : writes a copy of daily aggregate data to NetCDF
+* "fit_daily"      : (not yet implemented) fits a spatial model to the daily data at fine resolution
+* "export"         : (not yet implemented) downscale and spatially aggregate the daily data
 
 
 ### NOTES
@@ -53,14 +56,23 @@ the coarse data to match the fine resolution grids.
 
 You must download at least one fine resolution grid before running "update_gfs"
 
-"export" does some further transformation (max, min, mean) to produce daily output, creating
+"daily" does some further transformation (max, min, mean) to produce daily output, creating
 five variables and saving them to your "export" subdirectory
 
-* tmp_daily_max
-* tmp_daily_min
-* pcp_daily_mean
-* hum_daily_mean
-* wnd_daily_mean
+* tmp_max
+* tmp_min
+* pcp_mean
+* hum_mean
+* wnd_mean
+
+The last step, "export", summarizes the updated daily times series over the the polygons
+found in "export.geojson". Specify your own polygons by modifying this file. There can be any
+number of polygons but they must all lie within the bounding box of "aoi.geojson".
+Outputs are numbered in the same order as the polygons in "export.geojson".
+
+"fit_daily" must be run at least once (to save a set of model parameter files) before "export".
+If a set of parameter files exist already, "update_all" will skip this step and export using
+the existing parameters.
 
 
 ### EXAMPLES

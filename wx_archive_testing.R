@@ -8,13 +8,29 @@ library(devtools)
 load_all()
 document()
 
-
 project_dir = 'G:'
 from = NULL
 to = NULL
 data_dir = project_dir
 
-
+# lake = sf::st_read('D:/rswat_testing/data/nhd_lake.geojson') |> sf::st_geometry()
+# river = sf::st_read('D:/rswat_testing/data/nhd_flow.geojson') |> sf::st_geometry()
+# catch_df = sf::st_read('D:/rswat_testing/data/nhd_catchment.geojson')
+# catch = catch_df |> sf::st_geometry()
+#
+# i = catch_df$FEATUREID |> order() |> tail(5)
+#
+# #fname = 'example_areas.png'
+# #png(fname, width=25e2, height=45e2, units='px')
+#   #plot(catch[i], border=NA)
+#   plot(catch, add=F, border='white', col='grey90')
+#   plot(river, add=TRUE, col=adjustcolor('blue', alpha.f=0.2))
+#   plot(lake, add=TRUE, border=NA, col='blue')
+#   plot(catch[i], add=TRUE, border='white', col='red')
+# #dev.off()
+#
+# catch[i] |> sf::st_transform(4326) |> sf::st_write('G:/export.geojson')
+#
 data_dir |> workflow_update_gfs()
 project_dir |> workflow_list()
 
@@ -78,7 +94,7 @@ origin_hour = 0L
 
 profvis({
 
-  data_dir |> workflow_export(write_csv=FALSE)
+  data_dir |> workflow_aggregate(write_csv=FALSE)
 
   })
 
@@ -87,7 +103,7 @@ profvis({
 
 # set max RAM available to terra in GB
 # terraOptions(memmax=2)
-data_dir |> workflow_export()
+data_dir |> workflow_aggregate()
 
 
 
@@ -101,7 +117,7 @@ data_dir |> workflow_update_rap(from=from, to=to)
 data_dir |> workflow_impute_rap()
 data_dir |> workflow_wnd_rap()
 data_dir |> workflow_update_gfs()
-data_dir |> workflow_export()
+data_dir |> workflow_aggregate()
 
 base_dir = data_dir
 var_nm = 'hum'

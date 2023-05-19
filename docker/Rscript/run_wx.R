@@ -16,6 +16,8 @@ operation_valid =  c('list',
                      'fit_rap',
                      'impute_rap',
                      'update_gfs',
+                     'daily',
+                     'fit_daily',
                      'export')
 
 # first argument specifies the operation
@@ -72,7 +74,11 @@ if( operation %in% c('update_all') ) data_dir |> wxArchive::workflow_wnd_rap()
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> wxArchive::workflow_update_gfs()
 
 # for each variable this will write a copy of the completed time series in one file
-if( operation %in% c('export', 'update_all') ) data_dir |> wxArchive::workflow_export()
+if( operation %in% c('daily', 'update_all') ) data_dir |> wxArchive::workflow_aggregate()
+
+if( operation == 'fit_daily') stop('fit_daily not yet implemented')
+if( operation == 'export') stop('export not yet implemented. Are you looking for "daily"?')
+
 
 # a clue that you can close the bash terminal now
 cat('\n')
