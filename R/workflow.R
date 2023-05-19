@@ -363,7 +363,7 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
   message('computing wind speed from u/v components')
   base_dir_gfs |> wnd_update(wnd_nm = .var_wnd,
                              uv_nm = .var_wnd_uv,
-                             input_nm = .nm_resample) |> invisible()
+                             input_nm = .nm_complete_gfs) |> invisible()
 }
 
 #' Exported completed time series to daily aggregate values and write to disk
