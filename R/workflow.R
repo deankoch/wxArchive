@@ -347,6 +347,9 @@ workflow_update_gfs = function(project_dir) {
                              uv_nm = c('wnd_u', 'wnd_v'),
                              input_nm = .nm_resample) |> invisible()
 
+  # DEBUGGING:
+  warnings() |> print()
+
 }
 
 #' Exported completed time series to daily aggregate values and write to disk
