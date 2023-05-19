@@ -47,6 +47,10 @@
 .var_rap_export = .nm_output_var |> c( list(.var_wnd) )
 .var_gfs_export = .nm_gfs_var |> c( list(.var_wnd) )
 
+# names for exported variables (indicating aggregation method)
+#.var_aggregate = c(tmp=)
+.var_export = 'NOT_IMPLEMENTED'
+
 ## DIRECTORIES
 
 # sub-directory names for NetCDF files at two resolutions
