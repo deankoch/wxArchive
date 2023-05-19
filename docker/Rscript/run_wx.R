@@ -1,15 +1,18 @@
-# usage: Rscript list_all [operation] [data_dir]
+# Rscript
+# Dean Koch, May 2023
 #
-# [data_dir] a directory with sub-folders "rap" and gfs". All weather data is written here
-# [operation] one of "list", "update_all", "update_rap", "fit_rap", "impute_rap", "update_gfs", "extract"
+# [data_dir] directory containing sub-folders "rap" and gfs". Outputs go here
+# [operation] probably one of "list", "update_all", "daily" or "extract"
+# [start_date] start of the date range for updates or outputs
+# [end_date] end of the date range for updates or outputs
+
+library(wxArchive)
 
 # put your own version of this file in data_dir to change the AOI
 aoi_nm = 'aoi.geojson'
 local_path = file.path('/home/wxarchive', aoi_nm)
 
-library(wxArchive)
-operation = commandArgs(trailingOnly=TRUE)[1]
-data_dir = commandArgs(trailingOnly=TRUE)[2]
+# valid operations
 operation_valid =  c('list',
                      'update_all',
                      'update_rap',
@@ -20,13 +23,25 @@ operation_valid =  c('list',
                      'fit_daily',
                      'export')
 
-# first argument specifies the operation
+# get user input
+msg_args = 'Usage: Rscript run_wx [data_dir] [operation] [start_date] [end_date]'
+user_args = commandArgs(trailingOnly=TRUE)
+if( length(user_args) != 4 ) stop(msg_args)
+
+# first argument should point to parent directory of "rap" and "gfs"
+data_dir = user_args[1]
+data_dir_exists = data_dir |> normalizePath(winslash='/') |> dir.exists()
+if( ( length(data_dir) == 0 ) | !data_dir_exists ) stop('data directory "', data_dir, '" not found')
+
+# second argument specifies the operation
+operation = user_args[2]
 operation_info = paste(operation_valid, collapse=', ')
 if( !(operation %in% operation_valid) ) stop('first argument must be one of: ', operation_info)
 
-# optional second argument should point to parent directory of "rap" and "gfs"
-data_dir_exists = data_dir |> normalizePath(winslash='/') |> dir.exists()
-if( ( length(data_dir) == 0 ) | !data_dir_exists ) stop('data directory "', data_dir, '" not found')
+# (optional) last two arguments specify the target date range for updates or output
+check_date = function(d) tryCatch(inherits(as.Date(d), 'Date'), error = \(e) NULL)
+start_date = user_args[3] |> check_date()
+end_date = user_args[4] |> check_date()
 
 # copy default AOI polygon file if it's not in the expected location
 ext_path = file.path(data_dir, aoi_nm)

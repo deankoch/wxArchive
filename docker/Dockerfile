@@ -28,6 +28,10 @@ RUN R -q -e "devtools::install_github('deankoch/wxArchive', force=TRUE)"
 # copy Rscript(s)
 COPY Rscript/* ${WX_PATH}/
 
-# set default operation and run Rscript
+# WX_START and WX_END can be strings like "2023-01-01"
 ENV WX_OPERATION=list
-ENTRYPOINT ["sh", "-c", "Rscript ${WX_PATH}/run_wx.R ${WX_OPERATION} ${WX_DATA_DIR}"]
+ENV WX_START='auto'
+ENV WX_END='auto'
+
+# run the Rscript that was copied above
+ENTRYPOINT ["sh", "-c", "Rscript ${WX_PATH}/run_wx.R ${WX_DATA_DIR} ${WX_OPERATION} ${WX_START} ${WX_END}"]
