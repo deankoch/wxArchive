@@ -131,6 +131,10 @@ time_nc = function(r) {
     # loop for vectorized case
     r_result = r |> lapply(\(p) {
 
+      #
+      # ***TODO: ADD YEAR CHUNKING HERE ***
+      # CHECK IF DIRECTORY, THEN SCAN FOR NC FILES
+      # AND LUMP THEM TOGETHER
       if( file.exists(p) ) time_nc(terra::rast(p)) else NA
 
     }) |> stats::setNames(r)

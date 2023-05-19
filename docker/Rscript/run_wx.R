@@ -55,16 +55,12 @@ if( !file.exists(ext_path) ) {
 # expected location of temporal model directory
 model_dir = data_dir |> file.path('rap', wxArchive:::.nm_resample_rap[1], 'model')
 
-# dates to download. NULL sets earliest/latest available
-from = NULL
-to = NULL
-
 # list stats about recognized files in the project directory
 if( operation == 'list' ) data_dir |> wxArchive::workflow_list()
 
 # update RAP/RUC archive
 if( operation %in% c('update_rap', 'update_all') ) data_dir |>
-  wxArchive::workflow_update_rap(from=from, to=to)
+  wxArchive::workflow_update_rap(from=start_date, to=end_date)
 
 # fit temporal model to RAP/RUC archive
 if( operation %in% c('fit_rap', 'update_all') ) {

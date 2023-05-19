@@ -21,7 +21,7 @@
 #' be safely deleted then rebuilt with `time_wx(p)`.
 #'
 #' @param r SpatRaster with POSIXct vector `terra::time(r)`, the data to write
-#' @param p character path the (.nc) time series data file to write
+#' @param p character path the (.nc) time series data file/directory to write
 #'
 #' @return vector of POSIXct times, the layers added to the file
 #' @export
@@ -69,7 +69,7 @@ nc_write = function(r, p) {
   nm = basename(p) |> tools::file_path_sans_ext()
   cat('\nwriting to', p)
 
-  # prepare for safer overwrite via tempfile
+  # prepare for safer overwrite via temporary file/directory
   if( is_update ) {
 
     # a temporary file name for the existing file
@@ -82,14 +82,22 @@ nc_write = function(r, p) {
   time_start = r_add |> terra::time() |> min()
   is_appended = all( p_time < time_start )
   msg_invalid = paste('cannot append times earlier than the latest existing:', time_start)
-  if( is_update & !is_appended ) stop(msg_invalid)
+  msg_suggest = paste('\nTry deleting the file/directory', p, 'and calling the function again')
+  if( is_update & !is_appended ) stop(msg_invalid, msg_suggest)
 
-  # write result
+  #
+  # ***TODO: ADD YEAR CHUNKING HERE ***
+  # CHECK IF DIRECTORY, THEN SCAN FOR NC FILES
+  # AND LUMP THEM TOGETHER
+
+  # write result to file
   terra::writeCDF(r_out, p_dest, varname=nm)
+
+  # rename the tempfile if needed
   if( is_update ) {
 
-    # remove old file and rename new one to replace it
-    unlink(p)
+    # remove old file/directory and rename new one to replace it
+    unlink(p, recursive=TRUE)
     file.rename(from=p_dest, to=p)
     p_dest = p
   }

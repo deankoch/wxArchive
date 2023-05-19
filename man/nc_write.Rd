@@ -9,7 +9,7 @@ nc_write(r, p)
 \arguments{
 \item{r}{SpatRaster with POSIXct vector \code{terra::time(r)}, the data to write}
 
-\item{p}{character path the (.nc) time series data file to write}
+\item{p}{character path the (.nc) time series data file/directory to write}
 }
 \value{
 vector of POSIXct times, the layers added to the file

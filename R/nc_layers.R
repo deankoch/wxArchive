@@ -48,6 +48,11 @@ nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE) {
   if( !any(p_valid) ) stop('file(s) not found: ', paste(p, collapse=', '))
   p = p[p_valid]
 
+  #
+  # ***TODO: ADD YEAR CHUNKING HERE ***
+  # CHECK IF DIRECTORY, THEN SCAN FOR NC FILES
+  # AND LUMP THEM TOGETHER IN RECURSIVE CALL
+
   # loop over vectorized input
   load_all_times = is.null(times)
   times = unique(times)
