@@ -12,7 +12,7 @@
 #'
 #' @return a list of character vectors, paths to individual NetCDF files
 #' @export
-workflow_list = function(project_dir, quiet=FALSE) {
+workflow_list = function(project_dir, export=TRUE, quiet=FALSE) {
 
   # make a list of all datasets with preference for RAP archive over GFS
   p_all = project_dir |> nc_list()
@@ -61,6 +61,45 @@ workflow_list = function(project_dir, quiet=FALSE) {
     c('\n', rep('-', nm_len-1)) |> paste(collapse='') |> cat()
     paste0('\n > ', p) |> cat()
     cat('\n')
+  }
+
+  # report on exported variables
+  if( export ) {
+
+    # base directories for all export files
+    export_nc_path = file_wx('nc', base_dir, .nm_export, .var_export)
+    export_exists = file.exists(export_nc_path)
+    if( any(export_exists) ) {
+
+      # loop over exported variables
+      n_export = length(export_nc_path)
+      message('\nexported to ', n_export, ' daily variable(s):')
+      for(i in seq(n_export)) {
+
+        var_i = .var_export_pairs[[i]]['var']
+        fun_i = .var_export_pairs[[i]]['fun']
+        p = export_nc_path[i]
+
+        # count times and find their range
+        time_all = p |> time_wx()
+        time_min = time_all[['time_obs']] |> min()
+        time_max = time_all[['time_obs']] |> max()
+        n = time_all[['time_obs']] |> length()
+
+        # check if time series is complete
+        ts_df = data.frame(posix_pred=time_all[['time_obs']]) |> archive_pad(quiet=TRUE)
+        n_miss = ts_df[['ts_hours']] |> is.na() |> sum()
+        msg_miss = ifelse(n_miss==0, ' (complete)', paste0(' (', n_miss, ' missing)'))
+
+
+
+
+
+        cat('\n', p)
+
+      }
+    }
+
   }
 
   cat('\n')

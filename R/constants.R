@@ -55,7 +55,7 @@
                          c(var='wnd', fun='mean'))
 
 # file names for the aggregate series
-.var_export = .var_aggregate_pairs |> sapply(\(x) paste(x, collapse='_'))
+.var_export = .var_export_pairs |> sapply(\(x) paste(x, collapse='_'))
 
 
 ## DIRECTORIES

@@ -14,6 +14,9 @@ from = NULL
 to = NULL
 data_dir = project_dir
 
+project_dir |> workflow_list()
+
+
 # check for spatial model
 nm_spatial = 'spatial_daily'
 dir_spatial = project_dir |> file.path(nm_spatial)

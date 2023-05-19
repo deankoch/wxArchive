@@ -4,7 +4,7 @@
 \alias{workflow_list}
 \title{List all times and variables available locally in the RAP/RUC/GFS archive}
 \usage{
-workflow_list(project_dir, quiet = FALSE)
+workflow_list(project_dir, export = TRUE, quiet = FALSE)
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}

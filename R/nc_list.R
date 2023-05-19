@@ -20,16 +20,14 @@
 nc_list = function(base_dir,
                    rap = .nm_rap_export,
                    gfs = .nm_gfs_export,
-                   export = .nm_export,
                    var_rap = .var_rap_export,
-                   var_gfs = .var_gfs_export,
-                   var_export = .var_export) {
+                   var_gfs = .var_gfs_export) {
 
   # NULL specifies to omit from results
   is_rap = !is.null(rap)
   if( is_rap ) {
 
-    # base directories for all NetCDF and GRIB files from RAP/RUC
+    # base directories for all RAP/RUC files
     base_dir_rap = base_dir |> file.path('rap')
     rap_nc_path = file_wx('nc', base_dir_rap, rap, var_rap)
   }
@@ -38,6 +36,7 @@ nc_list = function(base_dir,
   is_gfs = !is.null(gfs)
   if( is_gfs ) {
 
+    # base directories for all GFS files
     base_dir_gfs = base_dir |> file.path('gfs')
     gfs_nc_path = file_wx('nc', base_dir_gfs, gfs, var_gfs)
   }
