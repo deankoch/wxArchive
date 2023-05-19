@@ -13,6 +13,14 @@ from = NULL
 to = NULL
 data_dir = project_dir
 
+data_dir |> workflow_update_gfs()
+project_dir |> workflow_list()
+
+project_dir |> workflow_daily()
+project_dir |> workflow_list()
+
+
+
 # lake = sf::st_read('D:/rswat_testing/data/nhd_lake.geojson') |> sf::st_geometry()
 # river = sf::st_read('D:/rswat_testing/data/nhd_flow.geojson') |> sf::st_geometry()
 # catch_df = sf::st_read('D:/rswat_testing/data/nhd_catchment.geojson')
@@ -31,8 +39,24 @@ data_dir = project_dir
 #
 # catch[i] |> sf::st_transform(4326) |> sf::st_write('G:/export.geojson')
 #
-data_dir |> workflow_update_gfs()
-project_dir |> workflow_list()
+
+
+
+# create wind speed layers
+base_dir_gfs = project_dir |> file.path('gfs')
+base_dir_gfs |> file.path(.var_wnd) |> unlink(recursive=TRUE)
+cat('\n')
+message('computing wind speed from u/v components')
+base_dir_gfs |> wnd_update(wnd_nm = 'wnd',
+                           uv_nm = c('wnd_u', 'wnd_v'),
+                           input_nm = .nm_resample) |> invisible()
+
+
+
+
+
+
+
 
 
 # check for spatial model
