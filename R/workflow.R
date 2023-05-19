@@ -341,7 +341,7 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
               output_nm = .nm_resample,
               r_fine = r_fine) |> invisible()
 
-  # predictions will run n_head days past the end of the GFS data
+  # predictions will run n_ahead days past the end of the GFS data
   gfs_nc_path = file_wx('nc', base_dir_gfs, .nm_resample, .nm_gfs_var)
   gfs_time = lapply(gfs_nc_path, \(p) time_wx(p))
   gfs_end = do.call(c, lapply(gfs_time, \(x) max(x[['time_obs']]) )) |> max()
@@ -349,7 +349,7 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
 
   # prediction using model results from RAP analysis
   cat('\n')
-  message('extending forecasts by ', n_head, ' day(s)')
+  message('extending forecasts by ', n_ahead, ' day(s)')
   time_impute(var_nm = .nm_gfs_var,
               base_dir = base_dir_gfs,
               until = until,
