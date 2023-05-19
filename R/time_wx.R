@@ -40,13 +40,17 @@ time_wx = function(nc_path, join=TRUE) {
   # create any missing JSON files
   if( any(is_pending) ) {
 
-    # write the JSONs
-    is_json_new = nc_path[is_pending] |> sapply(write_time_json)
-    if( any(is_json_new) ) {
+    # write the JSON for existing nc file(s)
+    is_created = is_pending & file.exists(nc_path)
+    if( any(is_created) ) {
 
-      # load them
-      idx_new = which(is_pending)[is_json_new]
-      time_result[idx_new] = nc_path[idx_new] |> time_json()
+      is_json_new = nc_path[is_created] |> sapply(write_time_json)
+      if( any(is_json_new) ) {
+
+        # load them
+        idx_new = which(is_pending)[is_json_new]
+        time_result[idx_new] = nc_path[idx_new] |> time_json()
+      }
     }
   }
 
