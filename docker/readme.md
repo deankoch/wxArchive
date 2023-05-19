@@ -7,7 +7,8 @@ May 10 2023
 This uses the wxArchive R package to download GRIB files for weather forecasts and convert them to
 NetCDF. It is currently set up to download RAP/RUC data as far back as 2005, as well as current
 GFS forecasts up to 5 days ahead. These are stitched together and gap-filled to produce a complete
-time series.
+time series. The script can also predict ahead of the latest GFS file (using the `n_ahead` argument,
+in development) and is currently configured to predict ahead by 3 days.
 
 All output files are written to the directory /home/wxarchive/data in the container. To make this
 persistent you will need to map a local volume (some empty directory) to this location. In the
