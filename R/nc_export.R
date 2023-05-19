@@ -33,7 +33,7 @@ nc_export = function(base_dir,
                      var_nm = NULL,
                      output_nm = .nm_export,
                      write_csv = FALSE,
-                     fun = 'mean',
+                     fun = mean,
                      tz = 'UTC',
                      origin_hour = 0L) {
 
@@ -47,10 +47,13 @@ nc_export = function(base_dir,
   if( any(!is_valid) ) stop(msg_invalid)
   p_fetch = p_all[var_nm]
 
+  # get the name of the supplied function
+  is_agg = !is.null(fun)
+  fun_nm = fun |> substitute() |> deparse()
+
   # define output files
-  is_agg = !is.na(fun)
   output_nc = file_wx('nc', base_dir, output_nm, as.list(var_nm), make_dir=TRUE)
-  if( is_agg ) output_nc = gsub('.nc$',  paste0('_daily_', fun, '.nc'), output_nc)
+  if( is_agg ) output_nc = gsub('.nc$',  paste0('_daily_', fun_nm, '.nc'), output_nc)
   output_csv = gsub('.nc$', '.csv', output_nc)
   output_geojson = base_dir |> file.path(output_nm, 'grid_points.geojson')
 
@@ -137,7 +140,7 @@ nc_export = function(base_dir,
 #'
 #' @return SpatRaster, the aggregated data
 #' @export
-nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
+nc_aggregate = function(p, fun=mean, tz='UTC', origin_hour=0L) {
 
   # load everything into RAM (~5GB)
   cat('\nchecking times in', length(p), 'file(s)')
@@ -162,7 +165,7 @@ nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
 
   # compute stats in loop over days then remove the large source raster from memory
   cat('\ncomputing', fun, 'of', n_per, 'steps on', n_out, 'day(s)')
-  r_result = lapply(list_idx, \(j) terra::app(r[[j]], mean) )
+  r_result = lapply(list_idx, \(j) terra::app(r[[j]], fun) )
   rm(r)
   gc()
 
