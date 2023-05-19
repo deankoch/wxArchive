@@ -328,7 +328,7 @@ workflow_update_gfs = function(project_dir) {
             from = from) |> invisible()
 
   # load an example grid at fine resolution (second rast call drops cell values)
-  r_fine = file_wx('nc', base_dir_rap, .nm_spatial, names(.rap_regex)[[1]]) |>
+  r_fine = file_wx('nc', base_dir_rap, 'fine', names(.rap_regex)[[1]]) |>
     terra::rast() |> terra::rast()
 
   # resample to match RAP grid
