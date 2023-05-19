@@ -351,11 +351,14 @@ workflow_update_gfs = function(project_dir) {
 
 #' Exported completed time series to daily aggregate values and write to disk
 #'
-#' This prepares five output variables aggregated to daily average, or maximum or minimum
+#' Wraoper for `nc_aggregate`
 #'
-#'
+#' This prepares five output variables aggregated to daily average, or maximum or minimum.
+#' The pairing of variable names and aggregation functions is set up in the global
+#' constant `.var_daily_pairs`
 #'
 #' @param project_dir character path to the project root directory
+#' @param write_csv logical, if TRUE a CSV file and geoJSON are written in addition to the NetCDF
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
@@ -372,9 +375,9 @@ workflow_daily = function(project_dir, write_csv=FALSE) {
   print(.var_daily_pairs)
   export_paths = .var_daily_pairs |> lapply(\(x) nc_aggregate(base_dir = project_dir,
                                                               var_nm = x['var'],
+                                                              output_nm = .nm_daily,
                                                               write_csv = write_csv,
                                                               fun = x['fun'],
                                                               tz = 'MST'))
-
 }
 
