@@ -46,13 +46,15 @@ to = NULL
 if( operation == 'list' ) data_dir |> wxArchive::workflow_list()
 
 # update RAP/RUC archive
-if( operation %in% c('update_rap', 'update_all') ) data_dir |> workflow_update_rap(from=from, to=to)
+if( operation %in% c('update_rap', 'update_all') ) data_dir |>
+  wxArchive::workflow_update_rap(from=from, to=to)
 
 # fit temporal model to RAP/RUC archive
 if( operation %in% c('fit_rap', 'update_all') ) {
 
   # in "update_all" mode we fit the model only if it doesn't exist yet
-  if( !dir.exists(model_dir) | (operation == 'fit_rap') ) data_dir |> workflow_fit_temporal()
+  if( !dir.exists(model_dir) | (operation == 'fit_rap') ) data_dir |>
+    wxArchive::workflow_fit_temporal()
 }
 
 # impute missing values in RAP/RUC archive
@@ -60,17 +62,17 @@ if( operation %in% c('impute_rap', 'update_all') ) {
 
   # check if a temporal model has been fitted to the data yet
   if( !dir.exists(model_dir) ) stop('directory ', model_dir, ' not found. Run operation "fit_rap" first')
-  data_dir |> workflow_impute_rap()
+  data_dir |> wxArchive::workflow_impute_rap()
 }
 
 # add wind speed variable
-if( operation %in% c('update_all') ) data_dir |> workflow_wnd_rap()
+if( operation %in% c('update_all') ) data_dir |> wxArchive::workflow_wnd_rap()
 
 # update GFS archive
-if( operation %in% c('update_gfs', 'update_all') ) data_dir |> workflow_update_gfs()
+if( operation %in% c('update_gfs', 'update_all') ) data_dir |> wxArchive::workflow_update_gfs()
 
 # for each variable this will write a copy of the completed time series in one file
-if( operation %in% c('export', 'update_all') ) data_dir |> wxArchive::workflow_export()
+if( operation %in% c('export', 'update_all') ) data_dir |> wxArchive::wxArchive::workflow_export()
 
 # a clue that you can close the bash terminal now
 cat('\n')
