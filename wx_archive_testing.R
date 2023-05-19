@@ -14,6 +14,8 @@ from = NULL
 to = NULL
 data_dir = project_dir
 
+
+data_dir |> workflow_update_gfs()
 project_dir |> workflow_list()
 
 

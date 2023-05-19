@@ -72,7 +72,7 @@ if( operation %in% c('update_all') ) data_dir |> wxArchive::workflow_wnd_rap()
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> wxArchive::workflow_update_gfs()
 
 # for each variable this will write a copy of the completed time series in one file
-if( operation %in% c('export', 'update_all') ) data_dir |> wxArchive::wxArchive::workflow_export()
+if( operation %in% c('export', 'update_all') ) data_dir |> wxArchive::workflow_export()
 
 # a clue that you can close the bash terminal now
 cat('\n')
