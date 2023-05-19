@@ -12,7 +12,7 @@
 #'
 #' @return a list of character vectors, paths to individual NetCDF files
 #' @export
-workflow_list = function(project_dir, export=TRUE, quiet=FALSE) {
+workflow_list = function(project_dir, daily=TRUE, quiet=FALSE) {
 
   # make a list of all datasets with preference for RAP archive over GFS
   p_all = project_dir |> nc_list()
@@ -20,28 +20,28 @@ workflow_list = function(project_dir, export=TRUE, quiet=FALSE) {
 
   # AGGREGATE DATA
 
-  # report on exported variables
-  if( export ) {
+  # report on daily variables
+  if( daily ) {
 
-    # base directories for all export files
-    export_path = file_wx('nc', project_dir, .nm_export, .var_export)
+    # base directories for all daily files
+    daily_path = file_wx('nc', project_dir, .nm_daily, .var_daily)
 
     # fixed width names for printout
-    nm_all = .var_export_pairs |> sapply(\(x) paste(x['var'], '|', x['fun']))
+    nm_all = .var_daily_pairs |> sapply(\(x) paste(x['var'], '|', x['fun']))
     nm_len = nm_all |> sapply(nchar) |> max()
     nm_fix_wid = lapply(nm_all, \(nm) paste0(nm, paste(rep(' ', nm_len - nchar(nm)), collapse='')))
 
     # same for paths
-    p_len = export_path |> sapply(nchar) |> max()
-    p_fix_wid = lapply(export_path, \(nm) paste0(nm, paste(rep(' ', p_len - nchar(nm)), collapse='')))
+    p_len = daily_path |> sapply(nchar) |> max()
+    p_fix_wid = lapply(daily_path, \(nm) paste0(nm, paste(rep(' ', p_len - nchar(nm)), collapse='')))
 
-    # loop over exported variables
-    n_export = length(export_path)
-    message('\nchecking ', n_export, ' exported daily variable(s)')
-    for(i in seq(n_export)) {
+    # loop over daily variables
+    n_daily = length(daily_path)
+    message('\nchecking ', n_daily, ' daily daily variable(s)')
+    for(i in seq(n_daily)) {
 
       # this returns empty list when the file is missing
-      p = export_path[i]
+      p = daily_path[i]
       time_all = p |> time_wx()
       if( length(time_all) == 0 ) {
 
@@ -365,13 +365,14 @@ workflow_aggregate = function(project_dir, write_csv=FALSE) {
   message('merging data and exporting to file')
 
   # delete the old export directory
-  project_dir |> file.path(.nm_export) |> unlink(recursive=TRUE)
+  project_dir |> file.path(.nm_daily) |> unlink(recursive=TRUE)
 
   # export all in a loop
-  export_paths = .var_export_pairs |> lapply(\(x) nc_aggregate(base_dir = project_dir,
-                                                               var_nm = x['var'],
-                                                               write_csv = write_csv,
-                                                               fun = x['fun'],
-                                                               tz = 'MST'))
+  export_paths = .var_daily_pairs |> lapply(\(x) nc_aggregate(base_dir = project_dir,
+                                                              var_nm = x['var'],
+                                                              write_csv = write_csv,
+                                                              fun = x['fun'],
+                                                              tz = 'MST'))
+
 }
 

@@ -48,14 +48,15 @@
 .var_gfs_export = .nm_gfs_var |> c( list(.var_wnd) )
 
 # name and aggregation function for export
-.var_export_pairs = list(c(var='tmp', fun='max'),
-                         c(var='tmp', fun='min'),
-                         c(var='hum', fun='mean'),
-                         c(var='pcp', fun='mean'),
-                         c(var='wnd', fun='mean'))
+.var_daily_pairs = list(c(var='tmp', fun='max'),
+                        c(var='tmp', fun='min'),
+                        c(var='hum', fun='mean'),
+                        c(var='pcp', fun='mean'),
+                        c(var='wnd', fun='mean'))
+
 
 # file names for the aggregate series
-.var_export = .var_export_pairs |> sapply(\(x) paste(x, collapse='_'))
+.var_daily = .var_daily_pairs |> sapply(\(x) paste(x, collapse='_'))
 
 
 ## DIRECTORIES
@@ -73,7 +74,8 @@
 # sub-directory names for transformed layers
 .nm_resample = 'coarse_resampled'
 .nm_complete = 'completed'
-.nm_export = 'export'
+.nm_daily = 'daily'
+#.nm_export = 'export'
 
 # set of sub-directories to use for fitting temporal model and spatial model
 .nm_resample_rap = c(.nm_src_rap[['fine']], .nm_resample)

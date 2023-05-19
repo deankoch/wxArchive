@@ -31,7 +31,7 @@
 #' @export
 nc_aggregate = function(base_dir,
                         var_nm = NULL,
-                        output_nm = .nm_export,
+                        output_nm = .nm_daily,
                         write_csv = FALSE,
                         fun = 'mean',
                         tz = 'UTC',
