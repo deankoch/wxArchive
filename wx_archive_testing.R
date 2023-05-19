@@ -14,6 +14,36 @@ from = NULL
 to = NULL
 data_dir = project_dir
 
+# check for spatial model
+nm_spatial = 'spatial_daily'
+dir_spatial = project_dir |> file.path(nm_spatial)
+dir.exists(dir_spatial)
+
+
+# fit spatial model
+var_nm = 'pcp'
+base_dir = data_dir
+dem_path =
+input_nm = 'fine'
+model_nm = input_nm[[1]]
+n_max = 5e2
+positive = NULL
+
+
+
+
+
+
+
+# starting on down-scaling function
+# inputs: from, to,
+
+
+
+
+
+
+
 # # TODO: export the following:
 # tmp_max
 # tmp_min
@@ -21,9 +51,42 @@ data_dir = project_dir
 # pcp_mean
 # wnd_mean
 
+# p = file.path(project_dir, 'gfs', 'coarse_resampled', 'wnd_v.nc')
+# p |> rast() |> crs() |> cat()
+#
+# library(ncdf4)
+# nc = nc_open(p)
+# nc |> str()
+
+# DEBUGGING:
+library(profvis)
+
+base_dir = data_dir
+var_nm = 'pcp'
+output_nm = 'export'
+write_csv = F
+fun='mean'
+tz='MST'
+origin_hour = 0L
+
+#nc_export(data_dir, var_nm, )
+
+profvis({
+
+  data_dir |> workflow_export(write_csv=FALSE)
+
+  })
 
 
+
+
+# set max RAM available to terra in GB
+# terraOptions(memmax=2)
 data_dir |> workflow_export()
+
+
+
+
 
 
 
@@ -33,6 +96,7 @@ data_dir |> workflow_update_rap(from=from, to=to)
 data_dir |> workflow_impute_rap()
 data_dir |> workflow_wnd_rap()
 data_dir |> workflow_update_gfs()
+data_dir |> workflow_export()
 
 base_dir = data_dir
 var_nm = 'hum'

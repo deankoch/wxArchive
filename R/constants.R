@@ -47,14 +47,16 @@
 .var_rap_export = .nm_output_var |> c( list(.var_wnd) )
 .var_gfs_export = .nm_gfs_var |> c( list(.var_wnd) )
 
-# names for exported variables (indicating aggregation method)
-.var_aggregate = list(c('tmp', 'max'), c())
-.var_export = 'NOT_IMPLEMENTED'
-# tmp_max_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='max', tz='MST')
-# tmp_min_path = project_dir |> nc_export('tmp', write_csv=write_csv, fun='min', tz='MST')
-# hum_mean_path = project_dir |> nc_export('hum', write_csv=write_csv, fun='mean', tz='MST')
-# pcp_mean_path = project_dir |> nc_export('pcp', write_csv=write_csv, fun='mean', tz='MST')
-# wnd_mean_path = project_dir |> nc_export('wnd', write_csv=write_csv, fun='mean', tz='MST')
+# name and aggregation function for export
+.var_export_pairs = list(c(var='tmp', fun='max'),
+                         c(var='tmp', fun='min'),
+                         c(var='hum', fun='mean'),
+                         c(var='pcp', fun='mean'),
+                         c(var='wnd', fun='mean'))
+
+# file names for the aggregate series
+.var_export = .var_aggregate_pairs |> sapply(\(x) paste(x, collapse='_'))
+
 
 ## DIRECTORIES
 
