@@ -74,7 +74,7 @@ if( operation %in% c('update_all') ) data_dir |> wxArchive::workflow_wnd_rap()
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> wxArchive::workflow_update_gfs()
 
 # for each variable this will write a copy of the completed time series in one file
-if( operation %in% c('daily', 'update_all') ) data_dir |> wxArchive::workflow_aggregate()
+if( operation %in% c('daily', 'update_all') ) data_dir |> wxArchive::workflow_daily()
 
 if( operation == 'fit_daily') stop('fit_daily not yet implemented')
 if( operation == 'export') stop('export not yet implemented. Are you looking for "daily"?')
