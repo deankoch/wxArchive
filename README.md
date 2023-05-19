@@ -1,13 +1,21 @@
 # wxArchive: a database of weather forecasts from RAP/RUC/GFS 
-Dean Koch, updated May 19 2023
+Dean Koch
+**updated May 19 2023**
 
 ## Overview
 
-This R package collects 2-hourly data from the following (NOAA) forecast models: 
+This R package collects 2-hourly data from the following NOAA forecast models: 
 
 * Rapid Update Cycle (RUC) from 2005 to 2007 (26km resolution)
 * Rapid Refresh (RAP) from 2007 to present less 2 days (13km resolution)
 * Global Forecast System (GFS) from 10 days before present to 5 days ahead (28km resolution)
+
+The package handles downloads, model-fitting, and prediction automatically and produces
+outputs in convenient formats like netCDF, CSV and geoJSON. It can be scheduled to run daily
+in a docker container to produce an up-to-date, long-running, gap-less times series of your
+variables of interest.
+
+## Background
 
 The RAP/RUC GRIB source files cover all of North America, so the package crops them to an 
 an area of interest (AOI) supplied by the user before saving a copy. GFS forecasts can be
@@ -24,10 +32,11 @@ are used instead. Data points from GFS comprise the n-hour-ahead ahead forecasts
 odd-numbered n from 1 to 119 (inclusive). These are drawn from the daily releases at
 06:00 and 18:00, with a preference for the latest release. 
 
-All time series points are stitched together and missing times are imputed automatically.
+These various data sources are joined together and missing times are imputed automatically.
 The result is a 2-hourly gap-less time series extending from 2005 until several days into
 the future (see below). Optionally the package will aggregate to daily variables, and
-downscale or spatially aggregate outputs over user-supplied polygons
+efficiently extrapolate (using `snapKrig`) and/or spatially aggregate outputs over
+user-supplied polygons
 
 ## Variables
 
