@@ -67,11 +67,20 @@ if( operation %in% c('impute_rap', 'update_all') ) {
   data_dir |> wxArchive::workflow_impute_rap()
 }
 
+# DEBUGGING:
+warnings() |> print()
+
 # add wind speed variable
 if( operation %in% c('update_all') ) data_dir |> wxArchive::workflow_wnd_rap()
 
+# DEBUGGING:
+warnings() |> print()
+
 # update GFS archive
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> wxArchive::workflow_update_gfs()
+
+# DEBUGGING:
+warnings() |> print()
 
 # for each variable this will write a copy of the completed time series in one file
 if( operation %in% c('daily', 'update_all') ) data_dir |> wxArchive::workflow_daily()
@@ -79,6 +88,8 @@ if( operation %in% c('daily', 'update_all') ) data_dir |> wxArchive::workflow_da
 if( operation == 'fit_daily') stop('fit_daily not yet implemented')
 if( operation == 'export') stop('export not yet implemented. Are you looking for "daily"?')
 
+# DEBUGGING:
+warnings() |> print()
 
 # a clue that you can close the bash terminal now
 cat('\n')

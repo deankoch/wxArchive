@@ -383,5 +383,8 @@ workflow_daily = function(project_dir, write_csv=FALSE) {
                                                               write_csv = write_csv,
                                                               fun = x['fun'],
                                                               tz = 'MST'))
+
+  # DEBUGGING:
+  warnings() |> print()
 }
 
