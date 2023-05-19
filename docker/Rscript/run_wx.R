@@ -74,5 +74,5 @@ if( operation %in% c('export', 'update_all') ) data_dir |> wxArchive::workflow_e
 
 # a clue that you can close the bash terminal now
 cat('\n')
-message('finished')
+message('all done')
 
