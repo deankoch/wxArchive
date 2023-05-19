@@ -343,8 +343,8 @@ workflow_update_gfs = function(project_dir) {
   # create wind speed layers
   cat('\n')
   message('computing wind speed from u/v components')
-  base_dir_gfs |> wnd_update(wnd_nm = 'wnd',
-                             uv_nm = c('wnd_u', 'wnd_v'),
+  base_dir_gfs |> wnd_update(wnd_nm = .var_wnd,
+                             uv_nm = .var_wnd_uv,
                              input_nm = .nm_resample) |> invisible()
 }
 

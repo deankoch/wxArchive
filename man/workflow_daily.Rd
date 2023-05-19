@@ -8,10 +8,17 @@ workflow_daily(project_dir, write_csv = FALSE)
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}
+
+\item{write_csv}{logical, if TRUE a CSV file and geoJSON are written in addition to the NetCDF}
 }
 \value{
 returns nothing but possible writes to \code{project_dir}
 }
 \description{
-This prepares five output variables aggregated to daily average, or maximum or minimum
+Wrapper for \code{nc_aggregate}
+}
+\details{
+This prepares five output variables aggregated to daily average, or maximum or minimum.
+The pairing of variable names and aggregation functions is set up in the global
+constant \code{.var_daily_pairs}
 }
