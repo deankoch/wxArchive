@@ -9,7 +9,7 @@ nc_export(
   var_nm = NULL,
   output_nm = .nm_export,
   write_csv = FALSE,
-  fun = mean,
+  fun = "mean",
   tz = "UTC",
   origin_hour = 0L
 )
@@ -23,7 +23,7 @@ nc_export(
 
 \item{write_csv}{logical, Writes a CSV copy of the data, and point locations to geojson}
 
-\item{fun}{function, one of "mean", "min", or "max"}
+\item{fun}{function, a function name like "mean", "min", or "max" (see \code{?nc_aggregate})}
 
 \item{tz}{character time zone for \code{origin_hour}}
 
@@ -43,9 +43,9 @@ containing the matrix of data associated with each variable, and a time column w
 character string giving the date/time in UTC. These files have the same file-names as
 the NetCDF versions (up to file extension).
 
-If \code{fun=NA}, the function does no aggregation and writes all time points.
+If \code{fun=NULL}, the function does no aggregation and writes all time points.
 
-If \code{fun} is not \code{NA} then the last three arguments are passed to \code{nc_aggregate} to control
+If \code{fun} is not \code{NULL} then the last three arguments are passed to \code{nc_aggregate} to control
 the alignment of the aggregation window. \code{fun} specifies the function to use for combining
 times within the window (see \code{?nc_aggregate}).  Set \code{tz} to the desired output time
 zone, and leave \code{origin_hour=0} to have each day begin at 12AM (in time zone \code{tz}).

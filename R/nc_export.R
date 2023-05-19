@@ -9,9 +9,9 @@
 #' character string giving the date/time in UTC. These files have the same file-names as
 #' the NetCDF versions (up to file extension).
 #'
-#' If `fun=NA`, the function does no aggregation and writes all time points.
+#' If `fun=NULL`, the function does no aggregation and writes all time points.
 #'
-#' If `fun` is not `NA` then the last three arguments are passed to `nc_aggregate` to control
+#' If `fun` is not `NULL` then the last three arguments are passed to `nc_aggregate` to control
 #' the alignment of the aggregation window. `fun` specifies the function to use for combining
 #' times within the window (see `?nc_aggregate`).  Set `tz` to the desired output time
 #' zone, and leave `origin_hour=0` to have each day begin at 12AM (in time zone `tz`).
@@ -22,7 +22,7 @@
 #' @param base_dir path to parent directory of GRIB storage subfolder
 #' @param var_nm character vector, the variable(s) to export (NULL to export all)
 #' @param output_nm character, the sub-directory name for output
-#' @param fun function, one of "mean", "min", or "max"
+#' @param fun function, a function name like "mean", "min", or "max" (see `?nc_aggregate`)
 #' @param tz character time zone for `origin_hour`
 #' @param origin_hour integer, steps are aligned to start at this hour of the day
 #' @param write_csv logical, Writes a CSV copy of the data, and point locations to geojson
@@ -33,7 +33,7 @@ nc_export = function(base_dir,
                      var_nm = NULL,
                      output_nm = .nm_export,
                      write_csv = FALSE,
-                     fun = mean,
+                     fun = 'mean',
                      tz = 'UTC',
                      origin_hour = 0L) {
 
@@ -129,21 +129,21 @@ nc_export = function(base_dir,
 
 #' Aggregate sub-daily data to daily
 #'
-#' Returns a list of SpatRasters, one for each day in the time series
-#' `p`. Times within a given day are aggregated using the function
-#' `fun` should be a function (not a string naming it), such as `mean`
-#' or `max` (see `?terra::app`).
+#' Returns a list of SpatRasters, one for each day in the time series `p`. Times
+#' within a given day are aggregated using the function `fun` should be a string
+#' naming the function, like `"mean"` (and not `mean`) and this must be compatible
+#' with `terra::app`.
 #'
-#' This has not been tested on incomplete data
+#' This function has not been tested on incomplete data
 #'
 #' @param p character vector path to the nc file(s)
-#' @param fun function, one of "mean", "min", or "max"
+#' @param fun character naming a function, such as "mean", "min", or "max"
 #' @param tz character time zone for `origin_hour`
 #' @param origin_hour integer, steps are aligned to start at this hour of the day
 #'
 #' @return SpatRaster, the aggregated data
 #' @export
-nc_aggregate = function(p, fun=mean, tz='UTC', origin_hour=0L) {
+nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
 
   # load everything into RAM (~5GB)
   cat('\nchecking times in', length(p), 'file(s)')
@@ -167,9 +167,8 @@ nc_aggregate = function(p, fun=mean, tz='UTC', origin_hour=0L) {
   date_out = seq.Date(start_date, by='day', length.out=n_out)
 
   # compute stats in loop over days then remove the large source raster from memory
-  fun_nm = fun |> substitute() |> deparse1(backtick=FALSE)
-  cat('\ncomputing', fun_nm, 'of', n_per, 'steps on', n_out, 'day(s)')
-  r_result = lapply(list_idx, \(j) terra::app(r[[j]], fun) )
+  cat('\ncomputing', fun, 'of', n_per, 'steps on', n_out, 'day(s)')
+  r_result = lapply(list_idx, \(j) terra::app(r[[j]], get(fun)) )
   rm(r)
   gc()
 

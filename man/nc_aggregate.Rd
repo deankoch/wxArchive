@@ -4,12 +4,12 @@
 \alias{nc_aggregate}
 \title{Aggregate sub-daily data to daily}
 \usage{
-nc_aggregate(p, fun = mean, tz = "UTC", origin_hour = 0L)
+nc_aggregate(p, fun = "mean", tz = "UTC", origin_hour = 0L)
 }
 \arguments{
 \item{p}{character vector path to the nc file(s)}
 
-\item{fun}{function, one of "mean", "min", or "max"}
+\item{fun}{character naming a function, such as "mean", "min", or "max"}
 
 \item{tz}{character time zone for \code{origin_hour}}
 
@@ -19,11 +19,11 @@ nc_aggregate(p, fun = mean, tz = "UTC", origin_hour = 0L)
 SpatRaster, the aggregated data
 }
 \description{
-Returns a list of SpatRasters, one for each day in the time series
-\code{p}. Times within a given day are aggregated using the function
-\code{fun} should be a function (not a string naming it), such as \code{mean}
-or \code{max} (see \code{?terra::app}).
+Returns a list of SpatRasters, one for each day in the time series \code{p}. Times
+within a given day are aggregated using the function \code{fun} should be a string
+naming the function, like \code{"mean"} (and not \code{mean}) and this must be compatible
+with \code{terra::app}.
 }
 \details{
-This has not been tested on incomplete data
+This function has not been tested on incomplete data
 }
