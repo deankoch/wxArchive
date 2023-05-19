@@ -4,7 +4,7 @@
 \alias{nc_aggregate}
 \title{Aggregate sub-daily data to daily}
 \usage{
-nc_aggregate(p, fun = "mean", tz = "UTC", origin_hour = 0L)
+nc_aggregate(p, fun = mean, tz = "UTC", origin_hour = 0L)
 }
 \arguments{
 \item{p}{character vector path to the nc file(s)}

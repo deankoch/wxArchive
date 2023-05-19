@@ -7,9 +7,9 @@
 nc_export(
   base_dir,
   var_nm = NULL,
-  output_nm = "export",
+  output_nm = .nm_export,
   write_csv = FALSE,
-  fun = "mean",
+  fun = mean,
   tz = "UTC",
   origin_hour = 0L
 )

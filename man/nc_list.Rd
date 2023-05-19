@@ -8,8 +8,10 @@ nc_list(
   base_dir,
   rap = .nm_rap_export,
   gfs = .nm_gfs_export,
+  export = .nm_export,
   var_rap = .var_rap_export,
-  var_gfs = .var_gfs_export
+  var_gfs = .var_gfs_export,
+  var_export = .var_export
 )
 }
 \arguments{
