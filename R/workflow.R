@@ -365,9 +365,11 @@ workflow_daily = function(project_dir, write_csv=FALSE) {
   message('merging data and exporting to file')
 
   # delete the old export directory
+  print(project_dir |> file.path(.nm_daily))
   project_dir |> file.path(.nm_daily) |> unlink(recursive=TRUE)
 
   # export all in a loop
+  print(.var_daily_pairs)
   export_paths = .var_daily_pairs |> lapply(\(x) nc_aggregate(base_dir = project_dir,
                                                               var_nm = x['var'],
                                                               write_csv = write_csv,
