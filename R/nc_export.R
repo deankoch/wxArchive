@@ -49,7 +49,10 @@ nc_export = function(base_dir,
 
   # get the name of the supplied function
   is_agg = !is.null(fun)
-  fun_nm = fun |> substitute() |> deparse()
+  fun_nm = fun |> substitute() |> deparse1(backtick=FALSE)
+  # DEBUGGING
+  print(fun_nm)
+  print(nchar(fun_nm))
 
   # define output files
   output_nc = file_wx('nc', base_dir, output_nm, as.list(var_nm), make_dir=TRUE)
@@ -164,7 +167,8 @@ nc_aggregate = function(p, fun=mean, tz='UTC', origin_hour=0L) {
   date_out = seq.Date(start_date, by='day', length.out=n_out)
 
   # compute stats in loop over days then remove the large source raster from memory
-  cat('\ncomputing', fun, 'of', n_per, 'steps on', n_out, 'day(s)')
+  fun_nm = fun |> substitute() |> deparse1(backtick=FALSE)
+  cat('\ncomputing', fun_nm, 'of', n_per, 'steps on', n_out, 'day(s)')
   r_result = lapply(list_idx, \(j) terra::app(r[[j]], fun) )
   rm(r)
   gc()
