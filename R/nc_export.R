@@ -47,16 +47,10 @@ nc_export = function(base_dir,
   if( any(!is_valid) ) stop(msg_invalid)
   p_fetch = p_all[var_nm]
 
-  # get the name of the supplied function
-  is_agg = !is.null(fun)
-  fun_nm = fun |> substitute() |> deparse1(backtick=FALSE)
-  # DEBUGGING
-  print(fun_nm)
-  print(nchar(fun_nm))
-
   # define output files
   output_nc = file_wx('nc', base_dir, output_nm, as.list(var_nm), make_dir=TRUE)
-  if( is_agg ) output_nc = gsub('.nc$',  paste0('_daily_', fun_nm, '.nc'), output_nc)
+  is_agg = !is.null(fun)
+  if( is_agg ) output_nc = gsub('.nc$',  paste0('_daily_', fun, '.nc'), output_nc)
   output_csv = gsub('.nc$', '.csv', output_nc)
   output_geojson = base_dir |> file.path(output_nm, 'grid_points.geojson')
 
