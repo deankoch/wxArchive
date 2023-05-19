@@ -9,6 +9,7 @@ time_impute(
   base_dir,
   input_nm = "fine",
   output_nm = "completed",
+  model_dir = base_dir,
   model_nm = input_nm[1],
   n_max = NULL,
   until = NULL,

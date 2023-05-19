@@ -83,8 +83,9 @@
 
 # set of sub-directories forming completed time series
 .nm_complete_rap = c(.nm_resample_rap, .nm_complete)
+.nm_complete_gfs = c(.nm_resample, .nm_complete)
 
 # set of sub-directories to use for building exports
 .nm_rap_export = .nm_complete_rap |> c(.var_wnd)
-.nm_gfs_export = .nm_resample |> c(.var_wnd)
+.nm_gfs_export = .nm_complete_gfs |> c(.var_wnd)
 

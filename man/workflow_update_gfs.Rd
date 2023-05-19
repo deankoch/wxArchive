@@ -4,10 +4,12 @@
 \alias{workflow_update_gfs}
 \title{Update the GFS archive}
 \usage{
-workflow_update_gfs(project_dir)
+workflow_update_gfs(project_dir, n_ahead = 3)
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}
+
+\item{n_ahead}{integer, predictions run ahead of GFS data by this many days}
 }
 \value{
 returns nothing but possible writes to \code{project_dir}

@@ -284,10 +284,11 @@ workflow_wnd_rap = function(project_dir) {
 #' versions of the variables named in `.gfs_regex`.
 #'
 #' @param project_dir character path to the project root directory
+#' @param n_ahead integer, predictions run ahead of GFS data by this many days
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
-workflow_update_gfs = function(project_dir) {
+workflow_update_gfs = function(project_dir, n_ahead=3) {
 
   # path to area of interest polygon
   aoi_path = project_dir |> file.path('aoi.geojson')
@@ -339,6 +340,23 @@ workflow_update_gfs = function(project_dir) {
               input_nm = list(coarse=.nm_gfs),
               output_nm = .nm_resample,
               r_fine = r_fine) |> invisible()
+
+  # predictions will run n_head days past the end of the GFS data
+  gfs_nc_path = file_wx('nc', base_dir_gfs, .nm_resample, .nm_gfs_var)
+  gfs_time = lapply(gfs_nc_path, \(p) time_wx(p))
+  gfs_end = do.call(c, lapply(gfs_time, \(x) max(x[['time_obs']]) )) |> max()
+  until = gfs_end + ( n_ahead * 24 * 60 * 60 )
+
+  # prediction using model results from RAP analysis
+  cat('\n')
+  message('extending forecasts by ', n_head, ' day(s)')
+  time_impute(var_nm = .nm_gfs_var,
+              base_dir = base_dir_gfs,
+              until = until,
+              model_dir = base_dir_rap,
+              model_nm = .nm_resample_rap[1],
+              input_nm = .nm_resample,
+              output_nm = .nm_complete) |> invisible()
 
   # create wind speed layers
   cat('\n')
