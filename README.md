@@ -1,19 +1,33 @@
 # wxArchive: a database of weather forecasts from RAP/RUC/GFS 
-Dean Koch, May 02 2023
+Dean Koch, updated May 19 2023
 
 ## Overview
 
-This collects 2-hourly data from the following (NOAA) forecast models: 
+This R package collects 2-hourly data from the following (NOAA) forecast models: 
 
 * Rapid Update Cycle (RUC) from 2005 to 2007 (26km resolution)
 * Rapid Refresh (RAP) from 2007 to present less 2 days (13km resolution)
 * Global Forecast System (GFS) from 10 days before present to 5 days ahead (28km resolution)
 
-For past times, a grid of data covering all of North America is downloaded. For future times only the subgrid covering our area of interest (AOI) is downloaded. All past time points use the 1-hour-ahead forecast if available, and otherwise revert to the 0-hour forecast.
+The RAP/RUC GRIB source files cover all of North America, so the package crops them to an 
+an area of interest (AOI) supplied by the user before saving a copy. GFS forecasts can be
+requested for specific bounding boxes, so the GFS GRIB source files cover only the AOI.
 
-Source files are first saved to disk in their original GRIB/GRIB2 format before being coverted to NetCDF v4 for easier access. Each source file contains about 310 variables (eg temperature at various altitudes) but only a small number of relevant ones are copied to NetCDF, and only the sub-grid covering the AOI is included. 
+Source files are first saved to disk in their original GRIB/GRIB2 format before being
+converted to NetCDF v4 for easier access. Each source file contains about 310 variables
+(eg temperature at various altitudes) but only a small number of relevant ones are copied
+to NetCDF, and only the sub-grid covering the AOI is included. 
 
-All missing times are imputed as described below. The result is a complete time series extending from 2005 to 5 days into the future - a total of about 80,000 time points.
+Data points from RAP/RUC are comprised of 1-hour-ahead forecasts for odd-numbered hours,
+whenever they are available. When these are unavailable, the corresponding 0-hour forecast
+are used instead. Data points from GFS comprise the n-hour-ahead ahead forecasts for all
+odd-numbered n from 1 to 119 (inclusive). These are drawn from the daily releases at
+06:00 and 18:00, with a preference for the latest release. 
+
+All time series points are stitched together and missing times are imputed automatically.
+The result is a 2-hourly gap-less time series extending from 2005 until several days into
+the future (see below). Optionally the package will aggregate to daily variables, and
+downscale or spatially aggregate outputs over user-supplied polygons
 
 ## Variables
 
@@ -34,7 +48,7 @@ The precipitation type we are interested in is `pcp_total`. Variables `pcp_large
 
 ## Grids
 
-All resampled data use coordinates from the LCC projection, matching the 13km RAP grid. The projection WKT is as follows:
+All outputs use coordinates from the LCC projection, matching the 13km RAP grid. The projection WKT is as follows:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -93,7 +107,6 @@ Time points missing for any of these reasons are automatically imputed by one of
 2. downscale the RUC layer (if present) to replace a missing RAP layer
 3. Use a fitted AR2 model with seasonal trends to estimate the remaining missing points
 
-
 ## Updates
 
 The update script can be run as often as you like. Running it once daily should be sufficient. It should complete a one-day update in well under 30 minutes. An update does the following:
@@ -104,7 +117,7 @@ The update script can be run as often as you like. Running it once daily should 
 * imputation: resample to 13km (as needed)
 * imputation: predict missing times using AR2 and seasonal trend (as needed)
 
-The first two steps are then repeated for GFS. So far I have not encountered any missing data issues with GFS. If we run into issues in the future, it would be easy to implement the same gap-filling routine as with RAP/RUC.
+The first two steps are then repeated for GFS. Then the same gap-filling routine is used to impute any missing/future unseen times.
 
 
 ## Files
@@ -116,23 +129,33 @@ JSON can be found in the "time" subfolder of the directory containing the netCDF
 
 The NetCDF data for a given variable \<var\> is spread out over several files, using the following directory structure:
 
-* rap/coarse/\<var\>.nc stores layers found in RUC
-* rap/coarse_resampled/\<var\>.nc stores layers from RUC resampled to 13km resolution
-* rap/fine/\<var\>.nc stores layers found in RAP (13km resolution)
-* rap/completed/\<var\>.nc stores layers imputed using the AR(2) model (at 13km resolution)
+* rap/coarse/\<var\>.nc stores layers from RUC/RAP (26km)
+* rap/fine/\<var\>.nc stores layers from RAP (13km)
+* rap/coarse_resampled/\<var\>.nc stores layers from RUC resampled to match RAP
+* rap/completed/\<var\>.nc stores layers imputed using temporal model trained on RAP
+* rap/wnd/wnd.nc stores wind speed layer computed from wnd_u and wnd_v
 
 To speed up access and updates, non-imputed times prior to 2023-03 are held in these "long term storage" files:
 
 * rap/coarse_lts/\<var\>.nc
 * rap/fine_lts/\<var\>.nc
 
-The GFS component doesn't involve imputation, so it has a simpler structure:
+The GFS model only appears in one resolution (which I am naming "coarse"), so it has a slightly simpler structure:
 
 * gfs/coarse/\<var\>.nc stores layers at their original resolution
-* gfs/coarse_resampled/\<var\>.nc stores layers resampled to 13km resolution
+* gfs/coarse_resampled/\<var\>.nc stores a version resampled to match RAP
+* gfs/completed/\<var\>.nc stores layers imputed using RAP temporal model
+* gfs/wnd/wnd.nc stores wind speed layer computed from wnd_u and wnd_v
+
+Two additional top-level folders store output files
+
+* daily/<out_var>.nc stores daily aggregate values; like mean, max, min over time
+* spatial/<out_var>.nc stores spatial aggregate values of daily; like mean, max, min over space
 
 
 ## Reading/Exporting
+
+*this needs updating*
 
 Our data access functions (in R) are designed to operate on the the whole grid at a specified subset of times, with support for chunking time across different files. This means you can have different sets of times in different files, and the access functions will sort out which files/layers are needed for given query. 
 
