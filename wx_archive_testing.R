@@ -26,7 +26,7 @@ dir.exists(dir_spatial)
 # fit spatial model
 var_nm = 'pcp'
 base_dir = data_dir
-dem_path =
+#dem_path =
 input_nm = 'fine'
 model_nm = input_nm[[1]]
 n_max = 5e2

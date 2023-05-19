@@ -18,13 +18,67 @@ workflow_list = function(project_dir, export=TRUE, quiet=FALSE) {
   p_all = project_dir |> nc_list()
   if( quiet ) return(p_all)
 
+  # AGGREGATE DATA
+
+  # report on exported variables
+  if( export ) {
+
+    # base directories for all export files
+    export_path = file_wx('nc', project_dir, .nm_export, .var_export)
+
+    # fixed width names for printout
+    nm_all = .var_export_pairs |> sapply(\(x) paste(x['var'], '|', x['fun']))
+    nm_len = nm_all |> sapply(nchar) |> max()
+    nm_fix_wid = lapply(nm_all, \(nm) paste0(nm, paste(rep(' ', nm_len - nchar(nm)), collapse='')))
+
+    # same for paths
+    p_len = export_path |> sapply(nchar) |> max()
+    p_fix_wid = lapply(export_path, \(nm) paste0(nm, paste(rep(' ', p_len - nchar(nm)), collapse='')))
+
+    # loop over exported variables
+    n_export = length(export_path)
+    message('\nchecking ', n_export, ' exported daily variable(s)')
+    for(i in seq(n_export)) {
+
+      # this returns empty list when the file is missing
+      p = export_path[i]
+      time_all = p |> time_wx()
+      if( length(time_all) == 0 ) {
+
+        paste0('\n', p_fix_wid[i], ' | ', nm_fix_wid[i], ' | not found') |> cat()
+        next
+      }
+
+      # count times and find their range
+      time_min = time_all[['time_obs']] |> min()
+      time_max = time_all[['time_obs']] |> max()
+      n = time_all[['time_obs']] |> length()
+
+      # check if time series is complete
+      ts_df = data.frame(posix_pred=time_all[['time_obs']]) |> archive_pad(quiet=TRUE)
+      n_miss = ts_df[['ts_hours']] |> is.na() |> sum()
+      msg_miss = ifelse(n_miss==0, ' (complete)', paste0(' (', n_miss, ' missing)'))
+
+      # print stats and path to console
+      paste0('\n', p_fix_wid[i], ' | ',
+             nm_fix_wid[i], ' | ',
+             n, ' day(s) | ',
+             time_min, ' to ', time_max,
+             msg_miss) |> cat()
+    }
+    cat('\n')
+  }
+
+
+  # HOURLY DATA
+
   # fixed width names for printout
   nm_all = names(p_all)
   nm_len = nm_all |> sapply(nchar) |> max()
   nm_fix_wid = lapply(nm_all, \(nm) paste0(nm, paste(rep(' ', nm_len - nchar(nm)), collapse='')))
 
   # check available times in a loop, printing as we go
-  message('\nchecking available times for ', length(p_all), ' variable(s)')
+  message('\nchecking 2-hourly times for ', length(p_all), ' variable(s)')
   for( i in seq_along(p_all) ) {
 
     # check existence of source files
@@ -61,45 +115,6 @@ workflow_list = function(project_dir, export=TRUE, quiet=FALSE) {
     c('\n', rep('-', nm_len-1)) |> paste(collapse='') |> cat()
     paste0('\n > ', p) |> cat()
     cat('\n')
-  }
-
-  # report on exported variables
-  if( export ) {
-
-    # base directories for all export files
-    export_nc_path = file_wx('nc', base_dir, .nm_export, .var_export)
-    export_exists = file.exists(export_nc_path)
-    if( any(export_exists) ) {
-
-      # loop over exported variables
-      n_export = length(export_nc_path)
-      message('\nexported to ', n_export, ' daily variable(s):')
-      for(i in seq(n_export)) {
-
-        var_i = .var_export_pairs[[i]]['var']
-        fun_i = .var_export_pairs[[i]]['fun']
-        p = export_nc_path[i]
-
-        # count times and find their range
-        time_all = p |> time_wx()
-        time_min = time_all[['time_obs']] |> min()
-        time_max = time_all[['time_obs']] |> max()
-        n = time_all[['time_obs']] |> length()
-
-        # check if time series is complete
-        ts_df = data.frame(posix_pred=time_all[['time_obs']]) |> archive_pad(quiet=TRUE)
-        n_miss = ts_df[['ts_hours']] |> is.na() |> sum()
-        msg_miss = ifelse(n_miss==0, ' (complete)', paste0(' (', n_miss, ' missing)'))
-
-
-
-
-
-        cat('\n', p)
-
-      }
-    }
-
   }
 
   cat('\n')
