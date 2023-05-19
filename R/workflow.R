@@ -293,10 +293,6 @@ workflow_update_gfs = function(project_dir) {
   aoi_path = project_dir |> file.path('aoi.geojson')
   aoi = sf::st_read(aoi_path, quiet=TRUE)
 
-  # DEBUGGING:
-  cat('\ndone st_read\n')
-  warnings() |> print()
-
   # all the output files go here
   base_dir_gfs = project_dir |> file.path('gfs')
 
@@ -318,10 +314,6 @@ workflow_update_gfs = function(project_dir) {
                               model = 'gfs_0p25',
                               alternate = FALSE)
 
-  # DEBUGGING:
-  cat('\ndone GRIB update\n')
-  warnings() |> print()
-
   # delete the old GFS NetCDF directories
   base_dir_gfs |> file.path('coarse') |> unlink(recursive=TRUE)
   base_dir_gfs |> file.path(.nm_resample) |> unlink(recursive=TRUE)
@@ -335,17 +327,9 @@ workflow_update_gfs = function(project_dir) {
             regex = .gfs_regex,
             from = from) |> invisible()
 
-  # DEBUGGING:
-  cat('\ndone coarse update\n')
-  warnings() |> print()
-
   # load an example grid at fine resolution (second rast call drops cell values)
   r_fine = file_wx('nc', base_dir_rap, 'fine', names(.rap_regex)[[1]]) |>
     terra::rast() |> terra::rast()
-
-  # DEBUGGING:
-  cat('\ndone r_fine load\n')
-  warnings() |> print()
 
   # resample to match RAP grid
   cat('\n')
@@ -356,21 +340,12 @@ workflow_update_gfs = function(project_dir) {
               output_nm = .nm_resample,
               r_fine = r_fine) |> invisible()
 
-  # DEBUGGING:
-  cat('\ndone resample\n')
-  warnings() |> print()
-
   # create wind speed layers
   cat('\n')
   message('computing wind speed from u/v components')
   base_dir_gfs |> wnd_update(wnd_nm = 'wnd',
                              uv_nm = c('wnd_u', 'wnd_v'),
                              input_nm = .nm_resample) |> invisible()
-
-  # DEBUGGING:
-  cat('\nend\n')
-  warnings() |> print()
-
 }
 
 #' Exported completed time series to daily aggregate values and write to disk
