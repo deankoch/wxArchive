@@ -264,6 +264,9 @@ workflow_wnd_rap = function(project_dir) {
   base_dir_rap |> wnd_update(wnd_nm = .var_wnd,
                              uv_nm = .var_wnd_uv,
                              input_nm = .nm_complete_rap) |> invisible()
+
+  # DEBUGGING:
+  warnings() |> print()
 }
 
 
@@ -354,7 +357,7 @@ workflow_update_gfs = function(project_dir) {
 
 #' Exported completed time series to daily aggregate values and write to disk
 #'
-#' Wraoper for `nc_aggregate`
+#' Wrapper for `nc_aggregate`
 #'
 #' This prepares five output variables aggregated to daily average, or maximum or minimum.
 #' The pairing of variable names and aggregation functions is set up in the global
@@ -371,11 +374,9 @@ workflow_daily = function(project_dir, write_csv=FALSE) {
   message('merging data and exporting to file')
 
   # delete the old export directory
-  print(project_dir |> file.path(.nm_daily))
   project_dir |> file.path(.nm_daily) |> unlink(recursive=TRUE)
 
   # export all in a loop
-  print(.var_daily_pairs)
   export_paths = .var_daily_pairs |> lapply(\(x) nc_aggregate(base_dir = project_dir,
                                                               var_nm = x['var'],
                                                               output_nm = .nm_daily,
