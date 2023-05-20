@@ -86,11 +86,6 @@ nc_write = function(r, p, quiet=FALSE) {
   msg_suggest = paste('\nTry deleting the file/directory', p, 'and calling the function again')
   if( is_update & !is_appended ) stop(msg_invalid, msg_suggest)
 
-  #
-  # ***TODO: ADD YEAR CHUNKING HERE ***
-  # CHECK IF DIRECTORY, THEN SCAN FOR NC FILES
-  # AND LUMP THEM TOGETHER
-
   # write result to file
   terra::writeCDF(r_out, p_dest, varname=nm)
 
@@ -140,7 +135,7 @@ nc_write = function(r, p, quiet=FALSE) {
 #'
 #' If `nc_path` doesn't exist, the function returns `FALSE` and writes nothing
 #'
-#' @param nc_path character path the NetCDF file
+#' @param nc_path character path to the NetCDF file
 #' @param r SpatRaster or NULL, containing times to add
 #' @param append logical indicating to append times rather than overwrite
 #'

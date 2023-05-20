@@ -80,6 +80,11 @@ nc_chunk_write = function(r, p, name_only=FALSE) {
   # create/overwrite chunks in a loop over years
   cat('\nwriting chunks...\n')
   time_out = years |> lapply(\(yr) nc_write(r[[all_years == yr]], file.path(p, f[yr])) )
+
+  # TODO: add a time folder here for all chunks combined
+
+
+
   return(time_out)
 }
 
