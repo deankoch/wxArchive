@@ -7,7 +7,7 @@
 nc_layers(p, times = NULL, preload = TRUE, na_rm = FALSE)
 }
 \arguments{
-\item{p}{character vector path to the nc file(s)}
+\item{p}{character vector of path(s) to the nc file(s)}
 
 \item{times}{vector of unique POSIXct times to match in the file(s)}
 

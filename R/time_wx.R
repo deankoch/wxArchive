@@ -18,6 +18,9 @@
 #' times that it finds, returning all results in a single list. If a time is observed
 #' in any of the paths in `nc_path`, it is marked as observed in the output.
 #'
+#' Some or all of the elements in `nc_path` may point to directories containing nc
+#' files, in which case all of the contents are scanned (see `?nc_chunk`).
+#'
 #' If a NetCDF file is listed in `nc_path` but not not found on disk, it is dropped
 #' from the results. When looking up times, the function calls `time_json` first, then
 #' the much slower `time_nc` only if the JSON is not found. In that case the function
@@ -32,6 +35,9 @@
 #' @return a list with vectors 'na' (integer), 'time', 'time_na', 'time_obs' (or a list of them)
 #' @export
 time_wx = function(nc_path, join=TRUE) {
+
+  # expand paths to any files chunked by year
+  nc_path = do.call(c, lapply(nc_path, nc_chunk))
 
   # if requested, first attempt to get the info from the JSON (fast)
   time_result = time_json(nc_path)
@@ -131,10 +137,6 @@ time_nc = function(r) {
     # loop for vectorized case
     r_result = r |> lapply(\(p) {
 
-      #
-      # ***TODO: ADD YEAR CHUNKING HERE ***
-      # CHECK IF DIRECTORY, THEN SCAN FOR NC FILES
-      # AND LUMP THEM TOGETHER
       if( file.exists(p) ) time_nc(terra::rast(p)) else NA
 
     }) |> stats::setNames(r)

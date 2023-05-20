@@ -59,11 +59,11 @@ nc_chunk = function(p, check_ext=TRUE) {
 #'
 #' @return a list of times (the result of `nc_write` for each year in `r`)
 #' @export
-nc_chunk_write = function(r, p, name_only=FALSE) {
+nc_write_chunk = function(r, p, name_only=FALSE) {
 
   # create/scan output directory for chunked files
   p_chunk = nc_chunk(p)
-  if( anyNA(p_chunk) ) dir.create(p)
+  if( anyNA(p_chunk) ) dir.create(p, recursive=TRUE)
   p_chunk = nc_chunk(p)
   if( anyNA(p_chunk) ) stop('there was a problem creating the directory ', p)
 
@@ -80,11 +80,6 @@ nc_chunk_write = function(r, p, name_only=FALSE) {
   # create/overwrite chunks in a loop over years
   cat('\nwriting chunks...\n')
   time_out = years |> lapply(\(yr) nc_write(r[[all_years == yr]], file.path(p, f[yr])) )
-
-  # TODO: add a time folder here for all chunks combined
-
-
-
-  return(time_out)
+  return( invisible() )
 }
 

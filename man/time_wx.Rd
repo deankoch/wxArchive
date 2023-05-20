@@ -35,6 +35,9 @@ a list of results of with the above structure (one per path).
 times that it finds, returning all results in a single list. If a time is observed
 in any of the paths in \code{nc_path}, it is marked as observed in the output.
 
+Some or all of the elements in \code{nc_path} may point to directories containing nc
+files, in which case all of the contents are scanned (see \code{?nc_chunk}).
+
 If a NetCDF file is listed in \code{nc_path} but not not found on disk, it is dropped
 from the results. When looking up times, the function calls \code{time_json} first, then
 the much slower \code{time_nc} only if the JSON is not found. In that case the function

@@ -34,7 +34,7 @@
 #' the first matching layer in `p` is returned for each time, and this may be
 #' an NA layer (depending on the order of `p` and the contents of its files).
 #'
-#' @param p character vector path to the nc file(s)
+#' @param p character vector of path(s) to the nc file(s)
 #' @param times vector of unique POSIXct times to match in the file(s)
 #' @param preload logical indicating to load values into RAM
 #' @param na_rm logical indicating to return only non-NA layers
@@ -48,10 +48,8 @@ nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE) {
   if( !any(p_valid) ) stop('file(s) not found: ', paste(p, collapse=', '))
   p = p[p_valid]
 
-  #
-  # ***TODO: ADD YEAR CHUNKING HERE ***
-  # CHECK IF DIRECTORY, THEN SCAN FOR NC FILES
-  # AND LUMP THEM TOGETHER IN RECURSIVE CALL
+  # expand paths for any files chunked by year
+  p = do.call(c, lapply(p, nc_chunk))
 
   # loop over vectorized input
   load_all_times = is.null(times)

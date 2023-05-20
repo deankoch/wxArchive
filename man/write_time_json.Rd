@@ -7,7 +7,7 @@
 write_time_json(nc_path, r = NULL, append = TRUE)
 }
 \arguments{
-\item{nc_path}{character path the NetCDF file}
+\item{nc_path}{character path to the NetCDF file}
 
 \item{r}{SpatRaster or NULL, containing times to add}
 
