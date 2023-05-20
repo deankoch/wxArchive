@@ -4,12 +4,14 @@
 \alias{nc_write}
 \title{Create or modify a NetCDF file by appending new time layers from SpatRaster}
 \usage{
-nc_write(r, p)
+nc_write(r, p, quiet = FALSE)
 }
 \arguments{
 \item{r}{SpatRaster with POSIXct vector \code{terra::time(r)}, the data to write}
 
 \item{p}{character path the (.nc) time series data file/directory to write}
+
+\item{quiet}{logical suppresses console messages}
 }
 \value{
 vector of POSIXct times, the layers added to the file

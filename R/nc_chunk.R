@@ -5,35 +5,26 @@
 #' files are written to a directory named "var.nc". This function looks for files
 #' in this directory and returns their paths.
 #'
-#' With the default `year=NULL` the function scans for files at `p` and returns what
-#' it finds there: either `p` itself if the path points to a NetCDF file, or a vector
-#' of paths to all NetCDF files inside the directory `p`. If the directory exists but is
-#' empty, the function returns `character(0)`.
-#'
-#' If `year` is supplied, the function returns file paths for each of `unique(year)`,
-#' without checking if the parent directory exists.
+#' The function scans for files at `p` and returns what it finds there: either `p`
+#' itself if the path points to a NetCDF file, or a vector of paths to all NetCDF
+#' files inside the directory `p`. If the directory exists but is empty, the function
+#' returns `character(0)`. If the directory doesn't exist the function returns `NA`.
 #'
 #' The expected file name for a chunk is "var_year.nc", with "year" the 4-digit year
 #' of all times in the file. For example "tmp.nc/tmp_2005.nc" holds observations of
 #' temperature from 2005.
 #'
-#' @param p character path to a file or directory with extension '.nc'
-#' @param year (optional) character or integer vector of (4-digit) years
+#' @param p character path to a file or directory with extension ".nc"
+#' @param check_ext logical indicating to check that `p` ends with ".nc"
 #'
 #' @return character vector of file path(s) to NetCDF file(s) associated with `p`
 #' @export
-nc_chunk = function(p, year=NULL) {
+nc_chunk = function(p, check_ext=TRUE) {
 
   # validity check for arguments
   if( !is.character(p) ) stop('is.character(p) was FALSE. p must be a string')
-  if( endsWith(p, '.nc') ) stop('path ', p, ' should have extension ".nc"')
-  if( is.null(year) ) { if( !file.exists(p) ) stop('path ', p, ' not found on disk') } else {
-
-    # handle simple calls with known years
-    year = as.integer(year)
-    f = gsub('.nc', paste0('_', as.character(year)), basename(p)) |> paste0('.nc')
-    return( file.path(p, f) )
-  }
+  if( check_ext & !endsWith(p, '.nc') ) stop('expected path ', p, ' to have extension ".nc"')
+  if( !file.exists(p) ) return(NA)
 
   # if the file is a directory scan its contents
   if( dir.exists(p) ) {
@@ -43,6 +34,52 @@ nc_chunk = function(p, year=NULL) {
     return( file.path(p, f) )
   }
 
-  # p points to a single NetCDF file
+  # else p points to a single existing file
   return(p)
 }
+
+
+#' Write time series data to NetCDF files that are chunked by year
+#'
+#' A wrapper for `nc_write` with multiple output files. This splits the data
+#' from `r` by year and writes a separate file for each year in directory `p`
+#' according to the naming scheme in `?nc_chunk`.
+#'
+#' `p` must be a directory and its name must end with ".nc"
+#'
+#' Set `name_only` to return the file names that would be written, but not
+#' actually write anything.
+#'
+#' Note that the year for a given time can depend on the time zone. Years are
+#' delineated by this function in UTC.
+#'
+#' @param r SpatRaster to write
+#' @param p path to the output directory
+#' @param name_only logical, if TRUE the function writes nothing
+#'
+#' @return a list of times (the result of `nc_write` for each year in `r`)
+#' @export
+nc_chunk_write = function(r, p, name_only=FALSE) {
+
+  # create/scan output directory for chunked files
+  p_chunk = nc_chunk(p)
+  if( anyNA(p_chunk) ) dir.create(p)
+  p_chunk = nc_chunk(p)
+  if( anyNA(p_chunk) ) stop('there was a problem creating the directory ', p)
+
+  # get variable name from path
+  nm = gsub('.nc', '', basename(p))
+
+  # check input times and get output filenames
+  all_years = terra::time(r) |> format('%Y', tz='UTC')
+  if( is.null(all_years) ) stop('terra::time(r) was NULL (expected POSIXct times or Dates)')
+  years = unique(all_years) |> sort()
+  f = paste0(nm, '_', years, '.nc') |> stats::setNames(years)
+  if( name_only ) return(f)
+
+  # create/overwrite chunks in a loop over years
+  cat('\nwriting chunks...\n')
+  time_out = years |> lapply(\(yr) nc_write(r[[all_years == yr]], file.path(p, f[yr])) )
+  return(time_out)
+}
+

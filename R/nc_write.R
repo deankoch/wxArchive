@@ -22,10 +22,11 @@
 #'
 #' @param r SpatRaster with POSIXct vector `terra::time(r)`, the data to write
 #' @param p character path the (.nc) time series data file/directory to write
+#' @param quiet logical suppresses console messages
 #'
 #' @return vector of POSIXct times, the layers added to the file
 #' @export
-nc_write = function(r, p) {
+nc_write = function(r, p, quiet=FALSE) {
 
   # create/load JSON for nc file at p and copy times
   is_update = file.exists(p)
@@ -43,18 +44,18 @@ nc_write = function(r, p) {
   if( !any(is_new) ) {
 
     # compute index JSON if it's not there
-    cat('\nup to date\n')
+    if( !quiet ) cat('\nup to date\n')
     return( as.POSIXct(integer(0), tz='UTC') )
   }
 
   # +0 forces data into RAM
-  cat('\nloading and sorting', sum(is_new), 'input SpatRaster layer(s)')
+  if( !quiet ) cat('\nloading and sorting', sum(is_new), 'input SpatRaster layer(s)')
   r_add = r[[ which(is_new) ]] + 0
 
   # merge new and old layers in memory
   if( !is_update | ( length(p_time_fetch) == 0 ) ) { r_out = r_add } else {
 
-    cat('\nmerging with', length(p_time_fetch), 'existing nc layer(s)')
+    if( !quiet ) cat('\nmerging with', length(p_time_fetch), 'existing nc layer(s)')
     r_existing = p |> nc_layers(times=p_time_fetch, preload=TRUE)
     r_out = c(r_existing, r_add)
     rm(r_existing)
@@ -67,7 +68,7 @@ nc_write = function(r, p) {
 
   # a name for the dataset pulled from the file path
   nm = basename(p) |> tools::file_path_sans_ext()
-  cat('\nwriting to', p)
+  if( !quiet ) cat('\nwriting to', p)
 
   # prepare for safer overwrite via temporary file/directory
   if( is_update ) {
@@ -105,7 +106,7 @@ nc_write = function(r, p) {
   # update attributes on disk
   if( is_appended ) r_add = r_out
   p_dest |> write_time_json(r=r_add, append=is_appended)
-  cat('\n')
+  if( !quiet ) cat('\n')
 
   # remove all remaining SpatRaster objects from memory
   rm(r_add, r_out)

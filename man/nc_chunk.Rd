@@ -4,12 +4,12 @@
 \alias{nc_chunk}
 \title{Expand a directory path to get a set of paths to the NetCDF files within}
 \usage{
-nc_chunk(p, year = NULL)
+nc_chunk(p, check_ext = TRUE)
 }
 \arguments{
-\item{p}{character path to a file or directory with extension '.nc'}
+\item{p}{character path to a file or directory with extension ".nc"}
 
-\item{year}{(optional) character or integer vector of (4-digit) years}
+\item{check_ext}{logical indicating to check that \code{p} ends with ".nc"}
 }
 \value{
 character vector of file path(s) to NetCDF file(s) associated with \code{p}
@@ -21,13 +21,10 @@ files are written to a directory named "var.nc". This function looks for files
 in this directory and returns their paths.
 }
 \details{
-With the default \code{year=NULL} the function scans for files at \code{p} and returns what
-it finds there: either \code{p} itself if the path points to a NetCDF file, or a vector
-of paths to all NetCDF files inside the directory \code{p}. If the directory exists but is
-empty, the function returns \code{character(0)}.
-
-If \code{year} is supplied, the function returns file paths for each of \code{unique(year)},
-without checking if the parent directory exists.
+The function scans for files at \code{p} and returns what it finds there: either \code{p}
+itself if the path points to a NetCDF file, or a vector of paths to all NetCDF
+files inside the directory \code{p}. If the directory exists but is empty, the function
+returns \code{character(0)}. If the directory doesn't exist the function returns \code{NA}.
 
 The expected file name for a chunk is "var_year.nc", with "year" the 4-digit year
 of all times in the file. For example "tmp.nc/tmp_2005.nc" holds observations of
