@@ -78,6 +78,7 @@ nc_write_chunk = function(r, p, name_only=FALSE) {
   if( name_only ) return(f)
 
   # create/overwrite chunks in a loop over years
+  cat('\n')
   time_out = years |> lapply(\(yr) nc_write(r[[all_years == yr]], file.path(p, f[yr])) )
   return( invisible() )
 }
