@@ -5,11 +5,7 @@
 #' be found in the length-2 names vector `uv_nm`. Specify the directory names in
 #' which to look for these variables with `input_nm` (see also `?pcp_update`).
 #'
-#' `output_nm` may contain more than one directory, so that the output can be split
-#' into a long-term storage file and a recent updates file. The first directory named
-#' in `output_nm` is always used for writing changes.
-#'
-#' The function creates/modifies a NetCDF file in the directory named `output_nm[1]`.
+#' The function creates/modifies a NetCDF file in the directory `output_nm`.
 #' This file is named `paste0(wnd_nm, '.nc')` similar the other variables, so the
 #' function will not allow you to set `wnd_nm` to any of the (in-use) variable
 #' names (list them with `file_wx('nc', base_dir, output_nm)`).
@@ -63,23 +59,34 @@ wnd_update = function(base_dir,
     return( invisible() )
   }
 
-  # load components data into RAM
-  cat('\nloading', length(t_add), 'layers from', uv_nm[1], 'and', uv_nm[2])
-  r_u = nc_layers(input_path[[ uv_nm[1] ]], t_add, na_rm=TRUE)
-  r_v = nc_layers(input_path[[ uv_nm[2] ]], t_add, na_rm=TRUE)
+  # updates done one year at a time
+  yr_add = t_add |> format('%Y')
+  yr_unique = yr_add |> unique()
+  cat('\nprocessing', length(yr_unique), 'years...\n')
+  for(yr in yr_unique) {
 
-  # compute wind speed (m/s) as norm of vector then remove components from memory
-  cat('\ntransforming to wnd')
-  r = sqrt(r_u^2 + r_v^2)
-  rm(r_u, r_v)
-  gc()
+    cat('\nyear', yr)
+    t_add_yr = t_add[yr_add == yr]
 
-  # append to existing data file (or create the file and write to it)
-  r |> nc_write(output_nc_path)
+    # load components data into RAM
+    cat('\nloading', length(t_add_yr), 'layers from', uv_nm[1], 'and', uv_nm[2])
+    r_u = nc_layers(input_path[[ uv_nm[1] ]], t_add_yr, na_rm=TRUE)
+    r_v = nc_layers(input_path[[ uv_nm[2] ]], t_add_yr, na_rm=TRUE)
 
-  # remove output data from memory
-  rm(r)
-  gc()
+    # compute wind speed (m/s) as norm of vector then remove components from memory
+    cat('\ntransforming to wnd')
+    r = sqrt(r_u^2 + r_v^2)
+    rm(r_u, r_v)
+    gc()
+
+    # append to existing data file (or create the file and write to it)
+    r |> nc_write_chunk(output_nc_path)
+
+    # remove output data from memory
+    rm(r)
+    gc()
+  }
+
   cat('\n')
   return( invisible() )
 }

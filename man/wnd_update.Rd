@@ -31,11 +31,7 @@ be found in the length-2 names vector \code{uv_nm}. Specify the directory names 
 which to look for these variables with \code{input_nm} (see also \code{?pcp_update}).
 }
 \details{
-\code{output_nm} may contain more than one directory, so that the output can be split
-into a long-term storage file and a recent updates file. The first directory named
-in \code{output_nm} is always used for writing changes.
-
-The function creates/modifies a NetCDF file in the directory named \code{output_nm[1]}.
+The function creates/modifies a NetCDF file in the directory \code{output_nm}.
 This file is named \code{paste0(wnd_nm, '.nc')} similar the other variables, so the
 function will not allow you to set \code{wnd_nm} to any of the (in-use) variable
 names (list them with \code{file_wx('nc', base_dir, output_nm)}).
