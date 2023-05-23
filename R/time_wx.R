@@ -36,8 +36,10 @@
 #' @export
 time_wx = function(nc_path, join=TRUE) {
 
-  # expand paths to any files chunked by year
+  # expand paths to any files chunked by year (checks existence)
   nc_path = do.call(c, lapply(nc_path, nc_chunk))
+  if( anyNA(nc_path) ) nc_path = nc_path[!is.na(nc_path)]
+  if( length(nc_path) == 0 ) return( list() )
 
   # if requested, first attempt to get the info from the JSON (fast)
   time_result = time_json(nc_path)
@@ -168,6 +170,9 @@ time_nc = function(r) {
 #' @return a list of list(s) with vectors 'na' (integer), 'time', 'time_na', 'time_obs'
 #' @export
 time_json = function(nc_path) {
+
+  # return NA for invalid input
+  if( ( length(nc_path) == 0 ) | !is.character(nc_path) ) return(NA)
 
   # expect like-named JSONs in subdirectory "time"
   json_nm = nc_path |> tools::file_path_sans_ext() |> basename() |> paste0('.json')
