@@ -184,11 +184,16 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
               output_nm = .nm_resample) |> invisible()
 }
 
-#' Fit a temporal model to the RUC/RAP times series
+#' Fit a temporal model to the RUC/RAP times series or load it from a file
 #'
 #' A wrapper for `time_fit`. This reads its input from the sub-directories
-#' named in `.nm_resample_rap` and writes its output to the first of these
-#' sub-directories (for each variable). See `?time_fit`
+#' named in `.nm_resample_rap` and writes its output to `.model_nm` (see
+#' `?time_fit`).
+#'
+#' Alternatively, load a previously fitted model from a zip archive by providing
+#' the file name in `from_file`. This zip should contain the contents of
+#' `.model_nm` (including the "temporal" subdirectory) generated from a `time_fit`
+#' call on a similar dataset (in terms of time period and AOI)
 #'
 #' Call this function at least once after running `workflow_update_rap` for
 #' the first time (and before running `workflow_impute_rap`)
@@ -197,15 +202,28 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
-workflow_fit_temporal = function(project_dir) {
+workflow_fit_temporal = function(project_dir, from_file='model.zip') {
 
-  # all the output files go here
+  # all the output files go here, in sub-directory .model_nm
   base_dir_rap = project_dir |> file.path('rap')
 
-  # part 6: fit temporal model to fine grid (include all layers)
-  time_fit(var_nm = .nm_output_var,
-           base_dir = base_dir_rap,
-           input_nm = .nm_resample_rap) |> invisible()
+  # fit the models from scratch
+  if( is.null(from_file) ) {
+
+    # part 6: fit temporal model to fine grid (include all layers)
+    time_fit(var_nm = .nm_output_var,
+             base_dir = base_dir_rap,
+             model_nm = .model_nm,
+             input_nm = .nm_resample_rap) |> invisible()
+
+  } else {
+
+    # load from archive
+    zip_path = project_dir |> file.path(from_file)
+    dest_path = base_dir_rap |> file.path(.model_nm)
+    if( !file.exists(zip_path) ) stop('file ', zip_path, ' not found')
+    zip_path |> unzip(exdir=dest_path)
+  }
 }
 
 

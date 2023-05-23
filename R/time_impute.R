@@ -16,7 +16,7 @@ time_impute = function(var_nm,
                        input_nm = 'fine',
                        output_nm = 'completed',
                        model_dir = base_dir,
-                       model_nm = input_nm[1],
+                       model_nm = .nm_model,
                        n_max = NULL,
                        until = NULL,
                        quiet = FALSE) {
@@ -28,7 +28,7 @@ time_impute = function(var_nm,
   output_nc = file_wx('nc', base_dir, output_nm, var_nm_list, make_dir=TRUE)
 
   # paths to fitted parameter nc files are in this file
-  pars_json = file_wx('temporal_index', model_dir, model_nm[1], var_nm_list)
+  pars_json = file_wx('temporal_index', model_dir, model_nm, var_nm_list)
 
   # load time coverage of each variable
   cat('reading times and grid information for', paste(names(var_nm), collapse=', '))
@@ -172,7 +172,7 @@ time_impute = function(var_nm,
     t_overwrite = terra::time(r_pred)
 
     # append to nc file
-    r_pred |> nc_write(output_nc[[nm]])
+    r_pred |> nc_write_chunk(p=output_nc[[nm]])
 
     # remove output raster from memory
     rm(r_pred)
