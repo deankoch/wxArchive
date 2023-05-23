@@ -1,22 +1,22 @@
 #' Build file paths for writing outputs
 #'
-#' This organizes the input/output files for various steps in the RAP
-#' workflow. When `make_dir=TRUE`, the function creates the directory
-#' containing the requested file name (if it doesn't already exist).
+#' This organizes the input/output files for various steps in the RAP workflow. When
+#' `make_dir=TRUE`, the function creates the parent directory containing the requested
+#' file name (if it doesn't already exist).
 #'
-#' The default directory structure looks like this:
+#' The argument `sub_dir` defines the directory structure. eg by default we have:
 #'
 #' * .../grib/ stores the many source files (.grb and .grb2)
 #' * .../coarse/ stores NetCDF versions (.nc) for each variable at coarse resolution
 #' * .../fine/ stores NetCDF versions (.nc) for each variable at fine resolution
 #'
-#' Sub-directories "coarse/time" and "fine/time" hold file attributes in similarly
-#' named JSON files. The names "coarse" and "fine" can be changed via `sub_dir`.
+#' Note that a "file" may refer to a directory with the suffix ".nc" in its name. Such
+#' directories should contain a set of yearly NetCDF files named as defined by `nc_chunk`.
 #'
 #' Argument `what` specifies the path(s) to return:
 #'
 #' 1. 'grib' : character, the source GRIB file directory
-#' 2. 'nc' : a list of character vectors, paths to the .nc files
+#' 2. 'nc' : a list of character vectors, paths to the .nc file
 #' 3. 'index' : a list of character vectors, paths to JSON files storing time index
 #' 4. 'spatial' : a list of character vectors, paths to JSON files storing fitted spatial parameters
 #' 5. 'temporal_index' : character, path to a JSON file storing information about temporal fit
@@ -107,9 +107,9 @@ file_wx = function(what,
       dir_nm = list(grib = file.path(base_dir, 'grib'),
                     nc = stats::setNames(sub_path, sub_dir),
                     index = stats::setNames(file.path(sub_path, 'time'), sub_dir),
-                    spatial = stats::setNames(file.path(sub_path, 'model'), sub_dir),
-                    temporal_index = stats::setNames(file.path(sub_path, 'model'), sub_dir),
-                    temporal_nc = stats::setNames(file.path(sub_path, 'model/temporal'), sub_dir))
+                    spatial = stats::setNames(sub_path, sub_dir),
+                    temporal_index = stats::setNames(sub_path, sub_dir),
+                    temporal_nc = stats::setNames(file.path(sub_path, 'temporal'), sub_dir))
 
       # file names
       file_nm = list(nc = stats::setNames(paste0(var_nm, '.nc'), var_nm),
