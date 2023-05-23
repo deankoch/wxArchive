@@ -109,7 +109,7 @@ time_fit = function(var_nm,
 
     # write all parameter data to nc on disk
     cat('\nwriting results to', output_nc[[nm]])
-    g_obs |> sk(gval=fit_mat) |> sk_export() |> terra::writeCDF(output_nc[[nm]])
+    g_obs |> snapKrig::sk(gval=fit_mat) |> snapKrig::sk_export() |> terra::writeCDF(output_nc[[nm]])
 
     # remove temporary raster data from memory
     rm(g_obs)
