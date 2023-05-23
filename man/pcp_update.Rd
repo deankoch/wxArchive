@@ -31,8 +31,7 @@ times imputed using the sum of "pcp_large" (large scale precipitation) and "pcp_
 \details{
 \code{input_nm} should be a named list character vector elements 'coarse' and/or 'fine', each
 representing a batch of files to read a common variable from each resolution. Typical usage
-has at least two source files at each resolution - a long term storage file, and a smaller file
-with more recent times.
+reads several files for each variable, from different steps in the gap-filling workflow.
 
 The function writes one output file for each of the vectors in \code{input_nm}, to the
 location(s) in \code{output_nm}. The output file name is \code{paste0(pcp_nm, 'nc')}, so the

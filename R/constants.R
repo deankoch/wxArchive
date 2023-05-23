@@ -64,12 +64,7 @@
 # sub-directory names for NetCDF files at two resolutions
 .nm_gfs = 'coarse'
 .nm_rap = c('coarse', 'fine')
-.nm_old_rap = .nm_rap |> paste0('_lts')
-
-# list with old and new at both resolutions
-.nm_src_rap = cbind(.nm_rap, .nm_old_rap) |>
-  apply(1, identity, simplify=FALSE) |>
-  stats::setNames(.nm_rap)
+.nm_src_rap = as.list(.nm_rap) |> stats::setNames(.nm_rap)
 
 # sub-directory names for transformed layers
 .nm_resample = 'coarse_resampled'

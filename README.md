@@ -134,7 +134,7 @@ The first two steps are then repeated for GFS. Then the same gap-filling routine
 The total data volume is about 1.3 TB (as of 2023-05-02). Almost all of this space is used up by source files in GRIB2 format. The output files in NetCDF format currently make up around 6 GB or about 0.5% of the total. Each daily update introduces about 250 MB of new source files.
 
 Each NetCDF file contains data for a single variable, but can include numerous time points. To help speed up access in files with many times, every NetCDF file has an associated JSON file that indexes times and missing data points. This
-JSON can be found in the "time" subfolder of the directory containing the netCDF file (eg. if the file is "/\<var\>.nc" then the JSON is "/time/\<var\>.json").
+JSON can be found in the "time" subfolder of the directory containing the netCDF file (eg. if the file is "/\<foo\>.nc" then the JSON is "/time/\<foo\>.json").
 
 The NetCDF data for a given variable \<var\> is spread out over several files, using the following directory structure:
 
@@ -144,10 +144,8 @@ The NetCDF data for a given variable \<var\> is spread out over several files, u
 * rap/completed/\<var\>.nc stores layers imputed using temporal model trained on RAP
 * rap/wnd/wnd.nc stores wind speed layer computed from wnd_u and wnd_v
 
-To speed up access and updates, non-imputed times prior to 2023-03 are held in these "long term storage" files:
-
-* rap/coarse_lts/\<var\>.nc
-* rap/fine_lts/\<var\>.nc
+Each of these items is a directory containing NetCDF files split by year. For example "rap/coarse/tmp.nc" is a directory
+containing files of the form "rap/coarse/tmp.nc/tmp_\<year\>.nc"
 
 The GFS model only appears in one resolution (which I am naming "coarse"), so it has a slightly simpler structure:
 
@@ -156,10 +154,11 @@ The GFS model only appears in one resolution (which I am naming "coarse"), so it
 * gfs/completed/\<var\>.nc stores layers imputed using RAP temporal model
 * gfs/wnd/wnd.nc stores wind speed layer computed from wnd_u and wnd_v
 
-Two additional top-level folders store output files
+Three additional top-level folders store output files
 
 * daily/<out_var>.nc stores daily aggregate values; like mean, max, min over time
 * spatial/<out_var>.nc stores spatial aggregate values of daily; like mean, max, min over space
+* model stores model parameter files (either fitted to the data or loaded from a previous fit)
 
 
 ## Reading/Exporting
