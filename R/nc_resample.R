@@ -47,7 +47,7 @@ nc_resample = function(var_nm,
     r_fine_path = input_nc[['fine']][[1]][file.exists(input_nc[['fine']][[1]])]
     if( length(r_fine_path) == 0 ) stop('no files found in "fine" sub-directory. Try supplying r_fine')
     cat('loading', r_fine_path[1], 'to get grid information\n')
-    r_fine = r_fine_path[1] |> terra::rast(lyrs=1) |> terra::rast()
+    r_fine = r_fine_path[1] |> nc_chunk() |> terra::rast(lyrs=1) |> terra::rast()
   }
 
   # find time coverage of each input variable at both resolutions
@@ -96,7 +96,7 @@ nc_resample = function(var_nm,
       # append results to existing data file (or create the file and write to it)
       input_nc[['coarse']][[nm]] |>
         nc_project(r_fine, times=time_add[[nm]], ...) |>
-        nc_write(output_nc[[nm]])
+        nc_write_chunk(p = output_nc[[nm]])
 
       t2 = proc.time()
       cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.')
@@ -125,7 +125,9 @@ nc_resample = function(var_nm,
 #'
 #' Only the times listed in `times` are loaded and processed. Set `times=NULL`
 #' to process all. Both `target` and the file(s) at `nc_path` must have a well
-#' defined CRS (eg check `terra::crs(target)`).
+#' defined CRS (eg check `terra::crs(target)`). Elements of `nc_path` can either
+#' point to a single NetCDF file or a directory (with name ending in ".nc")
+#' containing a set of them.
 #'
 #' @param nc_path character vector, the path(s) to the input NetCDF file(s)
 #' @param target a SpatRaster

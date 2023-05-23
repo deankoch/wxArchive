@@ -36,5 +36,7 @@ iterations).
 
 Only the times listed in \code{times} are loaded and processed. Set \code{times=NULL}
 to process all. Both \code{target} and the file(s) at \code{nc_path} must have a well
-defined CRS (eg check \code{terra::crs(target)}).
+defined CRS (eg check \code{terra::crs(target)}). Elements of \code{nc_path} can either
+point to a single NetCDF file or a directory (with name ending in ".nc")
+containing a set of them.
 }

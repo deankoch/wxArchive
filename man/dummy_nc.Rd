@@ -28,6 +28,9 @@ WARNING: This overwrites any existing data in \code{output_nc}!
 checking for this variable on prior dates. This helps speed up the initial call
 to \code{nc_update}.
 
+I don't think we need this anymore (since switching to yearly files) but I will
+hold off on deleting it until we are "finished" developing the package
+
 At least one of the files listed in \code{grib_df} must exist so that this function can
 get a template grid from it. It is assumed that all files in \code{grib_df} are from
 same spatial grid. There are three different grids: GFS, and RAP/RUC coarse

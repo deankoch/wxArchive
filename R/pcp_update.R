@@ -99,8 +99,8 @@ pcp_update = function(base_dir,
 
     } else { cat('none found') }
 
-    # append to existing data file (or create the file and write to it)
-    r_add |> nc_write(p_out)
+    # append to existing data file(s) or create them, chunked by year
+    r_add |> nc_write_chunk(p_out)
 
     # remove the large raster from memory before returning
     rm(r_add)

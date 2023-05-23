@@ -27,25 +27,25 @@ file_wx(
 a named character vector, or a named list of them (depending on \code{what} and \code{sub_dir})
 }
 \description{
-This organizes the input/output files for various steps in the RAP
-workflow. When \code{make_dir=TRUE}, the function creates the directory
-containing the requested file name (if it doesn't already exist).
+This organizes the input/output files for various steps in the RAP workflow. When
+\code{make_dir=TRUE}, the function creates the parent directory containing the requested
+file name (if it doesn't already exist).
 }
 \details{
-The default directory structure looks like this:
+The argument \code{sub_dir} defines the directory structure. eg by default we have:
 \itemize{
 \item .../grib/ stores the many source files (.grb and .grb2)
 \item .../coarse/ stores NetCDF versions (.nc) for each variable at coarse resolution
 \item .../fine/ stores NetCDF versions (.nc) for each variable at fine resolution
 }
 
-Sub-directories "coarse/time" and "fine/time" hold file attributes in similarly
-named JSON files. The names "coarse" and "fine" can be changed via \code{sub_dir}.
+Note that a "file" may refer to a directory with the suffix ".nc" in its name. Such
+directories should contain a set of yearly NetCDF files named as defined by \code{nc_chunk}.
 
 Argument \code{what} specifies the path(s) to return:
 \enumerate{
 \item 'grib' : character, the source GRIB file directory
-\item 'nc' : a list of character vectors, paths to the .nc files
+\item 'nc' : a list of character vectors, paths to the .nc file
 \item 'index' : a list of character vectors, paths to JSON files storing time index
 \item 'spatial' : a list of character vectors, paths to JSON files storing fitted spatial parameters
 \item 'temporal_index' : character, path to a JSON file storing information about temporal fit

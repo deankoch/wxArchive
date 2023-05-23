@@ -12,13 +12,14 @@ nc_update(
   n_chunk = 5000,
   memory_limit = 8L,
   make_dummy = FALSE,
-  from = NULL
+  from = NULL,
+  grib_dir = file_wx("grib", base_dir)
 )
 }
 \arguments{
 \item{aoi}{geometry object passed to \code{grib_idx} (area of interest)}
 
-\item{base_dir}{path to parent directory of GRIB storage subfolder}
+\item{base_dir}{character path to parent directory of \code{names(output_nm)}}
 
 \item{output_nm}{list of character vectors, sub-directories in \code{base_dir} for the nc files}
 
@@ -31,6 +32,8 @@ nc_update(
 \item{make_dummy}{logical, indicates to omit "pcp_total" for early years (see details)}
 
 \item{from}{POSIXct time or vector of them, GRIB files for this and all earlier times are ignored}
+
+\item{grib_dir}{character path to GRIB directory (default is "base_dir/grib")}
 }
 \value{
 nothing, but possibly writes to the nc and JSON files in \code{file.path(base_dir, output_nm)}

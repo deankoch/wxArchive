@@ -49,13 +49,14 @@
 #' behaviour can be switched off with `make_dummy=FALSE`.
 #'
 #' @param aoi geometry object passed to `grib_idx` (area of interest)
-#' @param base_dir path to parent directory of GRIB storage subfolder
+#' @param base_dir character path to parent directory of `names(output_nm)`
 #' @param output_nm list of character vectors, sub-directories in `base_dir` for the nc files
 #' @param regex character vector passed to `grib_idx` (layer names)
 #' @param n_chunk number of files to load before saving intermediate results to disk
 #' @param memory_limit integer (GB) maximum memory usage passed to `grib_extract`
 #' @param make_dummy logical, indicates to omit "pcp_total" for early years (see details)
 #' @param from POSIXct time or vector of them, GRIB files for this and all earlier times are ignored
+#' @param grib_dir character path to GRIB directory (default is "base_dir/grib")
 #'
 #' @return nothing, but possibly writes to the nc and JSON files in `file.path(base_dir, output_nm)`
 #' @export
@@ -66,14 +67,14 @@ nc_update = function(aoi,
                      n_chunk = 5e3,
                      memory_limit = 8L,
                      make_dummy = FALSE,
-                     from = NULL) {
+                     from = NULL,
+                     grib_dir = file_wx('grib', base_dir)) {
 
   # pass lists to file_wx to loop over the variable/directory and set names properly
   var_nm = names(regex)
-  grib_dir = file_wx('grib', base_dir)
   input_path = file_wx('nc', base_dir, as.list(output_nm), as.list(var_nm), make_dir=TRUE)
 
-  # new data written to the first of the files listed in `output_nm`
+  # new data written to the first of the directories listed in elements of `output_nm`
   output_path = file_wx('nc', base_dir, lapply(output_nm, \(x) x[1]), as.list(names(regex)))
   output_json = file_wx('index', base_dir, lapply(output_nm, \(x) x[1]), as.list(names(regex)))
 
@@ -174,13 +175,9 @@ nc_update = function(aoi,
         cat('\nupdating .nc files:')
         for( nm in names(r_from_gribs) ) {
 
-          cat('\n\n', nm, '...')
-          nc_write(r = r_from_gribs[[nm]], p = output_path[[nm_res]][[nm]])
+          cat(paste0('\n\n', nm), '...')
+          nc_write_chunk(r = r_from_gribs[[nm]], p = output_path[[nm_res]][[nm]])
         }
-
-        # finished the slow part
-        t3 = proc.time()
-        cat('\nfinished in', round((t3-t2)['elapsed'] / 60, 2), 'minutes.')
       }
 
       # update counters
@@ -202,6 +199,9 @@ nc_update = function(aoi,
 #' `date_cutoff`). The purpose of this function is to trick `nc_update` into not
 #' checking for this variable on prior dates. This helps speed up the initial call
 #' to `nc_update`.
+#'
+#' I don't think we need this anymore (since switching to yearly files) but I will
+#' hold off on deleting it until we are "finished" developing the package
 #'
 #' At least one of the files listed in `grib_df` must exist so that this function can
 #' get a template grid from it. It is assumed that all files in `grib_df` are from
@@ -229,6 +229,6 @@ dummy_nc = function(output_nc, grib_df, aoi, date_cutoff=as.Date('2016-10-01')) 
     # write dummy file to disk (and attributes JSON)
     r_dummy[] = NA
     terra::time(r_dummy) = t_NA
-    nc_write(r_dummy, output_nc)
+    nc_write_chunk(r = r_dummy, p = output_nc)
   }
 }
