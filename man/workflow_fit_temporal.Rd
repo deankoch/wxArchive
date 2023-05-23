@@ -2,9 +2,9 @@
 % Please edit documentation in R/workflow.R
 \name{workflow_fit_temporal}
 \alias{workflow_fit_temporal}
-\title{Fit a temporal model to the RUC/RAP times series}
+\title{Fit a temporal model to the RUC/RAP times series or load it from a file}
 \usage{
-workflow_fit_temporal(project_dir)
+workflow_fit_temporal(project_dir, from_file = "model.zip")
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}
@@ -14,10 +14,15 @@ returns nothing but possible writes to \code{project_dir}
 }
 \description{
 A wrapper for \code{time_fit}. This reads its input from the sub-directories
-named in \code{.nm_resample_rap} and writes its output to the first of these
-sub-directories (for each variable). See \code{?time_fit}
+named in \code{.nm_resample_rap} and writes its output to \code{.model_nm} (see
+\code{?time_fit}).
 }
 \details{
+Alternatively, load a previously fitted model from a zip archive by providing
+the file name in \code{from_file}. This zip should contain the contents of
+\code{.model_nm} (including the "temporal" subdirectory) generated from a \code{time_fit}
+call on a similar dataset (in terms of time period and AOI)
+
 Call this function at least once after running \code{workflow_update_rap} for
 the first time (and before running \code{workflow_impute_rap})
 }
