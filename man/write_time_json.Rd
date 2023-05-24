@@ -4,14 +4,12 @@
 \alias{write_time_json}
 \title{Create or update the JSON file associated with a NetCDF time series}
 \usage{
-write_time_json(nc_path, r = NULL, append = TRUE)
+write_time_json(nc_path, r = NULL)
 }
 \arguments{
-\item{nc_path}{character path to the NetCDF file}
+\item{nc_path}{character path to a single NetCDF file}
 
 \item{r}{SpatRaster or NULL, containing times to add}
-
-\item{append}{logical indicating to append times rather than overwrite}
 }
 \value{
 logical indicating if the file was modified
@@ -24,19 +22,11 @@ the JSON and never the NetCDF file.
 }
 \details{
 Note that the JSON contains only the fields "na" and "time" and not the derived
-fields "time_na" and "time_obs" (see \code{?time_wx}).
+fields "time_na" and "time_obs" returned by \code{time_nc} and \code{time_wx}.
 
-Call the function with default arguments to initialize the JSON for an existing
-NetCDF file. This involves loading all data into memory, so it can be very slow when
-there are numerous time points.
-
-If \code{r} is supplied along with \code{append=TRUE}, the function creates/updates the JSON
-to make it consistent with the result of concatenating the layers in \code{nc_path} with
-the layers in \code{r}. Only times occurring after the last time in \code{nc_path} are copied
-from \code{r}
-
-Set \code{append=FALSE} to delete an existing JSON file and replace it with all of the
-layer info for SpatRaster \code{r},
+If \code{r} is supplied, the function indexes the SpatRaster. If \code{r} is \code{NULL}, the
+function instead indexes all layers in \code{nc_path}. This can be very slow if there
+are many time points.
 
 If \code{nc_path} doesn't exist, the function returns \code{FALSE} and writes nothing
 }

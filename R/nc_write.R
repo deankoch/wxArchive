@@ -3,15 +3,18 @@
 #' This creates or updates an existing NetCDF file with new times (layers) in the
 #' supplied SpatRaster `r`.
 #'
-#' `r` must have a time for each layer (check `terra::time(r)`). Only new times
-#' are copied - ie those occurring after the latest time in the file at `p`. To
-#' add/modify earlier times you will need to delete the file and start over.
+#' `r` must have a time for each layer (check `terra::time(r)`). When `insert=FALSE`
+#' (the default), only new times in `r` are written, ie those not found already in
+#' the file at `p`. Set `insert=TRUE` to allow existing times to be modified in `p`.
+#' Existing times that do not appear in `r` are never modified. This means that once
+#' a time has been added to a file, it cannot be removed except by deleting the file
+#' and starting over.
 #'
-#' The function assumes that `p` is a valid path to a NetCDF file (.nc), and that
-#' the raster grid in `r` is compatible with the file at `p` in terms of dimensions,
-#' projection, etc.
+#' The function assumes that `p` is a valid path to a NetCDF file (a file with extension
+#' .nc, and not a directory of them, as in `nc_write_chunk` ), and that the raster
+#' grid in `r` is compatible with the file at `p` in terms of dimensions, projection, etc.
 #'
-#' When overwriting an existing file, the function initially writes to a temporary
+#' When writing to an existing file, the function initially writes to a temporary
 #' file in the same directory. At the end of the function call the old file is
 #' deleted and the temporary one is renamed to take its place. If something goes
 #' wrong and the function halts, this temporary file can be safely deleted.
@@ -26,7 +29,7 @@
 #'
 #' @return vector of POSIXct times, the layers added to the file
 #' @export
-nc_write = function(r, p, quiet=FALSE) {
+nc_write = function(r, p, quiet=FALSE, insert=FALSE) {
 
   # create/load JSON for nc file at p and copy times
   is_update = file.exists(p)
@@ -36,7 +39,10 @@ nc_write = function(r, p, quiet=FALSE) {
   r_time = terra::time(r)
   if( is.null(r_time) ) stop('terra::time(r) must return a time for each layer in r')
 
-  # resolve duplicates by omitting layers from input raster
+  # insert mode ignores existing times in `p` that also appear in `r`
+  if( insert )  p_time = p_time[ !( p_time %in% r_time ) ]
+
+  # resolve duplicates (in non-insert mode) by omitting layers from input raster
   is_new = !( r_time %in% p_time )
   p_time_fetch = as.POSIXct(p_time[ !(p_time %in% r_time[is_new]) ])
 
@@ -62,6 +68,10 @@ nc_write = function(r, p, quiet=FALSE) {
     gc()
   }
 
+  # clear unused raster data from memory
+  rm(r_add)
+  gc()
+
   # sort and name output layers
   r_out = r_out[[ order(terra::time(r_out)) ]]
   names(r_out) = paste0('lyr_', seq(terra::nlyr(r_out)))
@@ -79,13 +89,6 @@ nc_write = function(r, p, quiet=FALSE) {
 
   } else { p_dest = p }
 
-  # sanity check for attempted append with stale times
-  time_start = r_add |> terra::time() |> min()
-  is_appended = all( p_time < time_start )
-  msg_invalid = paste('cannot append times earlier than the latest existing:', time_start)
-  msg_suggest = paste('\nTry deleting the file/directory', p, 'and calling the function again')
-  if( is_update & !is_appended ) stop(msg_invalid, msg_suggest)
-
   # write result to file
   terra::writeCDF(r_out, p_dest, varname=nm)
 
@@ -99,14 +102,14 @@ nc_write = function(r, p, quiet=FALSE) {
   }
 
   # update attributes on disk
-  if( is_appended ) r_add = r_out
-  p_dest |> write_time_json(r=r_add, append=is_appended)
+  p_dest |> write_time_json(r=r_out)
   if( !quiet ) cat('\n')
 
-  # remove all remaining SpatRaster objects from memory
-  rm(r_add, r_out)
+  # remove remaining SpatRaster object from memory
+  rm(r_out)
   gc()
 
+  # return the times added
   return( r_time[is_new] )
 }
 
@@ -119,80 +122,38 @@ nc_write = function(r, p, quiet=FALSE) {
 #' the JSON and never the NetCDF file.
 #'
 #' Note that the JSON contains only the fields "na" and "time" and not the derived
-#' fields "time_na" and "time_obs" (see `?time_wx`).
+#' fields "time_na" and "time_obs" returned by `time_nc` and `time_wx`.
 #'
-#' Call the function with default arguments to initialize the JSON for an existing
-#' NetCDF file. This involves loading all data into memory, so it can be very slow when
-#' there are numerous time points.
-#'
-#' If `r` is supplied along with `append=TRUE`, the function creates/updates the JSON
-#' to make it consistent with the result of concatenating the layers in `nc_path` with
-#' the layers in `r`. Only times occurring after the last time in `nc_path` are copied
-#' from `r`
-#'
-#' Set `append=FALSE` to delete an existing JSON file and replace it with all of the
-#' layer info for SpatRaster `r`,
+#' If `r` is supplied, the function indexes the SpatRaster. If `r` is `NULL`, the
+#' function instead indexes all layers in `nc_path`. This can be very slow if there
+#' are many time points.
 #'
 #' If `nc_path` doesn't exist, the function returns `FALSE` and writes nothing
 #'
-#' @param nc_path character path to the NetCDF file
+#' @param nc_path character path to a single NetCDF file
 #' @param r SpatRaster or NULL, containing times to add
-#' @param append logical indicating to append times rather than overwrite
 #'
 #' @return logical indicating if the file was modified
 #' @export
-write_time_json = function(nc_path, r=NULL, append=TRUE) {
+write_time_json = function(nc_path, r=NULL) {
 
   # nc_path must point to a single, existing file
   if( length(nc_path) > 1 ) stop('nc_path had length > 1')
   if( !file.exists(nc_path) ) return(FALSE)
 
-  # fetch any existing JSON data in a list, and the file path
-  json_data = time_json(nc_path)
-  json_path = names(json_data)
-  cat('\nwriting attributes to', json_path)
-
-  # collapse the length-1 list
-  json_data = json_data[[1]]
-
-  # make the sub-directory if necessary
-  json_dir = dirname(json_path)
+  # output is a like-named JSON in subdirectory "time"
+  json_dir = file.path(dirname(nc_path), 'time')
   if( !dir.exists(json_dir) ) dir.create(json_dir)
+  json_nm = nc_path |> tools::file_path_sans_ext() |> basename() |> paste0('.json')
+  json_path = json_dir |> file.path(json_nm)
+  cat('\nwriting time index to', json_path)
 
-  # check for times in input SpatRaster
-  r_index = time_nc(r)
-  r_exists = !anyNA(r_index)
+  # read times from file if r not supplied
+  if( is.null(r) ) r = nc_path
+  json_data = time_nc(r)
 
-  # overwrite request erases existing JSON data
-  if( !append ) {
-
-    if( !r_exists ) stop('append=FALSE but no data supplied')
-    json_data = r_index
-
-  } else {
-
-    # if there is no existing JSON, compute NA index from scratch (slow)
-    if( anyNA(json_data) ) json_data = time_nc(nc_path)[[1]]
-
-    # append request merges new times with existing JSON data
-    if( r_exists ) {
-
-      # omit too-early times from r time (and NA) index
-      final_time = json_data[['time']] |> max()
-      is_early = r_index[['time']] <= final_time
-      if( any(is_early) ) {
-
-        r_index[['time']] = r_index[['time']][!is_early]
-        r_index[['na']] = ( seq_along(is_early) %in% r_index[['na']] )[!is_early] |> which()
-      }
-
-      # append to existing times
-      n_existing = length(json_data[['time']])
-      json_data[['time']] = json_data[['time']] |> c(r_index[['time']])
-      json_data[['na']] = json_data[['na']] |> c(n_existing + r_index[['na']])
-    }
-  }
-
-  json_data[c('na', 'time')] |> jsonlite::toJSON(pretty=TRUE) |> writeLines(json_path)
+  # report problems with `time_nc` or write results to disk
+  if( anyNA(json_data) ) stop('there was a problem reading times from the SpatRaster')
+  json_data[[1]][c('na', 'time')] |> jsonlite::toJSON(pretty=TRUE) |> writeLines(json_path)
   return(TRUE)
 }

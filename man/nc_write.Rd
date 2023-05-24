@@ -4,7 +4,7 @@
 \alias{nc_write}
 \title{Create or modify a NetCDF file by appending new time layers from SpatRaster}
 \usage{
-nc_write(r, p, quiet = FALSE)
+nc_write(r, p, quiet = FALSE, insert = FALSE)
 }
 \arguments{
 \item{r}{SpatRaster with POSIXct vector \code{terra::time(r)}, the data to write}
@@ -21,15 +21,18 @@ This creates or updates an existing NetCDF file with new times (layers) in the
 supplied SpatRaster \code{r}.
 }
 \details{
-\code{r} must have a time for each layer (check \code{terra::time(r)}). Only new times
-are copied - ie those occurring after the latest time in the file at \code{p}. To
-add/modify earlier times you will need to delete the file and start over.
+\code{r} must have a time for each layer (check \code{terra::time(r)}). When \code{insert=FALSE}
+(the default), only new times in \code{r} are written, ie those not found already in
+the file at \code{p}. Set \code{insert=TRUE} to allow existing times to be modified in \code{p}.
+Existing times that do not appear in \code{r} are never modified. This means that once
+a time has been added to a file, it cannot be removed except by deleting the file
+and starting over.
 
-The function assumes that \code{p} is a valid path to a NetCDF file (.nc), and that
-the raster grid in \code{r} is compatible with the file at \code{p} in terms of dimensions,
-projection, etc.
+The function assumes that \code{p} is a valid path to a NetCDF file (a file with extension
+.nc, and not a directory of them, as in \code{nc_write_chunk} ), and that the raster
+grid in \code{r} is compatible with the file at \code{p} in terms of dimensions, projection, etc.
 
-When overwriting an existing file, the function initially writes to a temporary
+When writing to an existing file, the function initially writes to a temporary
 file in the same directory. At the end of the function call the old file is
 deleted and the temporary one is renamed to take its place. If something goes
 wrong and the function halts, this temporary file can be safely deleted.
