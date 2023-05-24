@@ -80,7 +80,7 @@ nc_resample = function(var_nm,
   needs_update = sapply(time_add, length) > 0
   if( !any(needs_update) ) {
 
-    cat('\nall variables are up to date')
+    cat('\nall variables are up to date\n')
     return(invisible())
   }
 
