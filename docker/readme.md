@@ -19,10 +19,11 @@ by putting a file named "aoi.geojson" in the directory mapped above (eg in G:/ao
 
 ### SET-UP
 
-To build the image you will need "dockerfile", "aoi.geojson", and "Rscript/run_wx.R" in your
-dockerfile directory (the same as they are laid out on github). Then, from this directory call
+To build the image you will need "dockerfile", "aoi.geojson", "model.zip" and "Rscript/run_wx.R"
+in your dockerfile directory (the same as they are laid out on github). Then, from this directory
+call
 
-docker build . --no-cache -t deankoch/wxarchive
+docker build . --no-cache
 
 The --no-cache argument causes the latest version of the `wxArchive` R package to be
 downloaded from github if you are building the image repeatedly. 
@@ -78,8 +79,8 @@ the existing parameters.
 
 ### EXAMPLES
 
-docker run --rm -e WX_OPERATION=list -v G:/test/:/home/wxarchive/data deankoch/wxarchive
+docker run --rm -e WX_OPERATION=list -v G:/test/:/home/wxarchive/data
 
-docker run --rm -e WX_OPERATION=export -v G:/test/:/home/wxarchive/data deankoch/wxarchive
+docker run --rm -e WX_OPERATION=export -v G:/test/:/home/wxarchive/data
 
-docker run --rm -e WX_OPERATION=update_all -v G:/test/:/home/wxarchive/data deankoch/wxarchive
+docker run --rm -e WX_OPERATION=update_all -v G:/test/:/home/wxarchive/data
