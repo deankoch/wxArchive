@@ -53,7 +53,7 @@ if( !file.exists(ext_path) ) {
 }
 
 # expected location of temporal model directory
-model_dir = data_dir |> file.path('rap', wxArchive:::.nm_resample_rap[1], 'model')
+model_dir = data_dir |> file.path('rap', wxArchive:::.nm_model)
 
 # list stats about recognized files in the project directory
 if( operation == 'list' ) data_dir |> wxArchive::workflow_list()

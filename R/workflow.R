@@ -187,24 +187,25 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
 #' Fit a temporal model to the RUC/RAP times series or load it from a file
 #'
 #' A wrapper for `time_fit`. This reads its input from the sub-directories
-#' named in `.nm_resample_rap` and writes its output to `.model_nm` (see
+#' named in `.nm_resample_rap` and writes its output to `.nm_model` (see
 #' `?time_fit`).
 #'
 #' Alternatively, load a previously fitted model from a zip archive by providing
 #' the file name in `from_file`. This zip should contain the contents of
-#' `.model_nm` (including the "temporal" subdirectory) generated from a `time_fit`
+#' `.nm_model` (including the "temporal" subdirectory) generated from a `time_fit`
 #' call on a similar dataset (in terms of time period and AOI)
 #'
 #' Call this function at least once after running `workflow_update_rap` for
 #' the first time (and before running `workflow_impute_rap`)
 #'
 #' @param project_dir character path to the project root directory
+#' @param from_file character file name of zip containing previously fitted model
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
 workflow_fit_temporal = function(project_dir, from_file='model.zip') {
 
-  # all the output files go here, in sub-directory .model_nm
+  # all the output files go here, in sub-directory .nm_model
   base_dir_rap = project_dir |> file.path('rap')
 
   # fit the models from scratch
@@ -213,14 +214,14 @@ workflow_fit_temporal = function(project_dir, from_file='model.zip') {
     # part 6: fit temporal model to fine grid (include all layers)
     time_fit(var_nm = .nm_output_var,
              base_dir = base_dir_rap,
-             model_nm = .model_nm,
+             model_nm = .nm_model,
              input_nm = .nm_resample_rap) |> invisible()
 
   } else {
 
-    # load from archive
+    # load from archive (overwrites existing model)
     zip_path = project_dir |> file.path(from_file)
-    dest_path = base_dir_rap |> file.path(.model_nm)
+    dest_path = base_dir_rap |> file.path(.nm_model)
     if( !file.exists(zip_path) ) stop('file ', zip_path, ' not found')
     zip_path |> unzip(exdir=dest_path)
   }
@@ -254,6 +255,7 @@ workflow_impute_rap = function(project_dir) {
   message('imputing missing times')
   time_impute(var_nm = .nm_output_var,
               base_dir = base_dir_rap,
+              model_nm = .nm_model,
               input_nm = .nm_resample_rap,
               output_nm = .nm_complete) |> invisible()
 }
@@ -279,9 +281,10 @@ workflow_wnd_rap = function(project_dir) {
   # create/update the file
   cat('\n')
   message('computing wind speed from u/v components')
-  base_dir_rap |> wnd_update(wnd_nm = .var_wnd,
-                             uv_nm = .var_wnd_uv,
-                             input_nm = .nm_complete_rap) |> invisible()
+  wnd_update(base_dir = base_dir_rap,
+             wnd_nm = .var_wnd,
+             uv_nm = .var_wnd_uv,
+             input_nm = .nm_complete_rap) |> invisible()
 }
 
 
@@ -347,7 +350,7 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
             from = from) |> invisible()
 
   # load an example grid at fine resolution (second rast call drops cell values)
-  r_fine = file_wx('nc', base_dir_rap, 'fine', names(.rap_regex)[[1]]) |>
+  r_fine = nc_chunk(file_wx('nc', base_dir_rap, 'fine', names(.rap_regex)[[1]]))[1] |>
     terra::rast() |> terra::rast()
 
   # resample to match RAP grid
@@ -372,7 +375,7 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
               base_dir = base_dir_gfs,
               until = until,
               model_dir = base_dir_rap,
-              model_nm = .nm_resample_rap[1],
+              model_nm = .nm_model,
               input_nm = .nm_resample,
               output_nm = .nm_complete) |> invisible()
 

@@ -62,7 +62,7 @@ wnd_update = function(base_dir,
   # updates done one year at a time
   yr_add = t_add |> format('%Y')
   yr_unique = yr_add |> unique()
-  cat('\nprocessing', length(yr_unique), 'years...\n')
+  cat('\nprocessing', length(yr_unique), 'year(s)...\n')
   for(yr in yr_unique) {
 
     cat('\nyear', yr)
