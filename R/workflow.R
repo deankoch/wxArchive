@@ -9,10 +9,12 @@
 #'
 #' @param project_dir character path to the project root directory
 #' @param quiet logical suppresses console messages
+#' @param daily logical shows daily data first
+#' @param tz character time zone string for displaying times
 #'
 #' @return a list of character vectors, paths to individual NetCDF files
 #' @export
-workflow_list = function(project_dir, daily=TRUE, quiet=FALSE) {
+workflow_list = function(project_dir, daily=TRUE, quiet=FALSE, tz='MST') {
 
   # make a list of all datasets with preference for RAP archive over GFS
   p_all = project_dir |> nc_list()
@@ -37,7 +39,7 @@ workflow_list = function(project_dir, daily=TRUE, quiet=FALSE) {
 
     # loop over daily variables
     n_daily = length(daily_path)
-    message('\nchecking ', n_daily, ' daily daily variable(s)')
+    message('\nchecking ', n_daily, ' daily variable(s)')
     for(i in seq(n_daily)) {
 
       # this returns empty list when the file is missing
@@ -50,8 +52,8 @@ workflow_list = function(project_dir, daily=TRUE, quiet=FALSE) {
       }
 
       # count times and find their range
-      time_min = time_all[['time_obs']] |> min()
-      time_max = time_all[['time_obs']] |> max()
+      time_min = time_all[['time_obs']] |> min() |> as.character(tz=tz)
+      time_max = time_all[['time_obs']] |> max() |> as.character(tz=tz)
       n = time_all[['time_obs']] |> length()
 
       # check if time series is complete
@@ -401,7 +403,7 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
-workflow_daily = function(project_dir, from=NULL, to=NULL) {
+workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
 
   cat('\n')
   message('merging data and exporting to file')
@@ -415,6 +417,6 @@ workflow_daily = function(project_dir, from=NULL, to=NULL) {
                                                               var_nm = x['var'],
                                                               output_nm = .nm_daily,
                                                               fun = x['fun'],
-                                                              tz = 'MST'))
+                                                              tz = tz))
 }
 

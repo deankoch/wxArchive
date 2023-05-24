@@ -4,12 +4,16 @@
 \alias{workflow_list}
 \title{List all times and variables available locally in the RAP/RUC/GFS archive}
 \usage{
-workflow_list(project_dir, daily = TRUE, quiet = FALSE)
+workflow_list(project_dir, daily = TRUE, quiet = FALSE, tz = "MST")
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}
 
+\item{daily}{logical shows daily data first}
+
 \item{quiet}{logical suppresses console messages}
+
+\item{tz}{character time zone string for displaying times}
 }
 \value{
 a list of character vectors, paths to individual NetCDF files
