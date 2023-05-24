@@ -4,11 +4,6 @@
 #' `var_nm` by applying the function named in `fun` to aggregate by day. `var_nm` should
 #' be a subset of the names returned by `nc_list(base_dir)`.
 #'
-#' If `write_csv=TRUE`, the function additionally writes, for each variable, a CSV file
-#' containing the matrix of data associated with each variable, and a time column with a
-#' character string giving the date/time in UTC. These files have the same file-names as
-#' the NetCDF versions (up to file extension).
-#'
 #' If `fun=NULL`, the function does no aggregation and writes all time points.
 #'
 #' If `fun` is not `NULL` then the last three arguments are passed to `.nc_aggregate` to control
@@ -25,14 +20,12 @@
 #' @param fun function, a function name like "mean", "min", or "max" (see `?.nc_aggregate`)
 #' @param tz character time zone for `origin_hour`
 #' @param origin_hour integer, steps are aligned to start at this hour of the day
-#' @param write_csv logical, Writes a CSV copy of the data, and point locations to geojson
 #'
 #' @return vector of file paths written to the `output_nm` directory
 #' @export
 nc_aggregate = function(base_dir,
                         var_nm = NULL,
                         output_nm = .nm_daily,
-                        write_csv = FALSE,
                         fun = 'mean',
                         tz = 'UTC',
                         origin_hour = 0L) {
@@ -52,8 +45,6 @@ nc_aggregate = function(base_dir,
   output_nc = file_wx('nc', base_dir, output_nm, as.list(var_nm), make_dir=TRUE)
   is_agg = !is.null(fun)
   if( is_agg ) output_nc = gsub('.nc$',  paste0('_', fun, '.nc'), output_nc)
-  output_csv = gsub('.nc$', '.csv', output_nc)
-  output_geojson = base_dir |> file.path(output_nm, 'grid_points.geojson')
 
   # loop over files
   for( i in seq_along(p_fetch) ) {
@@ -61,63 +52,55 @@ nc_aggregate = function(base_dir,
     cat('\nprocessing', names(p_fetch)[[i]], '...')
     t1 = proc.time()
 
-    # make a SpatRaster of output layers
-    r_i = if( is_agg ) {
+    # split by year
+    time_i = time_wx(p_fetch[[i]])[['time_obs']]
+    yr_i = time_i |> format('%Y', tz=tz)
+    yr_unique = yr_i |> unique()
+    cat('\nprocessing', length(yr_unique), 'year(s)...\n')
+    for(yr in yr_unique) {
 
-      # aggregate to daily
-      r_out = p_fetch[[i]] |> .nc_aggregate(fun=fun, tz=tz, origin_hour=origin_hour) |> terra::rast()
-      terra::time(r_out) = as.Date(names(r_out))
-      r_out
+      cat('\nyear', yr, paste0('(', tz, ')'))
+      time_i_yr = time_i[yr_i == yr]
 
-    } else {
+      # make a SpatRaster of output layers
+      r_i = if( is_agg ) {
 
-      # copy all layers unchanged
-      time_i = time_wx(p_fetch[[i]])[['time_obs']]
-      p_fetch[[i]] |> nc_layers(times=time_i, na_rm=TRUE)
+        # aggregate to daily (NULL if failed)
+        aggregate_result = p_fetch[[i]] |>
+          .nc_aggregate(times=time_i_yr, fun=fun, tz=tz, origin_hour=origin_hour)
+
+        # skip when there are not enough layers to make a single day
+        if( is.null(aggregate_result) ) {
+
+          cat('\nskipped (not enough layers)\n')
+          next
+        }
+
+        # else set times and return SpatRaster
+        r_out = aggregate_result |> terra::rast()
+        terra::time(r_out) = as.Date(names(r_out))
+        r_out
+
+      } else {
+
+        # copy all layers unchanged
+        p_fetch[[i]] |> nc_layers(times=time_i_yr, na_rm=TRUE)
+      }
+
+      # create the output nc file and write to it
+      r_i |> nc_write_chunk(output_nc[[i]])
+
+      # remove the large source raster from memory
+      rm(r_i)
+      gc()
     }
 
-    # create the output nc file and write to it
-    r_i |> nc_write_chunk(output_nc[[i]])
-
-    if( write_csv ) {
-
-      # export to data frame
-      cat('writing data matrix to', output_csv[i])
-      cell_id = paste0('grid_', seq( terra::ncell(r_i)))
-      df_i = terra::time(r_i) |>
-        as.character(tz=tz) |>
-        data.frame() |>
-        cbind( t(r_i[]) ) |>
-        stats::setNames( nm=c('time', cell_id) )
-
-      # write the CSV to disk
-      df_i |> write.csv(output_csv[i], row.names=FALSE)
-
-      # grid point locations as st POINT collection in WGS84 coordinates
-      pts = terra::crds(r_i) |>
-        sf::st_multipoint() |>
-        sf::st_sfc(crs=terra::crs(r_i)) |>
-        sf::st_cast('POINT') |>
-        sf::st_transform(4326)
-
-      # add key and write to disk as geojson
-      unlink(output_geojson)
-      sf::st_sf(data.frame(id=cell_id), geometry=pts) |>
-        sf::st_write(output_geojson) |>
-        suppressWarnings() # GDAL generates spurious warnings on linux
-    }
-
-    # remove the large source raster from memory
-    rm(r_i)
-    gc()
     t2 = proc.time()
     cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.\n')
   }
 
   # report all files written
-  output_paths = output_nc
-  if(write_csv) output_paths = c(output_paths, output_csv, output_geojson)
-  return(output_paths)
+  return(output_nc)
 }
 
 
@@ -128,37 +111,46 @@ nc_aggregate = function(base_dir,
 #'
 #' Returns a list of SpatRasters, one for each day in the time series `p`. Times
 #' within a given day are aggregated using the function `fun` should be a string
-#' naming the function, like `"mean"` (and not `mean`) and this must be compatible
-#' with `terra::app`.
+#' naming the function, like `"mean"` (and not `mean` itself) and this function
+#' must be compatible with `terra::app`.
 #'
-#' This function has not been tested on incomplete data
+#' The function clips the data to the nearest `origin_hour` in the time zone `tz`,
+#' omitting times from incomplete days that appear at the beginning and/or end of
+#' `times`. If this results in a time series of length-0, the function returns NULL
 #'
 #' @param p character vector path to the nc file(s)
+#' @param times vector of POSIXct times to include (default is all)
 #' @param fun character naming a function, such as "mean", "min", or "max"
 #' @param tz character time zone for `origin_hour`
 #' @param origin_hour integer, steps are aligned to start at this hour of the day
 #'
-#' @return SpatRaster, the aggregated data
+#' @return SpatRaster, the aggregated data or NULL
 #' @export
-.nc_aggregate = function(p, fun='mean', tz='UTC', origin_hour=0L) {
+.nc_aggregate = function(p, times=NULL, fun='mean', tz='UTC', origin_hour=0L) {
 
-  # load everything into RAM (~5GB)
+  # check all available times
   cat('\nchecking times in', length(p), 'file(s)')
   p_time = time_wx(p)
-  cat('\ncopying', length(p_time[['time_obs']]), 'layers to RAM')
-  r = nc_layers(p, times=p_time[['time_obs']], na_rm=TRUE)
+  if( is.null(times) ) times = p_time[['time_obs']]
+  times = times[times %in% p_time[['time_obs']]]
+  if(length(times) < 2) return(NULL)
+
+  # lead all requested data
+  cat('\ncopying', length(times), 'layers to RAM')
+  r = nc_layers(p, times=times, na_rm=TRUE)
 
   # check for gaps and detect step size (hours)
   ts_df = data.frame(posix_pred=terra::time(r)) |> archive_pad()
   step_data = time_step(ts_df)
+  n_per = 24L / step_data
+  if(length(times) < n_per) return(NULL)
 
   # starting hour of the data in target time zone
   start_hour = ts_df[['posix_pred']] |> min() |> format('%H', tz=tz) |> as.integer()
-  start_idx = 1 + ( ( (origin_hour - start_hour) %% 24 ) / step_data )
+  start_idx = ( step_data + (origin_hour - start_hour) %% 24 ) / step_data
   start_date = ts_df[['posix_pred']][start_idx] |> as.Date(tz=tz)
 
   # list of indices to aggregate in each step and the corresponding dates
-  n_per = 24L / step_data
   n_out = floor( ( length(ts_df[['posix_pred']]) - start_idx + 1 ) / n_per )
   list_idx = seq(n_out) |> lapply(\(i) seq(n_per) + (i-1)*n_per )
   date_out = seq.Date(start_date, by='day', length.out=n_out)

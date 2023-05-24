@@ -8,7 +8,6 @@ nc_aggregate(
   base_dir,
   var_nm = NULL,
   output_nm = .nm_daily,
-  write_csv = FALSE,
   fun = "mean",
   tz = "UTC",
   origin_hour = 0L
@@ -20,8 +19,6 @@ nc_aggregate(
 \item{var_nm}{character vector, the variable(s) to export (NULL to export all)}
 
 \item{output_nm}{character, the sub-directory name for output}
-
-\item{write_csv}{logical, Writes a CSV copy of the data, and point locations to geojson}
 
 \item{fun}{function, a function name like "mean", "min", or "max" (see \code{?.nc_aggregate})}
 
@@ -38,11 +35,6 @@ This creates a (single) NetCDF file in \code{output_nm} for each of the variable
 be a subset of the names returned by \code{nc_list(base_dir)}.
 }
 \details{
-If \code{write_csv=TRUE}, the function additionally writes, for each variable, a CSV file
-containing the matrix of data associated with each variable, and a time column with a
-character string giving the date/time in UTC. These files have the same file-names as
-the NetCDF versions (up to file extension).
-
 If \code{fun=NULL}, the function does no aggregation and writes all time points.
 
 If \code{fun} is not \code{NULL} then the last three arguments are passed to \code{.nc_aggregate} to control

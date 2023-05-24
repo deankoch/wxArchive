@@ -396,13 +396,12 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
 #' constant `.var_daily_pairs`
 #'
 #' @param project_dir character path to the project root directory
-#' @param write_csv logical, if TRUE a CSV file and geoJSON are written in addition to the NetCDF
 #' @param from Date start of date range (default is earliest available)
 #' @param to Date end of date range (default is latest available)
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
-workflow_daily = function(project_dir, from=NULL, to=NULL, write_csv=FALSE) {
+workflow_daily = function(project_dir, from=NULL, to=NULL) {
 
   cat('\n')
   message('merging data and exporting to file')
@@ -415,7 +414,6 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, write_csv=FALSE) {
   export_paths = .var_daily_pairs |> lapply(\(x) nc_aggregate(base_dir = project_dir,
                                                               var_nm = x['var'],
                                                               output_nm = .nm_daily,
-                                                              write_csv = write_csv,
                                                               fun = x['fun'],
                                                               tz = 'MST'))
 }

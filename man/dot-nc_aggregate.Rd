@@ -4,10 +4,12 @@
 \alias{.nc_aggregate}
 \title{Aggregate sub-daily data to daily}
 \usage{
-.nc_aggregate(p, fun = "mean", tz = "UTC", origin_hour = 0L)
+.nc_aggregate(p, times = NULL, fun = "mean", tz = "UTC", origin_hour = 0L)
 }
 \arguments{
 \item{p}{character vector path to the nc file(s)}
+
+\item{times}{vector of POSIXct times to include (default is all)}
 
 \item{fun}{character naming a function, such as "mean", "min", or "max"}
 
@@ -16,7 +18,7 @@
 \item{origin_hour}{integer, steps are aligned to start at this hour of the day}
 }
 \value{
-SpatRaster, the aggregated data
+SpatRaster, the aggregated data or NULL
 }
 \description{
 Helper function for \code{nc_aggregate}
@@ -24,8 +26,10 @@ Helper function for \code{nc_aggregate}
 \details{
 Returns a list of SpatRasters, one for each day in the time series \code{p}. Times
 within a given day are aggregated using the function \code{fun} should be a string
-naming the function, like \code{"mean"} (and not \code{mean}) and this must be compatible
-with \code{terra::app}.
+naming the function, like \code{"mean"} (and not \code{mean} itself) and this function
+must be compatible with \code{terra::app}.
 
-This function has not been tested on incomplete data
+The function clips the data to the nearest \code{origin_hour} in the time zone \code{tz},
+omitting times from incomplete days that appear at the beginning and/or end of
+\code{times}. If this results in a time series of length-0, the function returns NULL
 }

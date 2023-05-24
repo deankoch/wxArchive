@@ -4,7 +4,7 @@
 \alias{workflow_daily}
 \title{Exported completed time series to daily aggregate values and write to disk}
 \usage{
-workflow_daily(project_dir, from = NULL, to = NULL, write_csv = FALSE)
+workflow_daily(project_dir, from = NULL, to = NULL)
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}
@@ -12,8 +12,6 @@ workflow_daily(project_dir, from = NULL, to = NULL, write_csv = FALSE)
 \item{from}{Date start of date range (default is earliest available)}
 
 \item{to}{Date end of date range (default is latest available)}
-
-\item{write_csv}{logical, if TRUE a CSV file and geoJSON are written in addition to the NetCDF}
 }
 \value{
 returns nothing but possible writes to \code{project_dir}
