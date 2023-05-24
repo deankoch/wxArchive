@@ -39,7 +39,7 @@ workflow_list = function(project_dir, daily=TRUE, quiet=FALSE, tz='MST') {
 
     # loop over daily variables
     n_daily = length(daily_path)
-    message('\nchecking ', n_daily, ' daily variable(s)')
+    message('\n', n_daily, ' daily variable(s)')
     for(i in seq(n_daily)) {
 
       # this returns empty list when the file is missing
@@ -80,7 +80,7 @@ workflow_list = function(project_dir, daily=TRUE, quiet=FALSE, tz='MST') {
   nm_fix_wid = lapply(nm_all, \(nm) paste0(nm, paste(rep(' ', nm_len - nchar(nm)), collapse='')))
 
   # check available times in a loop, printing as we go
-  message('\nchecking 2-hourly times for ', length(p_all), ' variable(s)')
+  message('\n', length(p_all), ' 2-hourly variable(s)')
   for( i in seq_along(p_all) ) {
 
     # check existence of source files
