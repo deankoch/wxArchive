@@ -9,6 +9,9 @@ ENV WX_DATA_DIR=/home/wxarchive/data
 # area of interest polygon
 ARG AOI_NAME=aoi.geojson
 
+# fitted temporal model files
+ARG MODEL_NAME=model.zip
+
 # get CRAN packages (skip any installed already)
 RUN install2.r -e -s \
 devtools \
@@ -20,9 +23,10 @@ sf \
 terra \
 && rm -rf /tmp/downloaded_packages
 
-# copy the AOI file and install wxArchive
+# copy the AOI and model files, and install wxArchive
 WORKDIR ${WX_PATH}
 COPY ${AOI_NAME} ${AOI_NAME}
+COPY ${MODEL_NAME} ${MODEL_NAME}
 RUN R -q -e "devtools::install_github('deankoch/wxArchive', force=TRUE)"
 
 # copy Rscript(s)
