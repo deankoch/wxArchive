@@ -77,7 +77,7 @@ nc_aggregate = function(base_dir,
     }
 
     # create the output nc file and write to it
-    r_i |> nc_write(output_nc[[i]])
+    r_i |> nc_write_chunk(output_nc[[i]])
 
     if( write_csv ) {
 
