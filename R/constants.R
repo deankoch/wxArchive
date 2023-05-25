@@ -23,17 +23,14 @@
                wnd_u = '^10\\[m\\].*u-component of wind',
                wnd_v = '^10\\[m\\].*v-component of wind')
 
-# same for GFS (only pcp is different)
-.gfs_regex = c(pcp = '^SFC.*hr Total precipitation', # same as RAP but with short name
-               tmp = '^2\\[m\\].*Temperature',
-               hum = '^2\\[m\\].*Relative humidity',
-               wnd_u = '^10\\[m\\].*u-component of wind',
-               wnd_v = '^10\\[m\\].*v-component of wind')
+# same for GFS (but use short name pcp for pcp_total)
+.gfs_regex2 = c(pcp = .rap_regex[['pcp_total']],
+                .gfs_regex[c('tmp', 'hum', 'wnd_u', 'wnd_v')] )
 
 # output variable names from GFS
 .nm_gfs_var = names(.gfs_regex)
 
-# output names for precipitation variables
+# names for precipitation (pcp_large + pcp_small = pcp_total = pcp)
 .var_pcp = 'pcp'
 .var_pcp_old = c('pcp_large', 'pcp_small', 'pcp_total')
 .var_not_pcp = names(.rap_regex) |> setdiff(.var_pcp_old)
