@@ -36,22 +36,23 @@
 #' @export
 time_wx = function(nc_path, join=TRUE) {
 
-  # expand paths to any files chunked by year (checks existence)
+  # expand paths to any files chunked by year. This checks existence
   nc_path = do.call(c, lapply(nc_path, nc_chunk))
   if( anyNA(nc_path) ) nc_path = nc_path[!is.na(nc_path)]
   if( length(nc_path) == 0 ) return( list() )
 
-  # if requested, first attempt to get the info from the JSON (fast)
+  # first attempt to get the info from the JSON (fast)
   time_result = time_json(nc_path)
   is_pending = is.na(time_result)
 
   # create any missing JSON files
   if( any(is_pending) ) {
 
-    # write the JSON for existing nc file(s)
+    # skip nc files not found on disk
     is_created = is_pending & file.exists(nc_path)
     if( any(is_created) ) {
 
+      # write the JSON for existing nc file(s)
       is_json_new = nc_path[is_created] |> sapply(write_time_json)
       if( any(is_json_new) ) {
 
