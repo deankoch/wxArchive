@@ -80,7 +80,7 @@ workflow_list = function(project_dir, daily=TRUE, quiet=FALSE, tz='MST') {
   nm_fix_wid = lapply(nm_all, \(nm) paste0(nm, paste(rep(' ', nm_len - nchar(nm)), collapse='')))
 
   # check available times in a loop, printing as we go
-  message('\n', length(p_all), ' 2-hourly variable(s)')
+  message('\n', length(p_all), ' two-hourly variable(s)')
   for( i in seq_along(p_all) ) {
 
     # check existence of source files
@@ -161,6 +161,7 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
                  to = to,
                  model = 'rap_archive') |> invisible()
 
+  # TODO: add from argument
   # export to nc
   cat('\n')
   message('updating NetCDF files')
