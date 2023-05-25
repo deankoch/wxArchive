@@ -161,7 +161,6 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
                  to = to,
                  model = 'rap_archive') |> invisible()
 
-  # TODO: add from argument
   # export to nc
   cat('\n')
   message('updating NetCDF files')
@@ -172,7 +171,7 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
             output_nm = .nm_src_rap,
             regex = .rap_regex) |> invisible()
 
-  # copy precip from components (applies to early years)
+  # copy precip from components (applies mostly to early years)
   cat('\n')
   message('processing precipitation layers')
   pcp_update(base_dir = base_dir_rap,
@@ -345,9 +344,11 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
   base_dir_gfs |> file.path('coarse') |> unlink(recursive=TRUE)
   base_dir_gfs |> file.path(.nm_resample) |> unlink(recursive=TRUE)
   base_dir_gfs |> file.path(.var_wnd) |> unlink(recursive=TRUE)
+  base_dir_gfs |> file.path(.nm_complete) |> unlink(recursive=TRUE)
 
   # export latest GFS data to nc (creates "coarse" subdirectory)
   cat('\n')
+  message('updating NetCDF files')
   nc_update(aoi = aoi,
             base_dir = base_dir_gfs,
             output_nm = list(coarse=.nm_gfs),
@@ -378,7 +379,7 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
   message('extending forecasts by ', n_ahead, ' day(s)')
   time_impute(var_nm = .nm_gfs_var,
               base_dir = base_dir_gfs,
-              until = until,
+              to = until,
               model_dir = base_dir_rap,
               model_nm = .nm_model,
               input_nm = .nm_resample,

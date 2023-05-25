@@ -4,13 +4,7 @@
 \alias{grib_extract}
 \title{Extract the specified area of interest (sub-grid) and variables (layers) from GRIB archive}
 \usage{
-grib_extract(
-  grib_df,
-  file_idx = NULL,
-  regex = .rr_regex,
-  aoi = NULL,
-  memory_limit = 8L
-)
+grib_extract(grib_df, file_idx = NULL, regex = .rr_regex, aoi = NULL)
 }
 \arguments{
 \item{grib_df}{data frame, a subset of the rows returned by \code{grib_list}}
@@ -20,8 +14,6 @@ grib_extract(
 \item{regex}{character vector passed to \code{grib_idx} (layer names)}
 
 \item{aoi}{geometry object coercible to \code{SpatVector}, the area of interest}
-
-\item{memory_limit}{integer (in GB) the maximum memory usage allowed of the output}
 }
 \value{
 a list of multi-layer SpatRasters (one per variable in \code{regex})
@@ -33,9 +25,7 @@ as a list of SpatRasters, one for each variable in \code{regex}, each with a lay
 file (ie time).
 }
 \details{
-With a large number of GRIBs, memory usage can get high and everything slows down
-overall. I recommend loading at most 100s to 1000s of files at once, and merging results
-as you go. \code{memory_limit} sets up a limit (in GB) as a sanity check.
+The function loads GRIBs in a loop over years to keep memory usage low
 
 The function calls \code{grib_idx} on \code{grib_df} (and not the subset in \code{file_idx})
 to initially get basic grid information like dimensions, so make sure all the GRIBs

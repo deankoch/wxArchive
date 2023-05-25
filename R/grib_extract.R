@@ -5,9 +5,7 @@
 #' as a list of SpatRasters, one for each variable in `regex`, each with a layer for every
 #' file (ie time).
 #'
-#' With a large number of GRIBs, memory usage can get high and everything slows down
-#' overall. I recommend loading at most 100s to 1000s of files at once, and merging results
-#' as you go. `memory_limit` sets up a limit (in GB) as a sanity check.
+#' The function loads GRIBs in a loop over years to keep memory usage low
 #'
 #' The function calls `grib_idx` on `grib_df` (and not the subset in `file_idx`)
 #' to initially get basic grid information like dimensions, so make sure all the GRIBs
@@ -17,24 +15,19 @@
 #' @param file_idx integer vector, the rows of `grib_df` to load
 #' @param regex character vector passed to `grib_idx` (layer names)
 #' @param aoi geometry object coercible to `SpatVector`, the area of interest
-#' @param memory_limit integer (in GB) the maximum memory usage allowed of the output
 #'
 #' @return a list of multi-layer SpatRasters (one per variable in `regex`)
 #' @export
-grib_extract = function(grib_df, file_idx=NULL, regex=.rr_regex, aoi=NULL, memory_limit=8L) {
+grib_extract = function(grib_df, file_idx=NULL, regex=.rr_regex, aoi=NULL) {
 
   # by default open all files in grib_df
   if(is.null(file_idx)) file_idx = nrow(grib_df) |> seq()
 
   # get grid dimensions by looking at first file
   r_info = grib_idx(grib_df, regex, aoi=aoi, quiet=TRUE, try_again=TRUE)
-
-  # sanity check for memory usage
   n_space = prod(r_info[['dim']])
   n_var = length(regex)
   n_file = length(file_idx)
-  est_gb = estimate_memory(r_info[['dim']], n_var, n_file)
-  if(est_gb > memory_limit) stop('memory limit exceeded.')
 
   # initialize storage matrices for numeric data from all times
   z_out = lapply(regex, \(x) matrix(NA_real_, n_space, n_file))
@@ -87,34 +80,6 @@ grib_extract = function(grib_df, file_idx=NULL, regex=.rr_regex, aoi=NULL, memor
   cat('done.\n')
   return(r_out)
 }
-
-
-#' Estimate memory usage in GB for a nested list of numeric matrices
-#'
-#' Helper function for `grib_extract`
-#'
-#' This prints a rough estimate of the memory needed for a list of `n_file * n_var`
-#' grids of dimensions `gdim`. The output is always in GB whereas the console message
-#' is printed in MB if the volume is less than 1 GB.
-#'
-#' @param gdim integer vector, the grid dimensions (order unimportant)
-#' @param n_var integer number of variables
-#' @param n_file integer number of files
-#' @param quiet logical, if FALSE the function prints information to console
-#'
-#' @return numeric (GB)
-#' @export
-estimate_memory = function(gdim, n_var=1L, n_file=1L, quiet=FALSE) {
-
-  # memory requirement estimate (based on NCmisc)
-  est_gb = 1.05 * prod(c(gdim, n_file, n_var) ) / 2^27
-  if(!quiet) cat('\nexpected memory usage:', ifelse(est_gb < 1,
-                                                    round(1e3*est_gb, 2) |> paste('MB'),
-                                                    round(est_gb, 2) |> paste('GB')))
-
-  return(est_gb)
-}
-
 
 
 #' Find layer and sub-grid indices for calls to `terra::rast` and `terra::values`
