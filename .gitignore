@@ -3,6 +3,9 @@ ideas/
 python/
 docker/testing/
 
+# credentials
+aws_secret.json
+
 # History files
 .Rhistory
 .Rapp.history
