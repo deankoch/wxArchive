@@ -5,8 +5,8 @@
 #' @param input_nm character vector or list, subdirectories containing the .nc files to process
 #' @param output_nm character, sub-directory to write the output nc files
 #' @param model_nm character, sub-directory to look for fitted model files
-#' @param n_max integer, maximum number of time points to use (NULL for all)
-#' @param until POSIXct time, the series is truncated/padded to this time point (passed to `archive_pad`)
+#' @param from POSIXct time, start of time range to process
+#' @param to POSIXct time, end of time range to process (passed as "until" to `archive_pad`)
 #' @param quiet logical indicating to suppress console output
 #'
 #' @return nothing, but writes output to nc files in `output_nm`
@@ -17,8 +17,8 @@ time_impute = function(var_nm,
                        output_nm = 'completed',
                        model_dir = base_dir,
                        model_nm = .nm_model,
-                       n_max = NULL,
-                       until = NULL,
+                       from = NULL,
+                       to = NULL,
                        quiet = FALSE) {
 
   # data input/output paths (var_nm is list to ensure output paths are in list)
@@ -49,7 +49,6 @@ time_impute = function(var_nm,
     if( ( length(yearly_n) > 1 ) ) stop('inconsistent "yearly_n"')
 
     # load latest fitted parameter matrices
-    #pars_r = Reduce('+', lapply(pars_nc, terra::rast)) / length(pars_info)
     pars_nc = pars_info |> sapply(\(x) file.path(pars_dir, x[['file']]))
     pars_r = file.path(pars_dir, tail(pars_info, 1)[[1]][['file']]) |> terra::rast()
     t_knots = tail(pars_info, 1)[[1]][['knots']] |> as.POSIXct(tz='UTC')
@@ -62,15 +61,22 @@ time_impute = function(var_nm,
     # check for existing imputed times
     t_out = time_wx(output_nc[[nm]])[['time_obs']]
 
-    # extract observed times, compute step size, compute default n_max (2 years)
+    # extract observed times and filter to requested start time
     t_obs = var_info[[nm]][['time_obs']]
+    t_obs = t_obs[t_obs >= from]
+    if( length(t_obs) == 0 ) {
+
+      cat('\nno times to process')
+      next
+    }
+
+    # compute step size
     step_hours = data.frame(posix_pred=t_obs) |> time_step()
     freq_year = as.integer(24 * 365.25 / step_hours)
-    if( is.null(n_max) ) n_max = 2 * freq_year
 
     # make data frame of times observed padded with NAs for gaps
     ts_df = data.frame(posix_pred=t_obs) |>
-      archive_pad(quiet=quiet, until=until) |>
+      archive_pad(quiet=quiet, until=to) |>
       dplyr::mutate( missing = is.na(ts_hours) ) |>
       dplyr::mutate( done = posix_pred %in% t_out ) |>
       dplyr::mutate( changed = done & !missing )
