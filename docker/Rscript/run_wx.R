@@ -64,7 +64,7 @@ if( operation %in% c('fit_rap', 'update_all') ) {
 
   # this unpacks a saved set of model parameter files unless in fit_rap mode
   from_file = 'model.zip'
-  if(fit_rap) from_file = NULL
+  if(operation == 'fit_rap') from_file = NULL
   data_dir |> wxArchive::workflow_fit_temporal(from_file=from_file)
 }
 
