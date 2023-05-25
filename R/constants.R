@@ -24,7 +24,7 @@
                wnd_v = '^10\\[m\\].*v-component of wind')
 
 # same for GFS (but use short name pcp for pcp_total)
-.gfs_regex = c(pcp = .rap_regex[['pcp_total']], .gfs_regex[c('tmp', 'hum', 'wnd_u', 'wnd_v')] )
+.gfs_regex = c(pcp = .rap_regex[['pcp_total']], .rap_regex[c('tmp', 'hum', 'wnd_u', 'wnd_v')] )
 
 # output variable names from GFS
 .nm_gfs_var = names(.gfs_regex)
