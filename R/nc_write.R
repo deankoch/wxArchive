@@ -154,6 +154,6 @@ write_time_json = function(nc_path, r=NULL) {
 
   # report problems with `time_nc` or write results to disk
   if( anyNA(json_data) ) stop('there was a problem reading times from the SpatRaster')
-  json_data[[1]][c('na', 'time')] |> jsonlite::toJSON(pretty=TRUE) |> writeLines(json_path)
+  json_data[c('na', 'time')] |> jsonlite::toJSON(pretty=TRUE) |> writeLines(json_path)
   return(TRUE)
 }
