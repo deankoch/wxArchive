@@ -140,7 +140,6 @@ nc_update = function(aoi,
 
         # check if we only need a subset of variables
         is_pending = as.matrix(is_new_mat[file_idx,], ncol=length(var_nm)) |> apply(2, any)
-        cat('\nloading', n_load, 'gribs...')
 
         # load GRIB data
         r_from_gribs = grib_extract(grib_df,
