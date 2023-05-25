@@ -21,7 +21,7 @@ snapKrig \
 splines \
 sf \
 terra \
-paws \
+paws.storage \
 && rm -rf /tmp/downloaded_packages
 
 # copy the AOI and model files, and install wxArchive
