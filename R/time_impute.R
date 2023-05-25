@@ -63,7 +63,7 @@ time_impute = function(var_nm,
 
     # extract observed times and filter to requested start time
     t_obs = var_info[[nm]][['time_obs']]
-    t_obs = t_obs[t_obs >= from]
+    if( !is.null(from) ) t_obs = t_obs[t_obs >= from]
     if( length(t_obs) == 0 ) {
 
       cat('\nno times to process')

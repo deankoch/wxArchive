@@ -11,8 +11,8 @@ time_impute(
   output_nm = "completed",
   model_dir = base_dir,
   model_nm = .nm_model,
-  n_max = NULL,
-  until = NULL,
+  from = NULL,
+  to = NULL,
   quiet = FALSE
 )
 }
@@ -27,9 +27,9 @@ time_impute(
 
 \item{model_nm}{character, sub-directory to look for fitted model files}
 
-\item{n_max}{integer, maximum number of time points to use (NULL for all)}
+\item{from}{POSIXct time, start of time range to process}
 
-\item{until}{POSIXct time, the series is truncated/padded to this time point (passed to \code{archive_pad})}
+\item{to}{POSIXct time, end of time range to process (passed as "until" to \code{archive_pad})}
 
 \item{quiet}{logical indicating to suppress console output}
 }
