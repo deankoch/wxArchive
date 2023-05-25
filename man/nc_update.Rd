@@ -9,10 +9,8 @@ nc_update(
   base_dir,
   output_nm = list(coarse = c("coarse"), fine = c("fine")),
   regex = .rap_regex,
-  n_chunk = 5000,
-  memory_limit = 8L,
-  make_dummy = FALSE,
   from = NULL,
+  to = NULL,
   grib_dir = file_wx("grib", base_dir)
 )
 }
@@ -25,13 +23,9 @@ nc_update(
 
 \item{regex}{character vector passed to \code{grib_idx} (layer names)}
 
-\item{n_chunk}{number of files to load before saving intermediate results to disk}
+\item{from}{Date or vector of them, GRIB files for all earlier times are ignored}
 
-\item{memory_limit}{integer (GB) maximum memory usage passed to \code{grib_extract}}
-
-\item{make_dummy}{logical, indicates to omit "pcp_total" for early years (see details)}
-
-\item{from}{POSIXct time or vector of them, GRIB files for this and all earlier times are ignored}
+\item{to}{Date or vector of them, GRIB files for all later times are ignored}
 
 \item{grib_dir}{character path to GRIB directory (default is "base_dir/grib")}
 }
@@ -66,25 +60,13 @@ unlikely to change very often. The function always writes to the first subdirect
 named in each of the elements of \code{output_nm}, but all subdirectories are checked
 when determining if a time has been processed yet.
 
-If \code{from} is supplied, the function only copies new times greater than or equal to
-\code{from}. A different \code{from} can be specified for each variable, in which case
-\code{length(from)} should match \code{length(regex)}. By default, \code{from} is set to the
-earliest available time.
-
-Within each of these sub-directories, another sub-directory, 'time', is created
-to store JSON files, one per variable (ie one per nc file). These hold the indices
-of NA layers, and the observed times, for quicker loading later on. To see their
-output paths. do:
-
-\code{file_wx('index', base_dir, output_nm, regex)}
-
+A date range for processing can be specified by passing either or both of \code{from}
+and \code{to}. GRIB files outside of this date range are ignored. Different date ranges
+can be specified for each variable, in which case \code{length(from)} and \code{length(to)}
+should match \code{length(regex)}. By default, \code{from} and \code{to} are set to the the
+earliest and latest GRIB available dates.
 The script will be very slow on the initial run with many input GRIBs, but subsequent
 calls to update an existing set of nc files (and JSONs) will be much faster, as
 only the missing layers are read and copied, and the files to modify on disk are
 relatively small.
-
-Note that total precipitation \code{.rap_regex['pcp_total']}is not available for the
-first decade or so. By default the function creates a dummy nc file (empty of
-data) for this period to avoid unnecessarily loading GRIBs to look for it. This
-behaviour can be switched off with \code{make_dummy=FALSE}.
 }

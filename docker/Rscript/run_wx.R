@@ -39,7 +39,7 @@ operation_info = paste(operation_valid, collapse=', ')
 if( !(operation %in% operation_valid) ) stop('first argument must be one of: ', operation_info)
 
 # (optional) last two arguments specify the target date range for updates or output
-check_date = function(d) tryCatch(inherits(as.Date(d), 'Date'), error = \(e) NULL)
+check_date = function(d) tryCatch(as.Date(d), error = \(e) NULL)
 start_date = user_args[3] |> check_date()
 end_date = user_args[4] |> check_date()
 
@@ -52,9 +52,6 @@ if( !file.exists(ext_path) ) {
   file.copy(local_path, ext_path)
 }
 
-# expected location of temporal model directory
-model_dir = data_dir |> file.path('rap', wxArchive:::.nm_model)
-
 # list stats about recognized files in the project directory
 if( operation == 'list' ) data_dir |> wxArchive::workflow_list()
 
@@ -65,16 +62,21 @@ if( operation %in% c('update_rap', 'update_all') ) data_dir |>
 # fit temporal model to RAP/RUC archive
 if( operation %in% c('fit_rap', 'update_all') ) {
 
-  # in "update_all" mode we fit the model only if it doesn't exist yet
-  if( !dir.exists(model_dir) | (operation == 'fit_rap') ) data_dir |>
-    wxArchive::workflow_fit_temporal()
+  # this unpacks a saved set of model parameter files unless in fit_rap mode
+  from_file = 'model.zip'
+  if(fit_rap) from_file = NULL
+  data_dir |> wxArchive::workflow_fit_temporal(from_file=from_file)
 }
 
 # impute missing values in RAP/RUC archive
 if( operation %in% c('impute_rap', 'update_all') ) {
 
+  # expected location of temporal model directory
+  model_dir = data_dir |> file.path('rap', wxArchive:::.nm_model)
+
   # check if a temporal model has been fitted to the data yet
-  if( !dir.exists(model_dir) ) stop('directory ', model_dir, ' not found. Run operation "fit_rap" first')
+  msg_fail = paste('directory', model_dir, 'not found. Run operation "fit_rap" first')
+  if( !dir.exists(model_dir) ) stop(msg_fail)
   data_dir |> wxArchive::workflow_impute_rap()
 }
 
