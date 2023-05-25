@@ -160,6 +160,7 @@ nc_update = function(aoi,
       }
     }
   }
+  cat('\n')
 }
 
 
