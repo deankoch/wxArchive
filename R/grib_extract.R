@@ -73,7 +73,7 @@ grib_extract = function(grib_df, file_idx=NULL, regex=.rr_regex, aoi=NULL, memor
 
   # loop over variables, copying matrix data to SpatRaster
   idx_write = seq(n_space)
-  cat('\ncopying', n_file, 'layers to', paste(names(regex), collapse=', '), '... ')
+  cat('\ncreating', n_file, 'layers in', paste(names(regex), collapse=', '), '... ')
   for(v in seq_along(r_out)) {
 
     # assign timestamps then data values in a loop over layers (times)
