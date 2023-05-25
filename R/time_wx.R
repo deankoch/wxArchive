@@ -129,8 +129,8 @@ time_nc = function(r) {
     r_time = terra::time(r)
     return(list(na = which(is_na),
                 time = r_time,
-                time_obs = r_time[!is_na],
-                time_na = r_time[is_na]))
+                time_na = r_time[is_na],
+                time_obs = r_time[!is_na]))
   }
 
   # character input interpreted as path to nc file
