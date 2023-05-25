@@ -167,6 +167,8 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
   message('updating NetCDF files')
   nc_update(aoi = aoi,
             base_dir = base_dir_rap,
+            from = from,
+            to = to,
             output_nm = .nm_src_rap,
             regex = .rap_regex) |> invisible()
 
