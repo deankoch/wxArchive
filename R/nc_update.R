@@ -67,11 +67,6 @@ nc_update = function(aoi,
   from = if( is.null(from) ) { as.Date( min(all_gribs[['posix_pred']]) ) } else { as.Date(from) }
   to = if( is.null(to) ) { as.Date( max(all_gribs[['posix_pred']]) ) } else { as.Date(to) }
 
-  all_gribs = all_gribs |> dplyr::filter(date_rel >= min(from))
-  if( nrow(all_gribs) == 0 ) stop('no GRIB files found at or after ', as.character(min(from)))
-  all_gribs = all_gribs |> dplyr::filter(date_rel <= max(to))
-  if( nrow(all_gribs) == 0 ) stop('no GRIB files found at or before ', as.character(max(to)))
-
   # check consistency of vector start/end arguments
   if( length(from) == 1 ) from = rep(from, length(regex))
   if( length(from) != length(regex) ) stop('"from" must have the same length as "regex" (or 1)')
@@ -79,6 +74,12 @@ nc_update = function(aoi,
   if( length(to) != length(regex) ) stop('"to" must have the same length as "regex" (or 1)')
   names(from) = names(regex)
   names(to) = names(regex)
+
+  # filter to relevant GRIBs
+  all_gribs = all_gribs |> dplyr::filter(date_rel >= min(from))
+  if( nrow(all_gribs) == 0 ) stop('no GRIB files found at or after ', as.character(min(from)))
+  all_gribs = all_gribs |> dplyr::filter(date_rel <= max(to))
+  if( nrow(all_gribs) == 0 ) stop('no GRIB files found at or before ', as.character(max(to)))
 
   # files at different resolutions processed separately
   for( nm_res in names(output_nm) ) {
@@ -108,10 +109,10 @@ nc_update = function(aoi,
       time_done = time_wx(p)[['time']]
       is_eligible & !( time_available %in% time_done )
 
-    }) |> as.matrix(nrow=length(time_available))
+    }) |> matrix(nrow=length(time_available))
 
     # which files and times are missing from the nc files
-    idx_new = do.call(c, lapply(is_new_mat, which)) |> unique()
+    idx_new = do.call(c, apply(is_new_mat, 2, which, simplify=FALSE)) |> unique()
     time_add = time_available[idx_new]
     if( length(time_add) == 0 ) {
 
