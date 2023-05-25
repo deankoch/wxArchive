@@ -107,12 +107,13 @@ nc_update = function(aoi,
       # of those, select all times not already processed
       time_done = time_wx(p)[['time']]
       is_eligible & !( time_available %in% time_done )
-    })
+
+    }) |> as.matrix(nrow=length(time_available))
 
     # which files and times are missing from the nc files
-    is_new = is_new_mat |> apply(1, any)
-    time_add = time_available[is_new]
-    if( !any(is_new) ) {
+    idx_new = do.call(c, lapply(is_new_mat, which)) |> unique()
+    time_add = time_available[idx_new]
+    if( length(time_add) == 0 ) {
 
       cat('\nup to date')
       next

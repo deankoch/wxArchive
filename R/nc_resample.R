@@ -93,6 +93,10 @@ nc_resample = function(var_nm,
       cat('\n\nprocessing', nm, '...')
       t1 = proc.time()
 
+
+
+
+
       # append results to existing data file (or create the file and write to it)
       input_nc[['coarse']][[nm]] |>
         nc_project(r_fine, times=time_add[[nm]], ...) |>
