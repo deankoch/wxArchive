@@ -78,7 +78,7 @@ nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE) {
   if( length(times) > 0 ) cat('\nunmatched times:', msg_unmatched)
 
   # remove unmatched files (NULL entries in the list)
-  r_out = r_out_list[!sapply(r_out_list, is.null)] |> terra::rast()
+  r_out = r_out_list[!sapply(r_out_list, is.null)] |> terra::rast() |> suppressWarnings()
 
   # remove the large list from memory
   rm(r_out_list)
