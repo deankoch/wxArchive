@@ -20,6 +20,7 @@ jsonlite \
 snapKrig \
 splines \
 sf \
+s2 \
 terra \
 paws.storage \
 && rm -rf /tmp/downloaded_packages
