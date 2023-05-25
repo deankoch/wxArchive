@@ -114,7 +114,7 @@ archive_get = function(model,
 
       h_rel = available_df[['hour_rel']][h]
       h_pred = available_df[['hour_pred']][h]
-      if( !quiet ) cat('\nhour', sprintf('%02d', h_rel), '+', sprintf('%03d', h_pred))
+      if( !quiet ) cat('\n  hour', sprintf('%02d', h_rel), '+', sprintf('%03d', h_pred))
 
       # skip if we couldn't locate a URL for the file
       if( is.na( available_df[['url']][h] ) ) {
