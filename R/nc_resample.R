@@ -91,19 +91,11 @@ nc_resample = function(var_nm,
     if( needs_update[nm] ) {
 
       cat('\n\nprocessing', nm, '...')
-      t1 = proc.time()
-
-
-
-
 
       # append results to existing data file (or create the file and write to it)
       input_nc[['coarse']][[nm]] |>
         nc_project(r_fine, times=time_add[[nm]], ...) |>
         nc_write_chunk(p = output_nc[[nm]])
-
-      t2 = proc.time()
-      cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.')
 
     } else { cat(paste0('\n', nm), 'is up to date') }
   }

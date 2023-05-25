@@ -59,7 +59,7 @@ time_impute = function(var_nm,
     pars_AR2 = pars_r[][, seq(2)]
 
     # check for existing imputed times
-    t_out = time_wx(output_nc[[nm]])[['time_obs']]
+    #t_out = time_wx(output_nc[[nm]])[['time_obs']]
 
     # extract observed times and filter to requested start time
     t_obs = var_info[[nm]][['time_obs']]

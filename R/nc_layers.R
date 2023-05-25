@@ -77,7 +77,7 @@ nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE) {
   msg_unmatched = as.character(times, tz='UTC') |> paste(collapse=', ')
   if( length(times) > 0 ) cat('\nunmatched times:', msg_unmatched)
 
-  # remove unmatched files (NULL entries in the list)
+  # remove unmatched (NULL) entries, suppress warnings about different ellipsoids (shouldn't matter)
   r_out = r_out_list[!sapply(r_out_list, is.null)] |> terra::rast() |> suppressWarnings()
 
   # remove the large list from memory
