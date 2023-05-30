@@ -4,7 +4,7 @@
 \alias{run_spatial_fit}
 \title{Fit a spatial model and return a list of results for use in \code{spatial_fit}}
 \usage{
-run_spatial_fit(p, X, n_max = 100, t_fit = NULL, positive = NULL)
+run_spatial_fit(p, X, n_max = 100, time_fit = NULL, pos = NULL)
 }
 \arguments{
 \item{p}{character vector of input file paths to time series .nc files}
@@ -13,9 +13,9 @@ run_spatial_fit(p, X, n_max = 100, t_fit = NULL, positive = NULL)
 
 \item{n_max}{integer > 0 number of layers to sample}
 
-\item{t_fit}{character vector of POSIXct times to sample}
+\item{time_fit}{character vector of POSIXct times to sample}
 
-\item{positive}{logical indicating to exclude all-zero layers}
+\item{pos}{logical indicating to exclude all-zero layers}
 }
 \value{
 list of model fitting results

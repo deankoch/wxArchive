@@ -9,9 +9,10 @@ spatial_fit(
   base_dir,
   dem_path,
   input_nm = "fine",
-  model_nm = input_nm[[1]],
+  model_nm = .nm_model,
   n_max = 500,
-  positive = NULL
+  time_fit = NULL,
+  pos = NULL
 )
 }
 \arguments{
@@ -27,7 +28,9 @@ spatial_fit(
 
 \item{n_max}{integer, maximum number of layers to sample for fitting}
 
-\item{positive}{logical indicating to exclude all-zero layers}
+\item{time_fit}{character vector of POSIXct times to sample (NULL for all)}
+
+\item{pos}{logical indicating to exclude all-zero layers (NULL for auto-detect "pcp")}
 }
 \value{
 returns nothing, but writes to JSON files in sub-directory \code{train_nm} of \code{base_dir}
@@ -44,10 +47,10 @@ stationary Gaussian covariogram with geometric anisotropy oriented along the
 cardinal axes. Time layers are treated as mutually independent, and the function
 uses a random subsample (<=\code{n_max}) of times for model fitting.
 
-Subsampling excludes layers with any number of NAs. when \code{positive=TRUE}, it also
-excludes all-zero layers (useful for precipitation). When \code{positive=NULL} (the
+Subsampling excludes layers with any number of NAs. when \code{pos=TRUE}, it also
+excludes all-zero layers (useful for precipitation). When \code{pos=NULL} (the
 default), the function attempts to detect precipitation layers automatically by
-setting \code{positive=TRUE} for variable names beginning with 'pcp'.
+setting \code{pos=TRUE} for variable names beginning with 'pcp'.
 
 \code{input_nc} can be a vector of sub-directories, and \code{var_nm} can be a list of
 character vectors (specifying sets of equivalent names), allowing users to specify

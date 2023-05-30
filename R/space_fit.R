@@ -10,10 +10,10 @@
 #' cardinal axes. Time layers are treated as mutually independent, and the function
 #' uses a random subsample (<=`n_max`) of times for model fitting.
 #'
-#' Subsampling excludes layers with any number of NAs. when `positive=TRUE`, it also
-#' excludes all-zero layers (useful for precipitation). When `positive=NULL` (the
+#' Subsampling excludes layers with any number of NAs. when `pos=TRUE`, it also
+#' excludes all-zero layers (useful for precipitation). When `pos=NULL` (the
 #' default), the function attempts to detect precipitation layers automatically by
-#' setting `positive=TRUE` for variable names beginning with 'pcp'.
+#' setting `pos=TRUE` for variable names beginning with 'pcp'.
 #'
 #' `input_nc` can be a vector of sub-directories, and `var_nm` can be a list of
 #' character vectors (specifying sets of equivalent names), allowing users to specify
@@ -35,7 +35,8 @@
 #' @param input_nm character vector or list, subdirectories containing the .nc files to fit
 #' @param model_nm character name of sub-directory to write output files
 #' @param n_max integer, maximum number of layers to sample for fitting
-#' @param positive logical indicating to exclude all-zero layers
+#' @param time_fit character vector of POSIXct times to sample (NULL for all)
+#' @param pos logical indicating to exclude all-zero layers (NULL for auto-detect "pcp")
 #'
 #' @return returns nothing, but writes to JSON files in sub-directory `train_nm` of `base_dir`
 #' @export
@@ -43,23 +44,23 @@ spatial_fit = function(var_nm,
                        base_dir,
                        dem_path,
                        input_nm = 'fine',
-                       model_nm = input_nm[[1]],
+                       model_nm = .nm_model,
                        n_max = 5e2,
-                       positive = NULL) {
+                       time_fit = NULL,
+                       pos = NULL) {
 
-  # input and output paths
-  input_nc = file_wx('nc', base_dir, input_nm, var_nm)
+  # input/output paths (var_nm is list to ensure output paths are in list)
+  input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
   var_nm = var_nm |> stats::setNames(nm=names(input_nc))
-  output_path = file_wx('spatial', base_dir, input_nm[1], as.list(names(var_nm)), make_dir=TRUE)
+  var_nm_list = names(var_nm) |> as.list()
+  output_json = file_wx('spatial', base_dir, model_nm, var_nm_list, make_dir=TRUE)
 
-  # get grid info from first nc file, and spatial covariates matrix from DEM and grid dimensions
+  # get grid info from first nc file
+  r_grid = nc_chunk(input_nc[[1]][1])[1] |> terra::rast(lyrs=1) |> terra::rast()
+
+  # get spatial covariates matrix and grid dimensions from DEM
   cat('\nconstructing covariates from', dem_path)
-  r_grid = input_nc[[1]][1] |> terra::rast(lyrs=1) |> terra::rast()
-  X_space = space_X(r=r_grid, dem=terra::rast(dem_path))
-
-  # load time coverage of each variable
-  cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))
-  var_info = input_nc |> lapply(\(p) time_wx(p))
+  X_space = r_grid |> space_X(dem=terra::rast(dem_path))
 
   # fit spatial model for each variable in a loop
   cat('\nfitting spatial models...')
@@ -67,23 +68,25 @@ spatial_fit = function(var_nm,
 
     # load existing JSON data as list (or create the file)
     cat('\n\nprocessing', names(var_nm)[v])
-    t1 = proc.time()
-    json_exists = file.exists(output_path[[v]])
-    if( !json_exists ) writeLines('[]', output_path[[v]])
-    out_list = output_path[[v]] |> readLines() |> jsonlite::fromJSON()
+    json_exists = file.exists(output_json[[v]])
+    if( !json_exists ) writeLines('[]', output_json[[v]])
+    out_list = output_json[[v]] |> readLines() |> jsonlite::fromJSON()
 
-    # fit the model and append results to existing list
-    fit_result = input_nc[[v]] |> run_spatial_fit(X=X_space, n_max=n_max, positive=positive)
-    append_list = list(var_nm = var_nm[[v]], sub_dir = input_nm) |> c(fit_result) |> list()
+    # fit the model
+    fit_result = nc_chunk(input_nc[[v]]) |>
+      run_spatial_fit(X = X_space,
+                      n_max = n_max,
+                      time_fit = time_fit,
+                      pos = pos)
+
+    # append results to existing list in the JSON
+    append_list = list(var_nm=var_nm[[v]], sub_dir=input_nm) |> c(fit_result) |> list()
     out_list = out_list |> c(append_list)
     names(out_list) = paste0('fit_', seq_along(out_list))
 
-    # write to existing JSON
-    cat('\nwriting results to', output_path[[v]])
-    out_list |> jsonlite::toJSON(pretty=TRUE) |> writeLines(output_path[[v]])
-
-    t2 = proc.time()
-    cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.')
+    # write changes to disk
+    cat('\nwriting results to', output_json[[v]])
+    out_list |> jsonlite::toJSON(pretty=TRUE) |> writeLines(output_json[[v]])
   }
 }
 
@@ -106,15 +109,15 @@ spatial_fit = function(var_nm,
 #' @param p character vector of input file paths to time series .nc files
 #' @param X numeric matrix of spatial covariates (output of `space_X`)
 #' @param n_max integer > 0 number of layers to sample
-#' @param t_fit character vector of POSIXct times to sample
-#' @param positive logical indicating to exclude all-zero layers
+#' @param time_fit character vector of POSIXct times to sample
+#' @param pos logical indicating to exclude all-zero layers
 #'
 #' @return list of model fitting results
 #' @export
-run_spatial_fit = function(p, X, n_max=1e2, t_fit=NULL, positive=NULL) {
+run_spatial_fit = function(p, X, n_max=1e2, time_fit=NULL, pos=NULL) {
 
   # by default select non-zero layers only for variable names starting with "pcp"
-  if( is.null(positive) ) positive = basename(p) |> startsWith('pcp') |> any()
+  if( is.null(pos) ) pos = basename(p) |> startsWith('pcp') |> any()
 
   # add POSIXct time of function call to result
   call_time = Sys.time() |> as.character(tz='UTC')
@@ -125,21 +128,21 @@ run_spatial_fit = function(p, X, n_max=1e2, t_fit=NULL, positive=NULL) {
   t_obs = nc_info[['time_obs']]
 
   # select a set of points at random if idx_fit not supplied
-  n_fit = length(t_fit)
-  if( is.null(t_fit) ) {
+  n_fit = length(time_fit)
+  if( is.null(time_fit) ) {
 
     # sample from remaining times
     n_fit = t_obs |> length() |> pmin(n_max)
-    t_fit = t_obs |> sample(n_fit) |> sort()
+    time_fit = t_obs |> sample(n_fit) |> sort()
   }
 
   # copy non-NA layers and times into memory as sk object
   msg_n = paste0('(sampled from ', length(t_obs), ')')
   cat('\nloading', n_fit, 'layers', msg_n)
-  g_fit = p |> nc_layers(t_fit, na_rm=TRUE) |> snapKrig::sk()
+  g_fit = p |> nc_layers(time_fit, na_rm=TRUE) |> snapKrig::sk()
 
   # filter to times where the grid had non-zero value
-  if( positive ) {
+  if( pos ) {
 
     # check for layers with no nonzero values
     cat('\nchecking for all-zero layers')
@@ -148,8 +151,8 @@ run_spatial_fit = function(p, X, n_max=1e2, t_fit=NULL, positive=NULL) {
 
     # filter to analyze only nonzero layers
     g_fit = snapKrig::sk(g_fit, vals=FALSE) |> snapKrig::sk(gval=g_fit[][, !is_zero])
-    t_fit = t_fit[!is_zero]
-    n_fit = length(t_fit)
+    time_fit = time_fit[!is_zero]
+    n_fit = length(time_fit)
   }
 
   # fit a model then remove observed layers from memory
@@ -168,5 +171,5 @@ run_spatial_fit = function(p, X, n_max=1e2, t_fit=NULL, positive=NULL) {
                pars = pars,
                bds = bds,
                betas = gls,
-               train = t_fit) )
+               train = time_fit) )
 }
