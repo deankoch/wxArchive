@@ -45,7 +45,7 @@ space_X = function(r, dem, dem_knots=NULL, X_center=NULL, X_scale=NULL, intercep
   }
 
   # make a spline basis for the DEM
-  dem_knots_inner = dem_knots |> head(-1) |> tail(-1)
+  dem_knots_inner = dem_knots |> sort() |> head(-1) |> tail(-1)
   dem_basis = dem_warp[] |> splines::ns(knots=dem_knots_inner, Boundary.knots=range(dem_knots))
   colnames(dem_basis) = paste0('dem_spline_', colnames(dem_basis))
 

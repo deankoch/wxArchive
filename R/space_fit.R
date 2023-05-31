@@ -62,12 +62,18 @@ spatial_fit = function(var_nm,
   cat('\nconstructing covariates from', dem_path)
   X_space = r_grid |> space_X(dem=terra::rast(dem_path))
 
+  # attributes to copy to output list
+  X_attr = list(knots = sort(c(attr(X_space, 'knots'), attr(X_space, 'Boundary.knots'))),
+                center = attr(X_space, 'center'),
+                scale = attr(X_space, 'scale'))
+
   # fit spatial model for each variable in a loop
   cat('\nfitting spatial models...')
   for( v in seq_along(var_nm) ) {
 
-    # load existing JSON data as list (or create the file)
     cat('\n\nprocessing', names(var_nm)[v])
+
+    # load existing JSON data as list (or create the file)
     json_exists = file.exists(output_json[[v]])
     if( !json_exists ) writeLines('[]', output_json[[v]])
     out_list = output_json[[v]] |> readLines() |> jsonlite::fromJSON()
@@ -80,8 +86,9 @@ spatial_fit = function(var_nm,
                       pos = pos)
 
     # append results to existing list in the JSON
-    append_list = list(var_nm=var_nm[[v]], sub_dir=input_nm) |> c(fit_result) |> list()
-    out_list = out_list |> c(append_list)
+    append_list = list(var_nm=var_nm[[v]], sub_dir=input_nm) |> c(X_attr) |> c(fit_result)
+
+    out_list = out_list |> c( list(append_list) )
     names(out_list) = paste0('fit_', seq_along(out_list))
 
     # write changes to disk
