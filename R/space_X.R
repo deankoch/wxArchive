@@ -34,12 +34,12 @@
 space_X = function(r, dem, dem_knots=NULL, X_center=NULL, X_scale=NULL, intercept=FALSE) {
 
   # use bilinear averaging to project onto forecast grid
-  dem_warp = dem |> terra::project(r) |> snapKrig::sk()
+  bbox_crop = sf::st_bbox(r) |> sf::st_as_sfc() |> sf::st_transform(terra::crs(dem))
+  dem_warp = dem |> terra::crop(bbox_crop) |> terra::project(r) |> snapKrig::sk()
 
   # get dem_knots (if not supplied) from quantiles of dem
   if( is.null(dem_knots) ) {
 
-    bbox_crop = sf::st_bbox(r) |> sf::st_as_sfc() |> sf::st_transform(terra::crs(dem))
     dem_crop = dem |>  terra::crop(as(bbox_crop, 'Spatial')) |> snapKrig::sk()
     dem_knots = dem_crop[] |> stats::quantile()
   }
