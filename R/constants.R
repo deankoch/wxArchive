@@ -66,11 +66,10 @@
 .nm_resample = 'coarse_resampled'
 .nm_complete = 'completed'
 .nm_daily = 'daily'
-#.nm_export = 'export'
+.nm_export = 'export'
 
 # set of sub-directories to use for fitting temporal model and spatial model
 .nm_resample_rap = c(.nm_src_rap[['fine']], .nm_resample)
-#.nm_spatial_daily = 'spatial_daily'
 .nm_model = 'model'
 
 # set of sub-directories forming completed time series

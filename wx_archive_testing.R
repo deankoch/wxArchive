@@ -8,46 +8,6 @@ library(devtools)
 load_all()
 document()
 
-library(paws.storage)
-
-# make a session token?
-#my_token = tempdir() |> basename()
-
-# load credentials:
-# this should be a list with 'secret_access_key' and 'access_key_id' character strings
-aws_secret = file.path('D:/wxArchive/docker/aws_secret.json') |>
-  readLines() |>
-  jsonlite::fromJSON()
-
-# example file to transfer and test bucket name
-p_src = 'G:/daily/pcp_mean.nc/pcp_mean_2023.nc'
-my_bucket_nm = 'deank-wxarchive-first-bucket-test'
-
-# destination key (ie "file" name) in the bucket
-# see https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html
-p_dest = gsub(':', '', p_src)
-
-# build the AWS client config using default profile
-credentials = list(creds = aws_secret,
-                   anonymous = FALSE)
-
-# start the client and make the test bucket
-aws_client = list(credentials = credentials, region='us-east-1') |> s3()
-aws_client$create_bucket(Bucket=my_bucket_nm)
-
-# attempt a file upload
-aws_client$put_object(Body = p_src,
-                      Bucket = my_bucket_nm,
-                      Key = p_dest)
-
-# attempt a file download
-my_obj = aws_client$get_object(Bucket = my_bucket_nm,
-                               Key = p_dest)
-
-p_src_test = 'G:/daily/pcp_mean.nc/pcp_mean_2023_test.nc'
-writeBin(my_obj$Body, p_src_test)
-
-
 
 
 # path to area of interest polygon
@@ -56,7 +16,242 @@ aoi_path = project_dir |> file.path('aoi.geojson')
 aoi = sf::st_read(aoi_path)
 
 # all the output files go here
-base_dir_rap = project_dir |> file.path('rap')
+#base_dir_rap = project_dir |> file.path('rap')
+
+var_nm = .var_daily
+
+# testing spatial fit
+#var_nm = 'tmp_max'
+base_dir = project_dir |> file.path('test')
+dem_path = project_dir |> file.path('elev_m.tif')
+input_nm = .nm_daily
+model_nm = .nm_model
+n_max = 5e2
+pos = NULL
+time_fit = NULL
+
+#spatial_fit(var_nm, base_dir, dem_path, input_nm, model_nm, n_max, pos)
+
+# testing down-scale of entire grid - select subsets with poly_out
+poly_path = project_dir |> file.path('export.geojson')
+poly_in = poly_path |> sf::st_read()
+
+
+# TESTING
+xx = file.path('D:/UYRW_data', 'data/prepared/usgs_catchments.rds') |> readRDS()
+poly_out = xx$boundary
+
+# poly_out should lie entirely within AOI
+plot(aoi)
+poly_out |> sf::st_geometry() |> sf::st_transform(sf::st_crs(aoi)) |> plot(add=TRUE)
+
+## TODO: put this into a new function `nc_downscale()`
+
+poly_out = poly_out
+dem = terra::rast(dem_path)
+output_nm = output_nm = .nm_export
+var_nm = .var_daily
+base_dir
+input_nm
+model_nm
+down = 100 # downscaling factor
+edge_buffer = NULL # distance to use as buffer (default is about 1/5 side length)
+fun = 'mean'
+dates = NULL
+
+# data input/output paths (var_nm is list to ensure output paths are in list)
+input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
+var_nm = var_nm |> stats::setNames(nm=names(input_nc))
+var_nm_list = names(var_nm) |> as.list()
+output_nc = file_wx('nc', base_dir, output_nm, var_nm_list, make_dir=TRUE)
+
+# read fitted parameter values of existing models for the variable(s)
+pars_json = file_wx('spatial', base_dir, model_nm, var_nm_list, make_dir=TRUE)
+pars_json = pars_json[ sapply(pars_json, file.exists) ]
+if( length(pars_json) == 0 ) stop('model file(s) not found in ', model_nm)
+pars_all =  pars_json |> lapply(jsonlite::fromJSON)
+
+# get input grid info from first nc file
+r_grid_in = nc_chunk(input_nc[[1]][1])[1] |> terra::rast(lyrs=1)
+crs_in = terra::crs(r_grid_in)
+aoi_in = r_grid_in |> terra::ext() |> sf::st_bbox() |> sf::st_as_sfc(crs=crs_in)
+poly_in = poly_in |> sf::st_geometry() |> sf::st_transform(crs=crs_in)
+
+# set default buffer size based on source resolution
+if( is.null(edge_buffer) ) edge_buffer = sum(terra::res(r_grid_in)^2) |> sqrt()
+
+# transform output polygons to input projection and find their bounding box
+poly_out = poly_in |> sf::st_transform(crs_in)
+bbox_out = sf::st_bbox(poly_out) |> sf::st_as_sfc()
+bbox_out_big = bbox_out |> sf::st_buffer(dist=edge_buffer)
+
+plot(bbox_out_big)
+plot(bbox_out, add=T)
+plot(poly_out, add=T)
+
+# set cell values to pixel key
+r_grid_in[] = terra::ncell(r_grid_in) |> seq()
+
+# get down-scaled (no data) version of input via snapKrig then crop to bbox
+r_grid_out = r_grid_in |>
+  snapKrig::sk() |>
+  snapKrig::sk_rescale(down=down) |>
+  snapKrig::sk_export() |>
+  terra::crop(bbox_out_big, snap='out')
+
+# snapKrig version and mapping from uncropped SpatRaster
+g_input = r_grid_out |> snapKrig::sk()
+is_obs = !is.na(g_input)
+idx_obs = g_input[is_obs]
+
+# select a variable
+i = 4
+
+# use the latest parameter fit
+pars_i = pars_all[[i]][[1]]
+
+# bilinear averaging to get DEM points on same grid as r_grid_out
+X_out = r_grid_out |> space_X(dem,
+                              dem_knots = pars_i[['knots']],
+                              X_center = pars_i[['center']],
+                              X_scale = pars_i[['scale']],
+                              intercept = FALSE)
+
+g = g_input
+pars = pars_i[['pars']]
+X = X_out
+poly_list = poly_out |> split( seq_along(poly_out) )
+
+# load all data
+r_obs = input_nc[[i]] |> nc_layers()
+
+# slow loading of all required data points
+z_obs_all = r_obs |> lapply(\(x) x[][idx_obs])
+z_obs = z_obs_all[1:10]
+#  r_obs can be deleted at this point?
+
+
+xx = .nc_downscale(g, z_obs, pars, X)
+xx |> plot()
+
+
+
+split.screen(c(1,2))
+
+screen(1)
+r_obs[[2]] |> terra::crop(bbox_out_big) |> plot(reset=F)
+plot(bbox_out_big, add=T)
+plot(bbox_out, add=T)
+plot(poly_out, add=T)
+
+screen(2)
+xx |> plot()
+plot(bbox_out_big, add=T)
+plot(bbox_out, add=T)
+plot(poly_out, add=T)
+
+
+
+
+
+i = 0
+
+i = i + 1
+xx[[i]][[1]] |> plot(reset=FALSE)
+poly_list[[i]] |> plot(add=TRUE)
+
+
+
+
+# loop over layers
+j = 0
+
+j = j + 1
+
+
+#copy data to snapKrig grid
+g_input[['gval']][is_obs] = c(r_obs[[j]][][idx_obs])
+
+# universal kriging
+g_output = g_input |> snapKrig::sk_cmean(pars=pars_i[['pars']], X=X_out)
+plot(g_output, reset=F)
+poly_out |> plot(add=TRUE)
+
+
+
+
+
+
+#
+
+
+
+poly_out[3,] |> plot(add=TRUE)
+
+
+
+
+# TODO: variance?
+#g_var = g_input |> snapKrig::sk_cmean(pars=pars_i[['pars']], X=X_out, what='v')
+#plot(g_var)
+
+
+
+
+
+
+
+
+
+pts_out = r_grid_out |> snapKrig::sk() |> snapKrig::sk_coords(out='sf')
+
+plot(dem_out, reset=F)
+plot(pts_out, add=TRUE)
+plot(poly_out, add=TRUE)
+plot(bbox_out, add=TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# bounding box of input raster
+poly_bbox
+
+
+if( is.null(poly_out) ) poly_out = poly_bbox
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 start_date = NULL
 end_date = NULL
