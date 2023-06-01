@@ -1,24 +1,57 @@
-# TODO: wrapper for down-scaling
-#
-# Since downscaling is slow, this will by default only update existing files,
-# and write its outputs as nc split by year, similar to nc_update
-#
-# optionally also write plaintext output of weather aggregate values (compatible
-# with rswat? or with SWAT+ directly?)
-#
-#
-
+#' Down-scale a spatio-temporal time series in a set of NetCDF files
+#'
+#' This is a wrapper for `.nc_downscale` that down-scales - ie predicts at finer
+#' resolution - the gridded time series data in `input_nm`. By default it writes
+#' a new (set of) NetCDF file(s) in the sub-directory `output_nm` of `base_dir`,
+#' with one (set) per variable named in `var_nm`.
+#'
+#' Down-scaling happens by universal kriging using the fitted spatial covariance
+#' parameters saved in the folder named in `model_nm` (generate this using
+#' `space_fit`), and using covariates generated from the digital elevation model
+#' in `dem` (with values in metres). Argument `down` is the (integer) factor by
+#' which the grid spacing is decreased: eg. `down=2` "doubles the resolution" by
+#' inserting one new grid point in between each existing pair of grid points.
+#'
+#' If `poly_out` is supplied, the function crops the output to each polygon and
+#' writes a separate NetCDF file for each one, using an integer-valued suffix
+#' in the filename corresponding to the order of the polygons in `poly_out`.
+#'
+#' If `fun` is supplied, the function uses the named function to aggregate the
+#' data values over the supplied polygons (within each date), and writes its
+#' results in a plain text table on disk. Set `write_nc=FALSE` to skip writing
+#' the NetCDF files (the function will still write the aggregate data).
+#'
+#' The function conditions its predictions on a subset of the input grid covering
+#' the desired output region, buffered by the distance `edge_buffer` (in m). By
+#' default this is set to the diagonal length of a single grid cell in the input.
+#'
+#' @param base_dir path to parent directory of GRIB storage subfolder
+#' @param dem SpatRaster of elevation data at finer resolution than the input data
+#' @param down integer, the down-scaling factor
+#' @param input_nm character, the sub-directory name of input to process
+#' @param model_nm character, the sub-directory name where the model files can be found
+#' @param output_nm character, the sub-directory name for output
+#' @param var_nm character vector, the name(s) of the variable to process
+#' @param poly_out sfc object, polygons of interest
+#' @param edge_buffer numeric, length in metres to buffer input data (see details)
+#' @param fun character, naming a function to use for spatial aggregation
+#' @param dates Date vector, the dates to process (NULL for all)
+#' @param write_nc logical, set `FALSE` to disable writing NetCDF files on disk
+#'
+#' @return
+#' @export
 nc_downscale = function(base_dir,
                         dem,
+                        down = 100,
                         input_nm = .nm_daily,
                         model_nm = .nm_model,
-                        poly_out = NULL,
                         output_nm = .nm_export,
                         var_nm = .var_daily,
-                        down = 100,
+                        poly_out = NULL,
                         edge_buffer = NULL,
                         fun = NULL,
-                        dates = NULL) {
+                        dates = NULL,
+                        write_nc = TRUE) {
 
   # var_nm is list to ensure input/output paths are lists too
   input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
@@ -40,6 +73,8 @@ nc_downscale = function(base_dir,
   r_grid_in = nc_chunk(input_nc[[1]][1])[1] |> terra::rast(lyrs=1)
   crs_in = terra::crs(r_grid_in)
   aoi_in = r_grid_in |> terra::ext() |> sf::st_bbox() |> sf::st_as_sfc()
+
+  # setting "unnamed" crs works this way but not with sf::st_as_sfc(crs=crs_in)
   sf::st_crs(aoi_in) = crs_in
 
   # set default polygon (whole extent)
@@ -47,8 +82,8 @@ nc_downscale = function(base_dir,
   poly_out = poly_out |> sf::st_geometry() |> sf::st_transform(crs_in)
   poly_list = poly_out |> split( seq_along(poly_out) )
 
-  # set default buffer size based on source resolution
-  if( is.null(edge_buffer) ) edge_buffer = sum(terra::res(r_grid_in)^2) |> sqrt()
+  # set default buffer size in m (length of grid cell diagonal in source)
+  if( is.null(edge_buffer) ) edge_buffer = sum( terra::res(r_grid_in)^2 ) |> sqrt()
 
   # transform output polygons to input projection and find their bounding box
   bbox_out = sf::st_bbox(poly_out) |> sf::st_as_sfc()
@@ -63,69 +98,83 @@ nc_downscale = function(base_dir,
   # set cell values to pixel key
   r_grid_in[] = terra::ncell(r_grid_in) |> seq()
 
-  # get down-scaled (no data) version of input via snapKrig then crop to bbox
+  # define output grid: down-scale (no data) version of input via snapKrig then crop to bbox
   r_grid_out = r_grid_in |>
     snapKrig::sk() |>
     snapKrig::sk_rescale(down=down) |>
     snapKrig::sk_export() |>
     terra::crop(bbox_out_big, snap='out')
 
-  # snapKrig version and mapping from uncropped SpatRaster
+  # reshape as sk object and find mapping from un-cropped SpatRaster
   g_input = r_grid_out |> snapKrig::sk()
   is_obs = !is.na(g_input)
   idx_obs = g_input[is_obs]
 
-  # select a variable
-  v = 4
+  # loop over variables
+  for( v in seq_along(input_nc) ) {
 
-  # copy existing dates
-  time_out = output_var_info[[v]][['time_obs']]
-  time_in = input_var_info[[v]][['time_obs']]
-  if( is.null(time_in) ) next
+    paste0('\n\nprocessing ', var_nm_list[[v]], '...') |> cat()
 
-  # set default dates to modify
-  time_mod = time_in
-  if( !is.null(time_out) ) {
+    # copy existing dates
+    time_out = output_var_info[[v]][['time_obs']]
+    time_in = input_var_info[[v]][['time_obs']]
+    if( is.null(time_in) )  {
 
-    # existing dates are left alone by default
-    if( is.null(dates) ) dates = time_mod[ !( time_mod %in% time_in ) ]
+      cat('\nup to date')
+      next
+    }
+
+    # set default dates to modify
+    time_mod = time_in
+    if( !is.null(time_out) ) {
+
+      # existing dates are left alone by default
+      if( is.null(dates) ) dates = time_mod[ !( time_mod %in% time_out ) ]
+    }
+
+    # filter to the user-specified range
+    if( !is.null(dates) ) time_mod = time_mod[ time_mod %in% dates ]
+    if( length(time_mod) == 0 ) {
+
+      cat('\nup to date')
+      next
+    }
+
+    # use the latest parameter fit
+    pars_v = pars_all[[v]][[1]]
+
+    # bilinear averaging to get DEM points on same grid as r_grid_out
+    X_out = r_grid_out |> space_X(dem,
+                                  dem_knots = pars_v[['knots']],
+                                  X_center = pars_v[['center']],
+                                  X_scale = pars_v[['scale']],
+                                  intercept = FALSE)
+
+    # loop over years
+    time_split = time_mod |> split(format(time_mod, '%Y'))
+    for( y in seq_along(time_split) ) {
+
+      # load all required grid values to list of vectors (each one corresponds to a date)
+      z_obs = input_nc[[v]] |> nc_layers(times=time_split[[y]]) |> lapply(\(x) x[][idx_obs])
+
+      # downscale in a loop over dates (returns in a list one SpatRaster per polygon)
+      g_output = .nc_downscale(g_input, z_obs, pars_v[['pars']], X_out, poly_list)
+      for( p in length(g_output) ) terra::time( g_output[[p]] ) = time_split[[y]]
+    }
+
+
+
+
+
+
+
+
+
+
+    g_output[[1]][[1]] |> plot()
+    plot(poly_out, add=T)
+
   }
-
-  # filter to the user-specified range
-  if( !is.null(dates) ) time_mod = time_mod[ time_mod %in% dates ]
-  if( length(time_mod) ) next
-
-  # use the latest parameter fit
-  pars_v = pars_all[[v]][[1]]
-
-  # bilinear averaging to get DEM points on same grid as r_grid_out
-  X_out = r_grid_out |> space_X(dem,
-                                dem_knots = pars_v[['knots']],
-                                X_center = pars_v[['center']],
-                                X_scale = pars_v[['scale']],
-                                intercept = FALSE)
-
-  # loop over years
-  time_split = time_mod |> split(format(time_mod, '%Y'))
-  for( i in seq_along(time_split) ) {
-
-    # load all requested layers and copy the required grid values to list of vectors
-    z_obs = input_nc[[v]] |> nc_layers(times=time_split[[i]]) |> lapply(\(x) x[][idx_obs])
-
-    # downscale layers in a loop
-    g_output = .nc_downscale(g_input, z_obs, pars_v[['pars']], X_out, poly_list)
-    if( !is.list(g_output) ) g_output = list(g_output)
-    for(j in length(g_output) ) terra::time( g_output[[j]] ) = time_split[[i]]
-  }
-
-
-
-
-
-
-  g_output[[12]][[1]] |> plot()
-  plot(poly_out, add=T)
-
 
 
 }
