@@ -4,7 +4,7 @@
 \alias{nc_write_chunk}
 \title{Write time series data to NetCDF files that are chunked by year}
 \usage{
-nc_write_chunk(r, p, name_only = FALSE)
+nc_write_chunk(r, p, name_only = FALSE, insert = FALSE)
 }
 \arguments{
 \item{r}{SpatRaster to write}
@@ -12,6 +12,8 @@ nc_write_chunk(r, p, name_only = FALSE)
 \item{p}{path to the output directory}
 
 \item{name_only}{logical, if TRUE the function writes nothing}
+
+\item{insert}{logical, enables replacement of existing times (passed to \code{nc_write})}
 }
 \value{
 a list of times (the result of \code{nc_write} for each year in \code{r})

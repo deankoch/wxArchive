@@ -2,28 +2,23 @@
 #'
 #' This is a wrapper for `.nc_downscale` that down-scales - ie predicts at finer
 #' resolution - the gridded time series data in `input_nm`. By default it writes
-#' a new (set of) NetCDF file(s) in the sub-directory `output_nm` of `base_dir`,
-#' with one (set) per variable named in `var_nm`.
+#' a set of (yearly) NetCDF files in the sub-directory `output_nm` of `base_dir`,
+#' with one set for each of the variables named in `var_nm`.
 #'
 #' Down-scaling happens by universal kriging using the fitted spatial covariance
 #' parameters saved in the folder named in `model_nm` (generate this using
 #' `space_fit`), and using covariates generated from the digital elevation model
-#' in `dem` (with values in metres). Argument `down` is the (integer) factor by
-#' which the grid spacing is decreased: eg. `down=2` "doubles the resolution" by
-#' inserting one new grid point in between each existing pair of grid points.
+#' in `dem` (with values in metres).
 #'
-#' If `poly_out` is supplied, the function crops the output to each polygon and
-#' writes a separate NetCDF file for each one, using an integer-valued suffix
-#' in the filename corresponding to the order of the polygons in `poly_out`.
+#' Argument `down` is the (integer) factor by which the grid spacing is decreased:
+#' eg. `down=2` "doubles the resolution" by inserting a new grid point in between
+#' each existing pair of (adjacent) grid points.
 #'
-#' If `fun` is supplied, the function uses the named function to aggregate the
-#' data values over the supplied polygons (within each date), and writes its
-#' results in a plain text table on disk. Set `write_nc=FALSE` to skip writing
-#' the NetCDF files (the function will still write the aggregate data).
-#'
-#' The function conditions its predictions on a subset of the input grid covering
-#' the desired output region, buffered by the distance `edge_buffer` (in m). By
-#' default this is set to the diagonal length of a single grid cell in the input.
+#' Specify an area of interest with `poly_out`. The function conditions its
+#' predictions on a subset of the input grid covering `poly_out`, buffered by
+#' the distance `edge_buffer` (in m). By default this is set to the diagonal length
+#' of a single grid cell. Setting this to a large number (eg the side length of your
+#' domain) will ensure that all observations are considered in predictions.
 #'
 #' @param base_dir path to parent directory of GRIB storage subfolder
 #' @param dem SpatRaster of elevation data at finer resolution than the input data
@@ -32,13 +27,11 @@
 #' @param model_nm character, the sub-directory name where the model files can be found
 #' @param output_nm character, the sub-directory name for output
 #' @param var_nm character vector, the name(s) of the variable to process
-#' @param poly_out sfc object, polygons of interest
+#' @param poly_out sfc object, polygon of interest
 #' @param edge_buffer numeric, length in metres to buffer input data (see details)
-#' @param fun character, naming a function to use for spatial aggregation
 #' @param dates Date vector, the dates to process (NULL for all)
-#' @param write_nc logical, set `FALSE` to disable writing NetCDF files on disk
 #'
-#' @return
+#' @return returns nothing but possibly modifes the NetCDF data in `output_nm`
 #' @export
 nc_downscale = function(base_dir,
                         dem,
@@ -59,28 +52,27 @@ nc_downscale = function(base_dir,
   var_nm_list = names(var_nm) |> as.list()
   output_nc = file_wx('nc', base_dir, output_nm, var_nm_list, make_dir=TRUE)
 
+  # check for available input and existing output dates
+  input_var_info = lapply(input_nc, \(p) time_wx(p))
+  output_var_info = lapply(output_nc, \(p) time_wx(p))
+
   # read fitted parameter values of existing models for the variable(s)
   pars_json = file_wx('spatial', base_dir, model_nm, var_nm_list, make_dir=TRUE)
   pars_json = pars_json[ sapply(pars_json, file.exists) ]
   if( length(pars_json) == 0 ) stop('model file(s) not found in ', model_nm)
   pars_all =  pars_json |> lapply(jsonlite::fromJSON)
 
-  # check for available input and existing output dates
-  input_var_info = lapply(input_nc, \(p) time_wx(p))
-  output_var_info = lapply(output_nc, \(p) time_wx(p))
-
   # get input grid info from first nc file
   r_grid_in = nc_chunk(input_nc[[1]][1])[1] |> terra::rast(lyrs=1)
   crs_in = terra::crs(r_grid_in)
   aoi_in = r_grid_in |> terra::ext() |> sf::st_bbox() |> sf::st_as_sfc()
 
-  # setting "unnamed" crs works this way but not with sf::st_as_sfc(crs=crs_in)
+  # apparently setting "unnamed" crs works this way but not with sf::st_as_sfc(crs=crs_in)?
   sf::st_crs(aoi_in) = crs_in
 
   # set default polygon (whole extent)
   if( is.null(poly_out) ) poly_out = aoi_in
   poly_out = poly_out |> sf::st_geometry() |> sf::st_transform(crs_in)
-  poly_list = poly_out |> split( seq_along(poly_out) )
 
   # set default buffer size in m (length of grid cell diagonal in source)
   if( is.null(edge_buffer) ) edge_buffer = sum( terra::res(r_grid_in)^2 ) |> sqrt()
@@ -88,12 +80,6 @@ nc_downscale = function(base_dir,
   # transform output polygons to input projection and find their bounding box
   bbox_out = sf::st_bbox(poly_out) |> sf::st_as_sfc()
   bbox_out_big = bbox_out |> sf::st_buffer(dist=edge_buffer)
-
-  # DEBUGGING
-  plot(aoi_in)
-  plot(bbox_out_big, add=T)
-  plot(bbox_out, add=T)
-  plot(poly_out, add=T)
 
   # set cell values to pixel key
   r_grid_in[] = terra::ncell(r_grid_in) |> seq()
@@ -154,29 +140,21 @@ nc_downscale = function(base_dir,
     time_split = time_mod |> split(format(time_mod, '%Y'))
     for( y in seq_along(time_split) ) {
 
+      cat('\nyear', names(time_split)[y])
+
       # load all required grid values to list of vectors (each one corresponds to a date)
       z_obs = input_nc[[v]] |> nc_layers(times=time_split[[y]]) |> lapply(\(x) x[][idx_obs])
 
       # downscale in a loop over dates (returns in a list one SpatRaster per polygon)
-      g_output = .nc_downscale(g_input, z_obs, pars_v[['pars']], X_out, poly_list)
-      for( p in length(g_output) ) terra::time( g_output[[p]] ) = time_split[[y]]
+      r_output = .nc_downscale(g_input, z_obs, pars_v[['pars']], X_out)
+      terra::time(r_output) = time_split[[y]]
+
+      # write outputs
+      cat('\nupdating .nc files')
+      nc_write_chunk(r=r_output, p=output_nc[[v]], insert=TRUE)
+      cat('done\n')
     }
-
-
-
-
-
-
-
-
-
-
-    g_output[[1]][[1]] |> plot()
-    plot(poly_out, add=T)
-
   }
-
-
 }
 
 
@@ -217,7 +195,7 @@ nc_downscale = function(base_dir,
   is_aggregate = !is.null(fun)
 
   # loop over layers
-  cat('\nprocessing', n_layer, 'layer(s)...\n')
+  cat('\ndownscaling', n_layer, 'layer(s)...\n')
   if(n_layer > 1) pb = utils::txtProgressBar(max=n_layer, style=3)
   list_out = vector(mode='list', length=n_layer)
   for( j in seq(n_layer) ) {

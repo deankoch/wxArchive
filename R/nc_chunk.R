@@ -56,10 +56,11 @@ nc_chunk = function(p, check_ext=TRUE) {
 #' @param r SpatRaster to write
 #' @param p path to the output directory
 #' @param name_only logical, if TRUE the function writes nothing
+#' @param insert logical, enables replacement of existing times (passed to `nc_write`)
 #'
 #' @return a list of times (the result of `nc_write` for each year in `r`)
 #' @export
-nc_write_chunk = function(r, p, name_only=FALSE) {
+nc_write_chunk = function(r, p, name_only=FALSE, insert=FALSE) {
 
   # create/scan output directory for chunked files
   p_chunk = nc_chunk(p)
@@ -79,7 +80,7 @@ nc_write_chunk = function(r, p, name_only=FALSE) {
 
   # create/overwrite chunks in a loop over years
   cat('\n')
-  time_out = years |> lapply(\(yr) nc_write(r[[all_years == yr]], file.path(p, f[yr])) )
+  time_out = years |> lapply(\(yr) nc_write(r[[all_years == yr]], file.path(p, f[yr]), insert=insert) )
   return( invisible() )
 }
 

@@ -8,8 +8,6 @@ library(devtools)
 load_all()
 document()
 
-
-
 # path to area of interest polygon
 data_dir = project_dir = 'G:'
 aoi_path = project_dir |> file.path('aoi.geojson')
@@ -54,10 +52,26 @@ var_nm = .var_daily
 base_dir
 input_nm
 model_nm
-down = 100 # downscaling factor
-edge_buffer = NULL # distance to use as buffer (default is about 1/5 side length)
-fun = 'mean'
+down = 2 # downscaling factor
+edge_buffer = NULL
 dates = NULL
+write_nc = TRUE
+
+nc_downscale(base_dir,
+             dem,
+             down = 2,
+             input_nm = .nm_daily,
+             model_nm = .nm_model,
+             output_nm = .nm_export,
+             var_nm = .var_daily,
+             poly_out = NULL,
+             edge_buffer = NULL,
+             fun = NULL,
+             dates = NULL,
+             write_nc = TRUE)
+
+
+
 
 # data input/output paths (var_nm is list to ensure output paths are in list)
 input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
