@@ -5,6 +5,13 @@
 # [operation] probably one of "list", "update_all", "daily" or "extract"
 # [start_date] start of the date range for updates or outputs
 # [end_date] end of the date range for updates or outputs
+#
+# TODO list
+#
+# * fix posix_rel in grib_df, which is getting turned into integer somewhere (then rebuild CSVs)
+# * configure aggregation workflow (and everything that follows) to overwrite from a saved date
+# *
+# *
 
 library(wxArchive)
 
@@ -87,7 +94,7 @@ if( operation %in% c('update_all') ) data_dir |> wxArchive::workflow_wnd_rap()
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> wxArchive::workflow_update_gfs()
 
 # for each variable this will write a copy of the completed time series in one file
-if( operation %in% c('daily', 'update_all') ) data_dir |> wxArchive::workflow_daily()
+#if( operation %in% c('daily', 'update_all') ) data_dir |> wxArchive::workflow_daily()
 if( operation == 'fit_daily') stop('fit_daily not yet implemented')
 if( operation == 'export') stop('export not yet implemented. Are you looking for "daily"?')
 
