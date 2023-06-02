@@ -17,7 +17,7 @@ workflow_daily(project_dir, from = NULL, to = NULL, tz = "MST")
 returns nothing but possible writes to \code{project_dir}
 }
 \description{
-Wrapper for \code{nc_aggregate}
+Wrapper for \code{nc_aggregate_time}
 }
 \details{
 This prepares five output variables aggregated to daily average, or maximum or minimum.

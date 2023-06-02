@@ -47,7 +47,7 @@ nc_export = function(base_dir,
   #   r_i = if( is_agg ) {
   #
   #     # aggregate to daily
-  #     r_out = p_fetch[[i]] |> .nc_aggregate(fun=fun, tz=tz, origin_hour=origin_hour) |> terra::rast()
+  #     r_out = p_fetch[[i]] |> .nc_aggregate_time(fun=fun, tz=tz, origin_hour=origin_hour) |> terra::rast()
   #     terra::time(r_out) = as.Date(names(r_out))
   #     r_out
   #

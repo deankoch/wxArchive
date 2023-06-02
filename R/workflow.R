@@ -395,7 +395,7 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
 
 #' Exported completed time series to daily aggregate values and write to disk
 #'
-#' Wrapper for `nc_aggregate`
+#' Wrapper for `nc_aggregate_time`
 #'
 #' This prepares five output variables aggregated to daily average, or maximum or minimum.
 #' The pairing of variable names and aggregation functions is set up in the global
@@ -417,7 +417,7 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
 
   # TODO: implement from/to
   # export all in a loop
-  export_paths = .var_daily_pairs |> lapply(\(x) nc_aggregate(base_dir = project_dir,
+  export_paths = .var_daily_pairs |> lapply(\(x) nc_aggregate_time(base_dir = project_dir,
                                                               var_nm = x['var'],
                                                               output_nm = .nm_daily,
                                                               fun = x['fun'],

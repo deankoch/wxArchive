@@ -6,9 +6,9 @@
 #'
 #' If `fun=NULL`, the function does no aggregation and writes all time points.
 #'
-#' If `fun` is not `NULL` then the last three arguments are passed to `.nc_aggregate` to control
+#' If `fun` is not `NULL` then the last three arguments are passed to `.nc_aggregate_time` to control
 #' the alignment of the aggregation window. `fun` specifies the function to use for combining
-#' times within the window (see `?.nc_aggregate`).  Set `tz` to the desired output time
+#' times within the window (see `?.nc_aggregate_time`).  Set `tz` to the desired output time
 #' zone, and leave `origin_hour=0` to have each day begin at 12AM (in time zone `tz`).
 #'
 #' File names for aggregate data are given the suffix `_daily_<fun>` - eg with `fun='mean'`,
@@ -17,13 +17,13 @@
 #' @param base_dir path to parent directory of GRIB storage subfolder
 #' @param var_nm character vector, the variable(s) to export (NULL to export all)
 #' @param output_nm character, the sub-directory name for output
-#' @param fun function, a function name like "mean", "min", or "max" (see `?.nc_aggregate`)
+#' @param fun function, a function name like "mean", "min", or "max" (see `?.nc_aggregate_time`)
 #' @param tz character time zone for `origin_hour`
 #' @param origin_hour integer, steps are aligned to start at this hour of the day
 #'
 #' @return vector of file paths written to the `output_nm` directory
 #' @export
-nc_aggregate = function(base_dir,
+nc_aggregate_time = function(base_dir,
                         var_nm = NULL,
                         output_nm = .nm_daily,
                         fun = 'mean',
@@ -67,7 +67,7 @@ nc_aggregate = function(base_dir,
 
         # aggregate to daily (NULL if failed)
         aggregate_result = p_fetch[[i]] |>
-          .nc_aggregate(times=time_i_yr, fun=fun, tz=tz, origin_hour=origin_hour)
+          .nc_aggregate_time(times=time_i_yr, fun=fun, tz=tz, origin_hour=origin_hour)
 
         # skip when there are not enough layers to make a single day
         if( is.null(aggregate_result) ) {
@@ -107,7 +107,7 @@ nc_aggregate = function(base_dir,
 
 #' Aggregate sub-daily data to daily
 #'
-#' Helper function for `nc_aggregate`
+#' Helper function for `nc_aggregate_time`
 #'
 #' Returns a list of SpatRasters, one for each day in the time series `p`. Times
 #' within a given day are aggregated using the function `fun` should be a string
@@ -126,7 +126,7 @@ nc_aggregate = function(base_dir,
 #'
 #' @return SpatRaster, the aggregated data or NULL
 #' @export
-.nc_aggregate = function(p, times=NULL, fun='mean', tz='UTC', origin_hour=0L) {
+.nc_aggregate_time = function(p, times=NULL, fun='mean', tz='UTC', origin_hour=0L) {
 
   # check all available times
   cat('\nchecking times in', length(p), 'file(s)')
