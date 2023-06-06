@@ -175,6 +175,9 @@ time_json = function(nc_path) {
   # return NA for invalid input
   if( ( length(nc_path) == 0 ) | !is.character(nc_path) ) return(NA)
 
+  # helper function to handle input that could be POSIX date or empty
+  my_char2p = \(x) if( length(x) > 0 ) as.POSIXct(x, tz='UTC') else list()
+
   # expect like-named JSONs in subdirectory "time"
   json_nm = nc_path |> tools::file_path_sans_ext() |> basename() |> paste0('.json')
   json_path = file.path(dirname(nc_path), 'time', json_nm)
@@ -195,7 +198,6 @@ time_json = function(nc_path) {
 
       # convert character to POSIXct
       nm_posix = c('time', 'time_na', 'time_obs')
-      my_char2p = \(x) if( length(x) > 0 ) as.POSIXct(x, tz='UTC') else list()
       json_data[nm_posix] = json_data[nm_posix] |> sapply(my_char2p)
       json_data
 

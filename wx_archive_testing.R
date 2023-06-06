@@ -8,6 +8,47 @@ library(devtools)
 load_all()
 document()
 
+###
+##
+# TESTING NEW TIME AGGREGATION UPDATER
+
+data_dir = project_dir = 'G:'
+from=NULL
+to=NULL
+tz='MST'
+
+k = 2
+var_nm = .var_daily_pairs[[k]][['var']]
+fun = .var_daily_pairs[[k]][['fun']]
+base_dir = project_dir
+output_nm = .nm_daily
+origin_hour = 0L
+
+nc_aggregate_time(base_dir,
+                  var_nm,
+                  output_nm,
+                  fun ,
+                  tz,
+                  origin_hour)
+
+#
+# *
+## *   \
+### * *  \
+#### \ \ / /
+# --> --> - -=-o
+#### / / \ \
+### * *  /
+## *   /
+# *
+#
+
+
+###
+##
+#### SPATIAL MODELLING
+####
+
 # path to area of interest polygon
 data_dir = project_dir = 'G:'
 aoi_path = project_dir |> file.path('aoi.geojson')
@@ -845,7 +886,7 @@ times
 #project_dir |> workflow_list()
 p_all = project_dir |> workflow_list(quiet=TRUE)
 p = p_all[[2]]
-r = nc_aggregate(p)
+r = nc_aggregate_time(p)
 
 r[[1]] |> plot()
 

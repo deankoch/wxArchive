@@ -47,6 +47,12 @@ nc_list = function(base_dir,
   if( is_gfs & !is_rap ) return( gfs_nc_path )
 
   # return both (order establishes preference for RAP/RUC archive over GFS)
-  p_all = Map(\(rap, gfs) c(rap, gfs), rap = rap_nc_path, gfs = gfs_nc_path)
+  p_all = Map(\(rap, gfs) {
+
+    src_nm = c(rep('rap', length(rap)), rep('gfs', length(gfs)))
+    c(rap, gfs) |> stats::setNames(src_nm)
+
+  }, rap = rap_nc_path, gfs = gfs_nc_path)
+
   return(p_all)
 }
