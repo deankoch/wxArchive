@@ -413,14 +413,18 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
   message('merging data and exporting to file')
 
   # delete the old export directory
-  project_dir |> file.path(.nm_daily) |> unlink(recursive=TRUE)
+  #project_dir |> file.path(.nm_daily) |> unlink(recursive=TRUE)
+
+  # TODO: look up latest RAP archive date
 
   # TODO: implement from/to
   # export all in a loop
-  export_paths = .var_daily_pairs |> lapply(\(x) nc_aggregate_time(base_dir = project_dir,
-                                                              var_nm = x['var'],
-                                                              output_nm = .nm_daily,
-                                                              fun = x['fun'],
-                                                              tz = tz))
+  export_paths = .var_daily_pairs |>
+    lapply(\(x) nc_aggregate_time(base_dir = project_dir,
+                                  var_nm = x['var'],
+                                  output_nm = .nm_daily,
+                                  fun = x['fun'],
+                                  tz = tz))
+
 }
 

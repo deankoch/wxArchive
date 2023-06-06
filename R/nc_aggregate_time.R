@@ -4,12 +4,22 @@
 #' `var_nm` by applying the function named in `fun` to aggregate by day. `var_nm` should
 #' be a subset of the names returned by `nc_list(base_dir)`.
 #'
-#' If `fun=NULL`, the function does no aggregation and writes all time points.
+#' If `fun=NULL`, the function does no aggregation and writes all times to the output file.
 #'
-#' If `fun` is not `NULL` then the last three arguments are passed to `.nc_aggregate_time` to control
-#' the alignment of the aggregation window. `fun` specifies the function to use for combining
-#' times within the window (see `?.nc_aggregate_time`).  Set `tz` to the desired output time
-#' zone, and leave `origin_hour=0` to have each day begin at 12AM (in time zone `tz`).
+#' If `fun` is not `NULL` then the last three arguments are passed to `.nc_aggregate_time` to
+#' control the alignment of the aggregation window. `fun` specifies the function to use for
+#' combining times within the window (see `?.nc_aggregate_time`).  Set `tz` to the desired
+#' output time zone, and leave `origin_hour=0` to have each day begin at 12AM (in time zone
+#' `tz`).
+#'
+#' Use `from` and `to` to specify a date range to update (inclusive), or leave them `NULL`
+#' to use a default range. The default range is meant to all layers originating from GFS
+#' (allowing them to be can be replaced by newly added RAP layers, or more recently released
+#' GFS forecasts).
+#'
+#' The default for `to` is always the latest available date in the input. The default for
+#' `from` is 10 days before the latest date found in the existing output files. If there
+#' are no existing outputs, the default is set to the earliest available date in the input.
 #'
 #' File names for aggregate data are given the suffix `_daily_<fun>` - eg with `fun='mean'`,
 #' the output "tmp.nc" becomes "tmp_daily_mean.nc".
@@ -20,16 +30,19 @@
 #' @param fun function, a function name like "mean", "min", or "max" (see `?.nc_aggregate_time`)
 #' @param tz character time zone for `origin_hour`
 #' @param origin_hour integer, steps are aligned to start at this hour of the day
+#' @param from Date, the start of the date range to process (in time zone `tz`)
+#' @param to Date, the end of the date range to process (in time zone `tz`)
 #'
 #' @return vector of file paths written to the `output_nm` directory
 #' @export
 nc_aggregate_time = function(base_dir,
-                        var_nm = NULL,
-                        output_nm = .nm_daily,
-                        fun = 'mean',
-                        tz = 'UTC',
-                        origin_hour = 0L) {
-
+                             var_nm = NULL,
+                             output_nm = .nm_daily,
+                             fun = 'mean',
+                             tz = 'UTC',
+                             origin_hour = 0L,
+                             from = NULL,
+                             to = NULL) {
 
   # get list of all relevant input netCDF files
   p_all = nc_list(base_dir)
@@ -41,10 +54,14 @@ nc_aggregate_time = function(base_dir,
   if( any(!is_valid) ) stop(msg_invalid)
   p_fetch = p_all[var_nm]
 
-  # define output files
+  # define output directory
   output_nc = file_wx('nc', base_dir, output_nm, as.list(var_nm), make_dir=TRUE)
   is_agg = !is.null(fun)
   if( is_agg ) output_nc = gsub('.nc$',  paste0('_', fun, '.nc'), output_nc)
+
+  # copy existing output dates
+  date_existing = time_wx( nc_chunk(output_nc) )[['time_obs']]
+  is_initial = length(date_existing) == 0
 
   # loop over files
   for( i in seq_along(p_fetch) ) {
@@ -52,8 +69,38 @@ nc_aggregate_time = function(base_dir,
     cat('\nprocessing', names(p_fetch)[[i]], '...')
     t1 = proc.time()
 
-    # split by year
+    # find available times from RAP/GFS combined
     time_i = time_wx(p_fetch[[i]])[['time_obs']]
+    if( length(time_i) == 0 ) {
+
+      cat('nothing to write\n')
+      next
+    }
+
+    # set default starting/ending times
+    if( is.null(to) ) to = max(time_i)
+    if( is.null(from) ) {
+
+      # on first call this writes everything
+      from = min(time_i)
+
+      # subsequently the default start time is 10 days before latest time
+      if(!is_initial) from = as.POSIXct(max(date_existing)) - ( 10 * (60*60*24) )
+    }
+
+    # silently fix invalid start/end times
+    if( from < min(time_i) ) from = min(time_i)
+    if( to > max(time_i) ) to = max(time_i)
+
+    # filter to requested range
+    time_i = time_i[ ( time_i >= from ) & ( time_i <= to ) ]
+    if( length(time_i) == 0 ) {
+
+      cat('nothing to write\n')
+      next
+    }
+
+    # split by year
     yr_i = time_i |> format('%Y', tz=tz)
     yr_unique = yr_i |> unique()
     cat('\nprocessing', length(yr_unique), 'year(s)...\n')
@@ -66,8 +113,10 @@ nc_aggregate_time = function(base_dir,
       r_i = if( is_agg ) {
 
         # aggregate to daily (NULL if failed)
-        aggregate_result = p_fetch[[i]] |>
-          .nc_aggregate_time(times=time_i_yr, fun=fun, tz=tz, origin_hour=origin_hour)
+        aggregate_result = p_fetch[[i]] |> .nc_aggregate_time(times = time_i_yr,
+                                                              fun = fun,
+                                                              tz = tz,
+                                                              origin_hour = origin_hour)
 
         # skip when there are not enough layers to make a single day
         if( is.null(aggregate_result) ) {
@@ -88,7 +137,7 @@ nc_aggregate_time = function(base_dir,
       }
 
       # create the output nc file and write to it
-      r_i |> nc_write_chunk(output_nc[[i]])
+      r_i |> nc_write_chunk(output_nc[[i]], insert=TRUE)
 
       # remove the large source raster from memory
       rm(r_i)
@@ -99,8 +148,8 @@ nc_aggregate_time = function(base_dir,
     cat('\nfinished in', round((t2-t1)['elapsed'] / 60, 2), 'minutes.\n')
   }
 
-  # report all files written
-  return(output_nc)
+  # report the file paths of the times series that was modified
+  return( nc_chunk(output_nc) )
 }
 
 
