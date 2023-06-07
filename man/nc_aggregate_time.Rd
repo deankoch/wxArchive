@@ -28,9 +28,9 @@ nc_aggregate_time(
 
 \item{origin_hour}{integer, steps are aligned to start at this hour of the day}
 
-\item{from}{Date, the start of the date range to process (in time zone \code{tz})}
+\item{from}{POSIXct, the start of the time range to process}
 
-\item{to}{Date, the end of the date range to process (in time zone \code{tz})}
+\item{to}{POSIXct, the end of the time range to process}
 }
 \value{
 vector of file paths written to the \code{output_nm} directory

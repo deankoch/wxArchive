@@ -55,12 +55,12 @@ nc_chunk = function(p, check_ext=TRUE) {
 #'
 #' @param r SpatRaster to write
 #' @param p path to the output directory
-#' @param name_only logical, if TRUE the function writes nothing
+#' @param path_only logical, if TRUE the function creates the directory but writes nothing to it
 #' @param insert logical, enables replacement of existing times (passed to `nc_write`)
 #'
 #' @return a list of times (the result of `nc_write` for each year in `r`)
 #' @export
-nc_write_chunk = function(r, p, name_only=FALSE, insert=FALSE) {
+nc_write_chunk = function(r, p, path_only=FALSE, insert=FALSE) {
 
   # create/scan output directory for chunked files
   p_chunk = nc_chunk(p)
@@ -76,11 +76,17 @@ nc_write_chunk = function(r, p, name_only=FALSE, insert=FALSE) {
   if( is.null(all_years) ) stop('terra::time(r) was NULL (expected POSIXct times or Dates)')
   years = unique(all_years) |> sort()
   f = paste0(nm, '_', years, '.nc') |> stats::setNames(years)
-  if( name_only ) return(f)
+  if( path_only ) return(file.path(p, f))
 
   # create/overwrite chunks in a loop over years
   cat('\n')
-  time_out = years |> lapply(\(yr) nc_write(r[[all_years == yr]], file.path(p, f[yr]), insert=insert) )
+  for(yr in years) {
+
+    # explicitly remove the large raster from RAM after the write completes
+    nc_write(r=r[[all_years == yr]], p=file.path(p, f[yr]), insert=insert)
+    gc()
+  }
+
   return( invisible() )
 }
 

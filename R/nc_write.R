@@ -54,27 +54,24 @@ nc_write = function(r, p, quiet=FALSE, insert=FALSE) {
     return( as.POSIXct(integer(0), tz='UTC') )
   }
 
-  # +0 forces data into RAM
+  # explicitly remove source raster from RAM after copying relevant layers
   if( !quiet ) cat('\nloading and sorting', sum(is_new), 'input SpatRaster layer(s)')
-  r_add = r[[ which(is_new) ]] + 0
+  r_out = r[[ which(is_new) ]]
+  rm(r)
+  gc()
 
   # merge new and old layers in memory
-  if( !is_update | ( length(p_time_fetch) == 0 ) ) { r_out = r_add } else {
+  if( is_update & ( length(p_time_fetch) != 0 ) ) {
 
     if( !quiet ) cat('\nmerging with', length(p_time_fetch), 'existing nc layer(s)')
-    r_existing = p |> nc_layers(times=p_time_fetch, preload=TRUE)
-    r_out = c(r_existing, r_add)
-    rm(r_existing)
+    r_out = nc_layers(p, times=p_time_fetch, preload=TRUE) |> c(r_out)
     gc()
   }
-
-  # clear unused raster data from memory
-  rm(r_add)
-  gc()
 
   # sort and name output layers
   r_out = r_out[[ order(terra::time(r_out)) ]]
   names(r_out) = paste0('lyr_', seq(terra::nlyr(r_out)))
+  gc()
 
   # a name for the dataset pulled from the file path
   nm = basename(p) |> tools::file_path_sans_ext()

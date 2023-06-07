@@ -30,8 +30,8 @@
 #' @param fun function, a function name like "mean", "min", or "max" (see `?.nc_aggregate_time`)
 #' @param tz character time zone for `origin_hour`
 #' @param origin_hour integer, steps are aligned to start at this hour of the day
-#' @param from Date, the start of the date range to process (in time zone `tz`)
-#' @param to Date, the end of the date range to process (in time zone `tz`)
+#' @param from POSIXct, the start of the time range to process
+#' @param to POSIXct, the end of the time range to process
 #'
 #' @return vector of file paths written to the `output_nm` directory
 #' @export
@@ -89,6 +89,8 @@ nc_aggregate_time = function(base_dir,
     }
 
     # silently fix invalid start/end times
+    from = as.POSIXct(from)
+    to = as.POSIXct(to)
     if( from < min(time_i) ) from = min(time_i)
     if( to > max(time_i) ) to = max(time_i)
 
