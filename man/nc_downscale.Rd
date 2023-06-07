@@ -10,12 +10,12 @@ nc_downscale(
   down = 100,
   input_nm = .nm_daily,
   model_nm = .nm_model,
-  output_nm = .nm_export,
+  output_nm = .nm_down,
   var_nm = .var_daily,
   poly_out = NULL,
   edge_buffer = NULL,
-  fun = NULL,
-  dates = NULL,
+  from = NULL,
+  to = NULL,
   write_nc = TRUE
 )
 }
@@ -38,30 +38,47 @@ nc_downscale(
 
 \item{edge_buffer}{numeric, length in metres to buffer input data (see details)}
 
-\item{dates}{Date vector, the dates to process (NULL for all)}
+\item{from}{Date, the first date of the sequence to process}
+
+\item{to}{Date, the last date of the sequence to process}
 }
 \value{
-returns nothing but possibly modifes the NetCDF data in \code{output_nm}
+returns nothing but possibly modifies the NetCDF data in \code{output_nm}
 }
 \description{
 This is a wrapper for \code{.nc_downscale} that down-scales - ie predicts at finer
 resolution - the gridded time series data in \code{input_nm}. By default it writes
-a set of (yearly) NetCDF files in the sub-directory \code{output_nm} of \code{base_dir},
+a set of yearly NetCDF files in the sub-directory \code{output_nm} of \code{base_dir},
 with one set for each of the variables named in \code{var_nm}.
 }
 \details{
 Down-scaling happens by universal kriging using the fitted spatial covariance
 parameters saved in the folder named in \code{model_nm} (generate this using
 \code{space_fit}), and using covariates generated from the digital elevation model
-in \code{dem} (with values in metres).
+in \code{dem} with values in metres.
 
-Argument \code{down} is the (integer) factor by which the grid spacing is decreased:
-eg. \code{down=2} "doubles the resolution" by inserting a new grid point in between
-each existing pair of (adjacent) grid points.
+Argument \code{down} is the factor by which to reduce grid line spacing. This should
+be an integer greater than 1. eg. \code{down=2} "doubles the resolution" by inserting
+a new grid line in between each existing pair of adjacent ones. This produces an
+output with approximately 4X (ie \code{down^2}) as many grid points as the input.
 
-Specify an area of interest with \code{poly_out}. The function conditions its
+The function expects \code{down} to be used consistently within a given output
+subdirectory. If you want to change the output resolution, you will need to delete
+any existing output or else specify a new \code{output_nm}.
+
+Use \code{from} and \code{to} to specify a date range to update (inclusive), or leave them \code{NULL}
+to use a default range. The default range is meant to cover layers originating from GFS
+(allowing them to be can be replaced by newly added RAP layers, or more recently released
+GFS forecasts).
+
+The default for \code{to} is always the latest available date in the input. The default for
+\code{from} is 10 days before the latest date found in the existing output files. If there
+are no existing outputs, the default is set to the earliest available date in the input.
+
+Define an area of interest with \code{poly_out}. The function conditions its
 predictions on a subset of the input grid covering \code{poly_out}, buffered by
 the distance \code{edge_buffer} (in m). By default this is set to the diagonal length
-of a single grid cell. Setting this to a large number (eg the side length of your
-domain) will ensure that all observations are considered in predictions.
+of a single grid cell. Set this to a larger number, like the side length of your
+domain, to ensure that all observations are considered in predictions, reducing
+edge effects.
 }

@@ -399,32 +399,88 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
 #'
 #' This prepares five output variables aggregated to daily average, or maximum or minimum.
 #' The pairing of variable names and aggregation functions is set up in the global
-#' constant `.var_daily_pairs`
+#' constant `.var_daily_pairs` and the name of the output folder is `.nm_daily`.
+#'
+#' By default the function overwrites layers starting from 10 days before the latest
+#' date in the existing output files. This ensures that any/all GFS forecasts are
+#' updated with fresh estimates, or else replaced by the more precise RAP archive
+#' estimates. Specify a different time range to process using `from` and `to`.
+#'
+#' The time zone string `tz` controls the alignment of the output frames, so that each
+#' "day" starts (and ends) on the hour 12AM in the time zone `tz`. Set this to the local
+#' time zone for your AOI.
 #'
 #' @param project_dir character path to the project root directory
-#' @param from Date start of date range (default is earliest available)
-#' @param to Date end of date range (default is latest available)
+#' @param from POSIXct start of time range (default is earliest available)
+#' @param to POSIXct end of time range (default is latest available)
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
 workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
 
   cat('\n')
-  message('merging data and exporting to file')
+  message('aggregating data by day')
 
-  # delete the old export directory
-  #project_dir |> file.path(.nm_daily) |> unlink(recursive=TRUE)
-
-  # TODO: look up latest RAP archive date
-
-  # TODO: implement from/to
   # export all in a loop
-  export_paths = .var_daily_pairs |>
-    lapply(\(x) nc_aggregate_time(base_dir = project_dir,
-                                  var_nm = x['var'],
-                                  output_nm = .nm_daily,
-                                  fun = x['fun'],
-                                  tz = tz))
-
+  export_paths = .var_daily_pairs |> lapply(\(x) nc_aggregate_time(base_dir = project_dir,
+                                                                   var_nm = x['var'],
+                                                                   output_nm = .nm_daily,
+                                                                   fun = x['fun'],
+                                                                   tz = tz,
+                                                                   from = from,
+                                                                   to = to))
 }
 
+
+#' Construct down-scaled (fine resolution) estimates of daily spatial grid data
+#'
+#' Wrapper for `nc_downscale` to produced down-scaled versions of the daily outputs
+#' produced by `workflow_daily`.
+#'
+#' This requires a digital elevation model (DEM) with data in meters. This is expected
+#' in the GeoTIFF file "elev_m.tif" in `project_dir`, but you can specify an alternate
+#' name or location with `dem_path` (passed to `terra::rast`).
+#'
+#' The DEM is warped to the target coordinate reference system by bilinear averaging
+#' Output is written to the sub-directory `.nm_export` of `project_dir`. By default the
+#' function overwrites layers starting from 10 days before the latest date in the existing
+#' output files (see `?workflow_daily`). Change this by setting start/end dates
+#' in `from`/`to`.
+#'
+#'
+#'
+workflow_downscale = function(project_dir, down=100,
+                              dem_path=NULL, poly_path=NULL,
+                              from=NULL, to=NULL) {
+
+  cat('\n')
+  message('downscaling')
+
+  # check for polygons to crop output
+  if( is.null(poly_path) ) poly_path = project_dir |> file.path('export.geojson')
+  if( !file.exists(poly_path) ) {
+
+    warning('"export.geojson" not found. Defaulting to bounding box of AOI polygon')
+    poly_path = project_dir |> file.path('aoi.geojson')
+    if( !file.exists(poly_path) ) stop('"aoi.geojson" not found in ', project_dir)
+  }
+
+  # load the polygons and DEM
+  poly_in = poly_path |> sf::st_read()
+  if( is.null(dem_path) ) dem_path = project_dir |> file.path('elev_m.tif')
+  dem = terra::rast(dem_path)
+
+  # run the workflow
+  nc_downscale(base_dir = project_dir,
+               dem = dem,
+               down = down,
+               input_nm = .nm_daily,
+               model_nm = .nm_model,
+               output_nm = .nm_down,
+               var_nm = .var_daily,
+               poly_out = poly_in,
+               edge_buffer = NULL,
+               from = from,
+               to = to,
+               write_nc = TRUE)
+}

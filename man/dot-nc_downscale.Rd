@@ -4,7 +4,7 @@
 \alias{.nc_downscale}
 \title{Down-scale a spatio-temporal time series}
 \usage{
-.nc_downscale(g, z_obs, pars, X, poly_list = NULL)
+.nc_downscale(g, z_obs, pars, X, poly_out = NULL)
 }
 \arguments{
 \item{g}{sk grid containing the locations of observed grid points (see \code{?snapKrig::sk_cmean})}
@@ -15,7 +15,7 @@
 
 \item{X}{numeric matrix of covariates passed (see \code{?snapKrig::sk_cmean})}
 
-\item{poly_list}{list of sf POLYGON objects to use for cropping output (or NULL for no cropping)}
+\item{poly_out}{sf POLYGON objects to use for cropping output (or NULL for no cropping)}
 }
 \value{
 either a SpatVector, a list of them
@@ -38,6 +38,6 @@ The data matrix \code{X} should be ordered the same way, but it must contain a r
 in the target grid, including unobserved ones. Typical usage is to create \code{X} with a call to
 \code{space_X} (with \code{intercept=FALSE}).
 
-Output layers are returned in a SpatRaster. If \code{poly_list} is supplied, the function returns
-a list of SpatRasters cropped to each of the polygons' extents.
+Output layers are returned in a SpatRaster. If \code{poly_out} is supplied, the function crops
+all layers to the bounding box of the polygons as a whole.
 }

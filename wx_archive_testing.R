@@ -3,14 +3,114 @@
 #' April 2023
 #'
 
-library(terra)
+#library(terra)
 library(devtools)
 load_all()
 document()
 
+terra::free_RAM() |> units::set_units(kb) |> units::set_units(Gb)
+
+
+project_dir = 'G:'
+dem_path = project_dir |> file.path('elev_m.tif')
+poly_path = project_dir |> file.path('export.geojson')
+down=100
+from=NULL
+to=NULL
+
+dem = terra::rast(dem_path)
+poly_in = poly_path |> sf::st_read()
+
+
+
+#workflow_downscale(project_dir)
+
+
+base_dir = project_dir
+dem = dem
+down = 100
+input_nm = .nm_daily
+model_nm = .nm_model
+output_nm = .nm_down
+var_nm = .var_daily
+poly_out = poly_in
+edge_buffer = NULL
+from = NULL
+to = NULL
+write_nc = TRUE
+
+
+
+
+
+
+
+
+# xx = file.path('D:/UYRW_data', 'data/prepared/usgs_catchments.rds') |> readRDS()
+# poly_test = xx$boundary
+# poly_test |> sf::st_write(poly_path)
+#
+
+
+base_dir = project_dir
+dem_path = project_dir |> file.path('elev_m.tif')
+dem = terra::rast(dem_path)
+
+nc_downscale(base_dir, dem, down=100, output_nm='foobar', poly_out=poly_in, from='2023-04-20', to='2023-05-03')
+
+
+output_nc = file_wx('nc', base_dir, 'foobar', as.list(.var_daily))
+
+
+xx = output_nc[[1]] |> nc_chunk() |> terra::rast()
+yy = sf::st_transform(poly_in, terra::crs(xx)) |> sf::st_geometry()
+
+terra::plot(xx[[1]], reset=F)
+plot(yy, add=TRUE)
+
+
+
+
+
+nc_downscale(base_dir, dem, down=10, output_nm='foobar', from='2023-05-01', to='2023-05-03')
+
+
+
+
+
+
+
+
+
+
+
+
+
 ###
 ##
 # TESTING NEW TIME AGGREGATION UPDATER
+
+#
+# *
+## *   \
+### * *  \
+#### \ \ / /
+# --> --> - -=-o
+#### / / \ \
+### * *  /
+## *   /
+# *
+#
+
+# export all in a loop
+export_paths = .var_daily_pairs |> lapply(\(x) nc_aggregate_time(base_dir = project_dir,
+                                                                 var_nm = x['var'],
+                                                                 output_nm = .nm_daily,
+                                                                 fun = x['fun'],
+                                                                 tz = tz,
+                                                                 from = from,
+                                                                 to = to))
+
 
 data_dir = project_dir = 'G:'
 from=NULL
@@ -63,6 +163,7 @@ var_nm = .var_daily
 #var_nm = 'tmp_max'
 base_dir = project_dir |> file.path('test')
 dem_path = project_dir |> file.path('elev_m.tif')
+dem = terra::rast(dem_path)
 input_nm = .nm_daily
 model_nm = .nm_model
 n_max = 5e2
