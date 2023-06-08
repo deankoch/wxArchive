@@ -10,7 +10,20 @@ document()
 
 project_dir = 'G:'
 terra::free_RAM() |> units::set_units(kb) |> units::set_units(Gb)
-workflow_downscale(project_dir)
+#workflow_downscale(project_dir)
+
+
+#
+# *
+## *   \
+### * *  \
+#### \ \ / /
+# --> --> - -=-o
+#### / / \ \
+### * *  /
+## *   /
+# *
+#
 
 
 dem_path = project_dir |> file.path('elev_m.tif')
@@ -25,7 +38,16 @@ dem = terra::rast(dem_path)
 poly_in = poly_path |> sf::st_read()
 
 
-
+#
+# *
+## *   \
+### * *  \
+#### \ \ / /
+# --> --> - -=-o
+#### / / \ \
+### * *  /
+## *   /
+# *
 #
 
 
@@ -40,7 +62,7 @@ poly_out = poly_in
 edge_buffer = NULL
 from = NULL
 to = NULL
-write_nc = TRUE
+file_ext = 'tif'
 
 
 

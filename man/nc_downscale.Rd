@@ -16,7 +16,7 @@ nc_downscale(
   edge_buffer = NULL,
   from = NULL,
   to = NULL,
-  file_ext = "both"
+  file_ext = "tif"
 )
 }
 \arguments{
@@ -42,7 +42,7 @@ nc_downscale(
 
 \item{to}{Date, the last date of the sequence to process}
 
-\item{file_ext}{character, either 'tif', 'nc', or 'both'}
+\item{file_ext}{character, either 'tif' or 'nc'}
 }
 \value{
 returns nothing but possibly modifies the NetCDF data in \code{output_nm}

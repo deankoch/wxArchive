@@ -37,20 +37,23 @@
 #' grid objects not getting removed from RAM, but I don't know enough about `ncdf4`
 #' or NetCDF drivers to understand where the issue is happening. The new argument
 #' `in_mem=TRUE` should allow users to write other file formats (like GeoTIFF)
-#' manually as a workaround.
+#' manually as a workaround. `file_ext` may be changed to `.tif` in this case (do not
+#' change it when `in_mem=FALSE`). This will cause the function to scan for existing
+#' GeoTIFF output data instead of NetCDF.
 #'
 #' @param r SpatRaster with POSIXct vector `terra::time(r)`, the data to write
 #' @param p character path the (.nc) time series data file/directory to write
 #' @param quiet logical suppresses console messages
 #' @param in_mem logical if `TRUE` returns a SpatRaster instead of modifying the NetCDF
+#' @param file_ext character, either 'tif' or 'nc'
 #'
 #' @return vector of POSIXct times, the layers added to the file
 #' @export
-nc_write = function(r, p, quiet=FALSE, insert=FALSE, in_mem=FALSE) {
+nc_write = function(r, p, quiet=FALSE, insert=FALSE, in_mem=FALSE, file_ext='.nc') {
 
   # create/load JSON for nc file at p and copy times
   is_update = file.exists(p)
-  p_time = if( is_update ) time_wx(p)[['time']] else NULL
+  p_time = if( is_update ) time_wx(p, file_ext=file_ext)[['time']] else NULL
 
   # collect times from input raster
   r_time = terra::time(r)
@@ -84,7 +87,7 @@ nc_write = function(r, p, quiet=FALSE, insert=FALSE, in_mem=FALSE) {
   if( is_update & ( length(p_time_fetch) != 0 ) ) {
 
     if( !quiet ) cat('\nmerging with', length(p_time_fetch), 'existing nc layer(s)')
-    r_out = nc_layers(p, times=p_time_fetch, preload=TRUE) |> c(r_out)
+    r_out = nc_layers(p, times=p_time_fetch, preload=TRUE, file_ext=file_ext) |> c(r_out)
     gc()
   }
 

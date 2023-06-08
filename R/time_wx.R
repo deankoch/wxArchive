@@ -29,15 +29,19 @@
 #' If none of the paths in `nc_path` point to an existing file, the function returns
 #' an empty list
 #'
+#' If `file_ext='tif'`, all of the above applies, but the function looks for an output
+#' file of type GeoTIFF (rather than NetCDF), having extension '.tif'.
+#'
 #' @param nc_path character vector, path(s) to the NetCDF file(s)
 #' @param join logical, when TRUE the results from all `nc_path` are combined
+#' @param file_ext character, either 'tif' or 'nc'
 #'
 #' @return a list with vectors 'na' (integer), 'time', 'time_na', 'time_obs' (or a list of them)
 #' @export
-time_wx = function(nc_path, join=TRUE) {
+time_wx = function(nc_path, join=TRUE, file_ext='nc') {
 
   # expand paths to any files chunked by year. This checks existence
-  nc_path = do.call(c, lapply(nc_path, nc_chunk))
+  nc_path = do.call(c, lapply(nc_path, \(p) nc_chunk(p, file_ext=file_ext)))
   if( anyNA(nc_path) ) nc_path = nc_path[!is.na(nc_path)]
   if( length(nc_path) == 0 ) return( list() )
 

@@ -46,7 +46,7 @@
 #' @param edge_buffer numeric, length in metres to buffer input data (see details)
 #' @param from Date, the first date of the sequence to process
 #' @param to Date, the last date of the sequence to process
-#' @param file_ext character, either 'tif', 'nc', or 'both'
+#' @param file_ext character, either 'tif' or 'nc'
 #'
 #' @return returns nothing but possibly modifies the NetCDF data in `output_nm`
 #' @export
@@ -61,7 +61,7 @@ nc_downscale = function(base_dir,
                         edge_buffer = NULL,
                         from = NULL,
                         to = NULL,
-                        file_ext = 'both') {
+                        file_ext = 'tif') {
 
   # var_nm is list to ensure input/output paths are lists too
   input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
@@ -71,7 +71,7 @@ nc_downscale = function(base_dir,
 
   # check for available input and existing output dates
   input_var_info = lapply(input_nc, \(p) time_wx(p))
-  output_var_info = lapply(output_nc, \(p) time_wx(p))
+  output_var_info = lapply(output_nc, \(p) time_wx(p, file_ext=file_ext))
 
   # read fitted parameter values of existing models for the variable(s)
   pars_json = file_wx('spatial', base_dir, model_nm, var_nm_list, make_dir=TRUE)
@@ -201,12 +201,12 @@ nc_downscale = function(base_dir,
       p_nc = nc_write_chunk(r=r_output, p=output_nc[[v]], path_only=TRUE)
 
       # export to GeoTIFF
-      if( file_ext %in% c('tif', 'both') ) {
+      if( file_ext == 'tif' ) {
 
         # write outputs to memory with `nc_write`
         cat('\nupdating .tif file(s)')
-        r_merged = nc_write(r=r_output, p=p_nc, insert=TRUE, in_mem=TRUE)
         p_dest = p_nc |> tools::file_path_sans_ext() |> paste0('.tif')
+        r_merged = nc_write(r=r_output, p=p_dest, insert=TRUE, in_mem=TRUE, file_ext=file_ext)
         is_update = file.exists(p_dest)
         cat('\nwriting to', p_dest)
 
@@ -215,20 +215,32 @@ nc_downscale = function(base_dir,
 
           # a temporary file name for the existing file
           suffix_temp = paste0('_', basename(tempfile()), '.tif')
-          p_temp = file.path(dirname(p_dest), paste0(nm, suffix_temp))
+          p_temp = file.path(dirname(p_dest), paste0(var_nm_list[[v]], suffix_temp))
 
         } else { p_temp = p_dest }
 
         # write result to file
         terra::writeRaster(r_merged, p_temp)
 
-        # rename the tempfile if needed
+        # rename the tempfile
         if( is_update ) {
 
-          # remove old file/directory and rename new one to replace it
-          unlink(p_dest, recursive=TRUE)
+          # GDAL might have written its own date index file
+          p_gdal_old = gsub('.tif$', '.tif.aux.json', p_dest, perl=TRUE)
+          p_gdal_new = gsub('.tif$', '.tif.aux.json', p_temp, perl=TRUE)
+
+          # replace the data file
+          unlink(p_dest)
           file.rename(from=p_temp, to=p_dest)
           p_dest = p_temp
+
+          # remove old aux file and rename new one to replace
+          if( file.exists(p_gdal_old) ) {
+
+            # destination file will be updated, so its aux file is obsolete
+            unlink(p_gdal_old)
+            if( file.exists(p_gdal_new) ) file.rename(from=p_gdal_new, to=p_gdal_old)
+          }
         }
 
         # update attributes on disk
@@ -241,7 +253,7 @@ nc_downscale = function(base_dir,
       }
 
       # export to NetCDF
-      if( file_ext %in% c('nc', 'both') ) {
+      if( file_ext == 'nc' ) {
 
         # write outputs via `nc_write` directly to save memory
         cat('\nupdating .nc file(s)')

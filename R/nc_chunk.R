@@ -14,23 +14,27 @@
 #' of all times in the file. For example "tmp.nc/tmp_2005.nc" holds observations of
 #' temperature from 2005.
 #'
+#' If `file_ext='tif'`, all of the above applies, but the function looks for output
+#' files of type GeoTIFF (rather than NetCDF), having extension '.tif' (rather than
+#' '.nc'). Note that the directory name may still end with '.nc' in this case, but
+#' only filenames ending in 'tif' are returned.
+#'
 #' @param p character path to a file or directory with extension ".nc"
-#' @param check_ext logical indicating to check that `p` ends with ".nc"
+#' @param file_ext character, either 'tif' or 'nc'
 #'
 #' @return character vector of file path(s) to NetCDF file(s) associated with `p`
 #' @export
-nc_chunk = function(p, check_ext=FALSE) {
+nc_chunk = function(p, file_ext='.nc') {
 
   # validity check for arguments
   if( !is.character(p) ) stop('is.character(p) was FALSE. p must be a string')
-  if( check_ext & !endsWith(p, '.nc') ) stop('expected path ', p, ' to have extension ".nc"')
   if( !file.exists(p) ) return(NA)
 
   # if the file is a directory scan its contents
   if( dir.exists(p) ) {
 
     p_contents = list.files(p)
-    f = p_contents[ endsWith(p_contents, '.nc') ]
+    f = p_contents[ endsWith(p_contents, file_ext) ]
     return( file.path(p, f) )
   }
 

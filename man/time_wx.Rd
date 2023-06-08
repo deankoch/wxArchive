@@ -4,12 +4,14 @@
 \alias{time_wx}
 \title{Find index of NA layers and times available in a (set of) NetCDF files(s)}
 \usage{
-time_wx(nc_path, join = TRUE)
+time_wx(nc_path, join = TRUE, file_ext = "nc")
 }
 \arguments{
 \item{nc_path}{character vector, path(s) to the NetCDF file(s)}
 
 \item{join}{logical, when TRUE the results from all \code{nc_path} are combined}
+
+\item{file_ext}{character, either 'tif' or 'nc'}
 }
 \value{
 a list with vectors 'na' (integer), 'time', 'time_na', 'time_obs' (or a list of them)
@@ -45,4 +47,7 @@ calls \code{write_time_json} to create it.
 
 If none of the paths in \code{nc_path} point to an existing file, the function returns
 an empty list
+
+If \code{file_ext='tif'}, all of the above applies, but the function looks for an output
+file of type GeoTIFF (rather than NetCDF), having extension '.tif'.
 }

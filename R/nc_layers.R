@@ -38,10 +38,11 @@
 #' @param times vector of unique POSIXct times to match in the file(s)
 #' @param preload logical indicating to load values into RAM
 #' @param na_rm logical indicating to return only non-NA layers
+#' @param file_ext character, either 'tif' or 'nc'
 #'
 #' @return a SpatRaster with `length(t)` layers
 #' @export
-nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE) {
+nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE, file_ext='nc') {
 
   # filter nonexistent files
   p_valid = file.exists(p)
@@ -49,7 +50,7 @@ nc_layers = function(p, times=NULL, preload=TRUE, na_rm=FALSE) {
   p = p[p_valid]
 
   # expand paths for any files chunked by year
-  p = do.call(c, lapply(p, nc_chunk))
+  p = do.call(c, lapply(p, \(x) nc_chunk(x, file_ext=file_ext)))
 
   # loop over vectorized input
   load_all_times = is.null(times)

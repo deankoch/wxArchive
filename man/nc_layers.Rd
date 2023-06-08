@@ -4,7 +4,7 @@
 \alias{nc_layers}
 \title{Open a subset of times from one or more NetCDF files}
 \usage{
-nc_layers(p, times = NULL, preload = TRUE, na_rm = FALSE)
+nc_layers(p, times = NULL, preload = TRUE, na_rm = FALSE, file_ext = "nc")
 }
 \arguments{
 \item{p}{character vector of path(s) to the nc file(s)}
@@ -14,6 +14,8 @@ nc_layers(p, times = NULL, preload = TRUE, na_rm = FALSE)
 \item{preload}{logical indicating to load values into RAM}
 
 \item{na_rm}{logical indicating to return only non-NA layers}
+
+\item{file_ext}{character, either 'tif' or 'nc'}
 }
 \value{
 a SpatRaster with \code{length(t)} layers

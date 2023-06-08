@@ -4,7 +4,7 @@
 \alias{nc_write}
 \title{Create or modify a NetCDF file by appending new time layers from SpatRaster}
 \usage{
-nc_write(r, p, quiet = FALSE, insert = FALSE, in_mem = FALSE)
+nc_write(r, p, quiet = FALSE, insert = FALSE, in_mem = FALSE, file_ext = ".nc")
 }
 \arguments{
 \item{r}{SpatRaster with POSIXct vector \code{terra::time(r)}, the data to write}
@@ -14,6 +14,8 @@ nc_write(r, p, quiet = FALSE, insert = FALSE, in_mem = FALSE)
 \item{quiet}{logical suppresses console messages}
 
 \item{in_mem}{logical if \code{TRUE} returns a SpatRaster instead of modifying the NetCDF}
+
+\item{file_ext}{character, either 'tif' or 'nc'}
 }
 \value{
 vector of POSIXct times, the layers added to the file
@@ -57,5 +59,7 @@ I believe this is a garbage collection malfunction, with intermediate (temporary
 grid objects not getting removed from RAM, but I don't know enough about \code{ncdf4}
 or NetCDF drivers to understand where the issue is happening. The new argument
 \code{in_mem=TRUE} should allow users to write other file formats (like GeoTIFF)
-manually as a workaround.
+manually as a workaround. \code{file_ext} may be changed to \code{.tif} in this case (do not
+change it when \code{in_mem=FALSE}). This will cause the function to scan for existing
+GeoTIFF output data instead of NetCDF.
 }

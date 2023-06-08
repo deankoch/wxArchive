@@ -4,12 +4,12 @@
 \alias{nc_chunk}
 \title{Expand a directory path to get a set of paths to the NetCDF files within}
 \usage{
-nc_chunk(p, check_ext = FALSE)
+nc_chunk(p, file_ext = ".nc")
 }
 \arguments{
 \item{p}{character path to a file or directory with extension ".nc"}
 
-\item{check_ext}{logical indicating to check that \code{p} ends with ".nc"}
+\item{file_ext}{character, either 'tif' or 'nc'}
 }
 \value{
 character vector of file path(s) to NetCDF file(s) associated with \code{p}
@@ -29,4 +29,9 @@ returns \code{character(0)}. If the directory doesn't exist the function returns
 The expected file name for a chunk is "var_year.nc", with "year" the 4-digit year
 of all times in the file. For example "tmp.nc/tmp_2005.nc" holds observations of
 temperature from 2005.
+
+If \code{file_ext='tif'}, all of the above applies, but the function looks for output
+files of type GeoTIFF (rather than NetCDF), having extension '.tif' (rather than
+'.nc'). Note that the directory name may still end with '.nc' in this case, but
+only filenames ending in 'tif' are returned.
 }
