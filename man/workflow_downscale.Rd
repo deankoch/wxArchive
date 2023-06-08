@@ -13,6 +13,22 @@ workflow_downscale(
   to = NULL
 )
 }
+\arguments{
+\item{project_dir}{character path to the project root directory}
+
+\item{down}{integer > 1 downscaling factor}
+
+\item{dem_path}{character path to digital elevation model raster file}
+
+\item{poly_path}{character path to polygons definining AOI}
+
+\item{from}{POSIXct start of time range}
+
+\item{to}{POSIXct end of time range}
+}
+\value{
+returns nothing but possible writes to \code{project_dir}
+}
 \description{
 Wrapper for \code{nc_downscale} to produced down-scaled versions of the daily outputs
 produced by \code{workflow_daily}.
