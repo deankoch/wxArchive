@@ -25,8 +25,8 @@ Note that the JSON contains only the fields "na" and "time" and not the derived
 fields "time_na" and "time_obs" returned by \code{time_nc} and \code{time_wx}.
 
 If \code{r} is supplied, the function indexes the SpatRaster. If \code{r} is \code{NULL}, the
-function instead indexes all layers in \code{nc_path}. This can be very slow if there
-are many time points.
+function instead indexes all layers in the file at \code{nc_path}. This can be very slow
+if there are many time points.
 
 If \code{nc_path} doesn't exist, the function returns \code{FALSE} and writes nothing
 }

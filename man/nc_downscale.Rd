@@ -16,7 +16,7 @@ nc_downscale(
   edge_buffer = NULL,
   from = NULL,
   to = NULL,
-  write_nc = TRUE
+  file_ext = "both"
 )
 }
 \arguments{
@@ -41,6 +41,8 @@ nc_downscale(
 \item{from}{Date, the first date of the sequence to process}
 
 \item{to}{Date, the last date of the sequence to process}
+
+\item{file_ext}{character, either 'tif', 'nc', or 'both'}
 }
 \value{
 returns nothing but possibly modifies the NetCDF data in \code{output_nm}
@@ -48,7 +50,7 @@ returns nothing but possibly modifies the NetCDF data in \code{output_nm}
 \description{
 This is a wrapper for \code{.nc_downscale} that down-scales - ie predicts at finer
 resolution - the gridded time series data in \code{input_nm}. By default it writes
-a set of yearly NetCDF files in the sub-directory \code{output_nm} of \code{base_dir},
+a set of yearly GeoTIFF files in the sub-directory \code{output_nm} of \code{base_dir},
 with one set for each of the variables named in \code{var_nm}.
 }
 \details{

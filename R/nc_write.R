@@ -1,7 +1,8 @@
 #' Create or modify a NetCDF file by appending new time layers from SpatRaster
 #'
 #' This creates or updates an existing NetCDF file with new times (layers) in the
-#' supplied SpatRaster `r`.
+#' supplied SpatRaster `r`. With `in_mem=TRUE` the file is not modified and the
+#' function instead returns the SpatRaster that would have been written.
 #'
 #' `r` must have a time for each layer (check `terra::time(r)`). When `insert=FALSE`
 #' (the default), only new times in `r` are written, ie those not found already in
@@ -10,9 +11,10 @@
 #' a time has been added to a file, it cannot be removed except by deleting the file
 #' and starting over.
 #'
-#' The function assumes that `p` is a valid path to a NetCDF file (a file with extension
-#' .nc, and not a directory of them, as in `nc_write_chunk` ), and that the raster
-#' grid in `r` is compatible with the file at `p` in terms of dimensions, projection, etc.
+#' The function assumes that `p` is a valid path to a NetCDF file with extension
+#' .nc (and not a directory of them, as in calls to `nc_write_chunk`). It also assumes
+#' that the raster grid in `r` is compatible with the file at `p` in terms of
+#' dimensions, projection, etc.
 #'
 #' When writing to an existing file, the function initially writes to a temporary
 #' file in the same directory. At the end of the function call the old file is
@@ -23,13 +25,28 @@
 #' file in the 'time' subdirectory. If something goes wrong with this file, it can
 #' be safely deleted then rebuilt with `time_wx(p)`.
 #'
+#' I have encountered some unexpected memory management issues when attempting to
+#' write NetCDF files containing grids with many spatial points. In my case, I was
+#' calling `terra::writeCDF` on a grid with 365 layers, and total size 3GB in RAM
+#' (`terra::mem_info`). I would expect this to require about 6-9 GB of free RAM
+#' (`ncdf4` is making its own copy in RAM). However this function call consistently
+#' led to peak memory usage exceeding 28GB, and subsequent slowdowns as `terra` is
+#' forced to move grids from RAM to disk.
+#'
+#' I believe this is a garbage collection malfunction, with intermediate (temporary)
+#' grid objects not getting removed from RAM, but I don't know enough about `ncdf4`
+#' or NetCDF drivers to understand where the issue is happening. The new argument
+#' `in_mem=TRUE` should allow users to write other file formats (like GeoTIFF)
+#' manually as a workaround.
+#'
 #' @param r SpatRaster with POSIXct vector `terra::time(r)`, the data to write
 #' @param p character path the (.nc) time series data file/directory to write
 #' @param quiet logical suppresses console messages
+#' @param in_mem logical if `TRUE` returns a SpatRaster instead of modifying the NetCDF
 #'
 #' @return vector of POSIXct times, the layers added to the file
 #' @export
-nc_write = function(r, p, quiet=FALSE, insert=FALSE) {
+nc_write = function(r, p, quiet=FALSE, insert=FALSE, in_mem=FALSE) {
 
   # create/load JSON for nc file at p and copy times
   is_update = file.exists(p)
@@ -49,9 +66,12 @@ nc_write = function(r, p, quiet=FALSE, insert=FALSE) {
   # if there's nothing to add we are done
   if( !any(is_new) ) {
 
-    # compute index JSON if it's not there
     if( !quiet ) cat('\nup to date\n')
-    return( as.POSIXct(integer(0), tz='UTC') )
+
+    # return an empty object
+    out_val = NULL
+    if(!in_mem) as.POSIXct(integer(0), tz='UTC')
+    return(out_val)
   }
 
   # explicitly remove source raster from RAM after copying relevant layers
@@ -72,6 +92,9 @@ nc_write = function(r, p, quiet=FALSE, insert=FALSE) {
   r_out = r_out[[ order(terra::time(r_out)) ]]
   names(r_out) = paste0('lyr_', seq(terra::nlyr(r_out)))
   gc()
+
+  # return from memory mode
+  if(in_mem) return(r_out)
 
   # a name for the dataset pulled from the file path
   nm = basename(p) |> tools::file_path_sans_ext()
@@ -122,8 +145,8 @@ nc_write = function(r, p, quiet=FALSE, insert=FALSE) {
 #' fields "time_na" and "time_obs" returned by `time_nc` and `time_wx`.
 #'
 #' If `r` is supplied, the function indexes the SpatRaster. If `r` is `NULL`, the
-#' function instead indexes all layers in `nc_path`. This can be very slow if there
-#' are many time points.
+#' function instead indexes all layers in the file at `nc_path`. This can be very slow
+#' if there are many time points.
 #'
 #' If `nc_path` doesn't exist, the function returns `FALSE` and writes nothing
 #'

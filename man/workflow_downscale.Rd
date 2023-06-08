@@ -31,7 +31,7 @@ returns nothing but possible writes to \code{project_dir}
 }
 \description{
 Wrapper for \code{nc_downscale} to produced down-scaled versions of the daily outputs
-produced by \code{workflow_daily}.
+produced by \code{workflow_daily}. Outputs are written GeoTIFF files.
 }
 \details{
 This requires a digital elevation model (DEM) with data in meters. This is expected

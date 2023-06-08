@@ -4,7 +4,7 @@
 \alias{nc_write}
 \title{Create or modify a NetCDF file by appending new time layers from SpatRaster}
 \usage{
-nc_write(r, p, quiet = FALSE, insert = FALSE)
+nc_write(r, p, quiet = FALSE, insert = FALSE, in_mem = FALSE)
 }
 \arguments{
 \item{r}{SpatRaster with POSIXct vector \code{terra::time(r)}, the data to write}
@@ -12,13 +12,16 @@ nc_write(r, p, quiet = FALSE, insert = FALSE)
 \item{p}{character path the (.nc) time series data file/directory to write}
 
 \item{quiet}{logical suppresses console messages}
+
+\item{in_mem}{logical if \code{TRUE} returns a SpatRaster instead of modifying the NetCDF}
 }
 \value{
 vector of POSIXct times, the layers added to the file
 }
 \description{
 This creates or updates an existing NetCDF file with new times (layers) in the
-supplied SpatRaster \code{r}.
+supplied SpatRaster \code{r}. With \code{in_mem=TRUE} the file is not modified and the
+function instead returns the SpatRaster that would have been written.
 }
 \details{
 \code{r} must have a time for each layer (check \code{terra::time(r)}). When \code{insert=FALSE}
@@ -28,9 +31,10 @@ Existing times that do not appear in \code{r} are never modified. This means tha
 a time has been added to a file, it cannot be removed except by deleting the file
 and starting over.
 
-The function assumes that \code{p} is a valid path to a NetCDF file (a file with extension
-.nc, and not a directory of them, as in \code{nc_write_chunk} ), and that the raster
-grid in \code{r} is compatible with the file at \code{p} in terms of dimensions, projection, etc.
+The function assumes that \code{p} is a valid path to a NetCDF file with extension
+.nc (and not a directory of them, as in calls to \code{nc_write_chunk}). It also assumes
+that the raster grid in \code{r} is compatible with the file at \code{p} in terms of
+dimensions, projection, etc.
 
 When writing to an existing file, the function initially writes to a temporary
 file in the same directory. At the end of the function call the old file is
@@ -40,4 +44,18 @@ wrong and the function halts, this temporary file can be safely deleted.
 After writing to the .nc file, the function creates/updates the JSON attributes
 file in the 'time' subdirectory. If something goes wrong with this file, it can
 be safely deleted then rebuilt with \code{time_wx(p)}.
+
+I have encountered some unexpected memory management issues when attempting to
+write NetCDF files containing grids with many spatial points. In my case, I was
+calling \code{terra::writeCDF} on a grid with 365 layers, and total size 3GB in RAM
+(\code{terra::mem_info}). I would expect this to require about 6-9 GB of free RAM
+(\code{ncdf4} is making its own copy in RAM). However this function call consistently
+led to peak memory usage exceeding 28GB, and subsequent slowdowns as \code{terra} is
+forced to move grids from RAM to disk.
+
+I believe this is a garbage collection malfunction, with intermediate (temporary)
+grid objects not getting removed from RAM, but I don't know enough about \code{ncdf4}
+or NetCDF drivers to understand where the issue is happening. The new argument
+\code{in_mem=TRUE} should allow users to write other file formats (like GeoTIFF)
+manually as a workaround.
 }

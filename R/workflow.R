@@ -435,7 +435,7 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
 #' Construct down-scaled (fine resolution) estimates of daily spatial grid data
 #'
 #' Wrapper for `nc_downscale` to produced down-scaled versions of the daily outputs
-#' produced by `workflow_daily`.
+#' produced by `workflow_daily`. Outputs are written GeoTIFF files.
 #'
 #' This requires a digital elevation model (DEM) with data in meters. This is expected
 #' in the GeoTIFF file "elev_m.tif" in `project_dir`, but you can specify an alternate
@@ -477,7 +477,7 @@ workflow_downscale = function(project_dir, down=100,
   if( is.null(dem_path) ) dem_path = project_dir |> file.path('elev_m.tif')
   dem = terra::rast(dem_path)
 
-  # run the workflow
+  # run the workflow to produce GeoTIFF outputs
   nc_downscale(base_dir = project_dir,
                dem = dem,
                down = down,
@@ -489,5 +489,5 @@ workflow_downscale = function(project_dir, down=100,
                edge_buffer = NULL,
                from = from,
                to = to,
-               write_nc = TRUE)
+               file_ext = 'tif')
 }

@@ -2,7 +2,7 @@
 #'
 #' This is a wrapper for `.nc_downscale` that down-scales - ie predicts at finer
 #' resolution - the gridded time series data in `input_nm`. By default it writes
-#' a set of yearly NetCDF files in the sub-directory `output_nm` of `base_dir`,
+#' a set of yearly GeoTIFF files in the sub-directory `output_nm` of `base_dir`,
 #' with one set for each of the variables named in `var_nm`.
 #'
 #' Down-scaling happens by universal kriging using the fitted spatial covariance
@@ -46,6 +46,7 @@
 #' @param edge_buffer numeric, length in metres to buffer input data (see details)
 #' @param from Date, the first date of the sequence to process
 #' @param to Date, the last date of the sequence to process
+#' @param file_ext character, either 'tif', 'nc', or 'both'
 #'
 #' @return returns nothing but possibly modifies the NetCDF data in `output_nm`
 #' @export
@@ -60,7 +61,7 @@ nc_downscale = function(base_dir,
                         edge_buffer = NULL,
                         from = NULL,
                         to = NULL,
-                        write_nc = TRUE) {
+                        file_ext = 'both') {
 
   # var_nm is list to ensure input/output paths are lists too
   input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
@@ -125,6 +126,15 @@ nc_downscale = function(base_dir,
     from_v = from
     to_v = to
 
+    # copy existing dates
+    time_out = output_var_info[[v]][['time_obs']] |> as.Date()
+    time_in = input_var_info[[v]][['time_obs']] |> as.Date()
+    if( is.null(time_in) )  {
+
+      cat('\nup to date')
+      next
+    }
+
     # use the latest parameter fit
     pars_v = pars_all[[v]][[1]]
 
@@ -134,15 +144,6 @@ nc_downscale = function(base_dir,
                                   X_center = pars_v[['center']],
                                   X_scale = pars_v[['scale']],
                                   intercept = FALSE)
-
-    # copy existing dates
-    time_out = output_var_info[[v]][['time_obs']] |> as.Date()
-    time_in = input_var_info[[v]][['time_obs']] |> as.Date()
-    if( is.null(time_in) )  {
-
-      cat('\nup to date')
-      next
-    }
 
     # set default starting/ending times
     is_initial = length(time_out) == 0
@@ -192,15 +193,62 @@ nc_downscale = function(base_dir,
                                           X = X_out,
                                           poly_out = poly_out)
 
-      # assign dates to layers then collect any garbage from .nc_downscale env
+      # assign dates to layers then collect any garbage from .nc_downscale environment
       terra::time(r_output) = time_y
       gc()
 
-      # write outputs via `nc_write` directly to save memory
-      cat('\nupdating .nc file(s)')
-      p = nc_write_chunk(r=r_output, p=output_nc[[v]], path_only=TRUE)
-      nc_write(r=r_output, p=p, insert=TRUE)
-      cat('done\n')
+      # paths to NetCDF outputs
+      p_nc = nc_write_chunk(r=r_output, p=output_nc[[v]], path_only=TRUE)
+
+      # export to GeoTIFF
+      if( file_ext %in% c('tif', 'both') ) {
+
+        # write outputs to memory with `nc_write`
+        cat('\nupdating .tif file(s)')
+        r_merged = nc_write(r=r_output, p=p_nc, insert=TRUE, in_mem=TRUE)
+        p_dest = p_nc |> tools::file_path_sans_ext() |> paste0('.tif')
+        is_update = file.exists(p_dest)
+        if( !quiet ) cat('\nwriting to', p_dest)
+
+        # prepare for safer overwrite via temporary file/directory
+        if( is_update ) {
+
+          # a temporary file name for the existing file
+          suffix_temp = paste0('_', basename(tempfile()), '.tif')
+          p_temp = file.path(dirname(p_dest), paste0(nm, suffix_temp))
+
+        } else { p_temp = p_dest }
+
+        # write result to file
+        terra::writeRaster(r_merged, p_temp)
+
+        # rename the tempfile if needed
+        if( is_update ) {
+
+          # remove old file/directory and rename new one to replace it
+          unlink(p_dest, recursive=TRUE)
+          file.rename(from=p_temp, to=p_dest)
+          p_dest = p_temp
+        }
+
+        # update attributes on disk
+        p_dest |> write_time_json(r=r_merged)
+        cat('done\n')
+
+        # remove remaining SpatRaster object from memory
+        rm(r_merged)
+        gc()
+      }
+
+      # export to NetCDF
+      if( file_ext %in% c('nc', 'both') ) {
+
+        # write outputs via `nc_write` directly to save memory
+        cat('\nupdating .nc file(s)')
+        p = nc_write_chunk(r=r_output, p=output_nc[[v]], path_only=TRUE)
+        nc_write(r=r_output, p=p_nc, insert=TRUE, in_mem=FALSE)
+        cat('done\n')
+      }
 
       # remove the large source raster from memory
       rm(r_output)
