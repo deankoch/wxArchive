@@ -135,10 +135,6 @@ nc_downscale = function(base_dir,
                                   X_scale = pars_v[['scale']],
                                   intercept = FALSE)
 
-    # garbage collection
-    rm(r_grid_out)
-    gc()
-
     # copy existing dates
     time_out = output_var_info[[v]][['time_obs']] |> as.Date()
     time_in = input_var_info[[v]][['time_obs']] |> as.Date()
