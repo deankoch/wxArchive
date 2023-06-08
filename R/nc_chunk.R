@@ -19,7 +19,7 @@
 #'
 #' @return character vector of file path(s) to NetCDF file(s) associated with `p`
 #' @export
-nc_chunk = function(p, check_ext=TRUE) {
+nc_chunk = function(p, check_ext=FALSE) {
 
   # validity check for arguments
   if( !is.character(p) ) stop('is.character(p) was FALSE. p must be a string')

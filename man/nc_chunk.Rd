@@ -4,7 +4,7 @@
 \alias{nc_chunk}
 \title{Expand a directory path to get a set of paths to the NetCDF files within}
 \usage{
-nc_chunk(p, check_ext = TRUE)
+nc_chunk(p, check_ext = FALSE)
 }
 \arguments{
 \item{p}{character path to a file or directory with extension ".nc"}
