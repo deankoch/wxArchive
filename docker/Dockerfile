@@ -8,6 +8,7 @@ ENV WX_DATA_DIR=/home/wxarchive/data
 
 # area of interest polygon
 ARG AOI_NAME=aoi.geojson
+ARG EXP_NAME=aoi_export.geojson
 
 # fitted temporal model files
 ARG MODEL_NAME=model.zip
@@ -27,6 +28,7 @@ terra \
 # copy the AOI and model files, and install wxArchive
 WORKDIR ${WX_PATH}
 COPY ${AOI_NAME} ${AOI_NAME}
+COPY ${EXP_NAME} ${EXP_NAME}
 COPY ${MODEL_NAME} ${MODEL_NAME}
 RUN R -q -e "devtools::install_github('deankoch/wxArchive', force=TRUE)"
 
