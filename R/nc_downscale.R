@@ -208,7 +208,7 @@ nc_downscale = function(base_dir,
         r_merged = nc_write(r=r_output, p=p_nc, insert=TRUE, in_mem=TRUE)
         p_dest = p_nc |> tools::file_path_sans_ext() |> paste0('.tif')
         is_update = file.exists(p_dest)
-        if( !quiet ) cat('\nwriting to', p_dest)
+        cat('\nwriting to', p_dest)
 
         # prepare for safer overwrite via temporary file/directory
         if( is_update ) {
