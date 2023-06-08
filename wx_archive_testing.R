@@ -8,12 +8,15 @@ library(devtools)
 load_all()
 document()
 
-terra::free_RAM() |> units::set_units(kb) |> units::set_units(Gb)
-
-
 project_dir = 'G:'
+terra::free_RAM() |> units::set_units(kb) |> units::set_units(Gb)
+workflow_downscale(project_dir)
+
+
 dem_path = project_dir |> file.path('elev_m.tif')
-poly_path = project_dir |> file.path('export.geojson')
+poly_path = project_dir |> file.path('aoi_export.geojson')
+
+
 down=100
 from=NULL
 to=NULL
@@ -23,7 +26,7 @@ poly_in = poly_path |> sf::st_read()
 
 
 
-#workflow_downscale(project_dir)
+#
 
 
 base_dir = project_dir

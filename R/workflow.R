@@ -452,7 +452,7 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
 #' @param from POSIXct start of time range
 #' @param to POSIXct end of time range
 #' @param dem_path character path to digital elevation model raster file
-#' @param poly_path character path to polygons definining AOI
+#' @param poly_path character path to polygons defining AOI
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
@@ -464,10 +464,10 @@ workflow_downscale = function(project_dir, down=100,
   message('downscaling')
 
   # check for polygons to crop output
-  if( is.null(poly_path) ) poly_path = project_dir |> file.path('export.geojson')
+  if( is.null(poly_path) ) poly_path = project_dir |> file.path('aoi_export.geojson')
   if( !file.exists(poly_path) ) {
 
-    warning('"export.geojson" not found. Defaulting to bounding box of AOI polygon')
+    warning('"aoi_export.geojson" not found. Defaulting to bounding box of AOI polygon')
     poly_path = project_dir |> file.path('aoi.geojson')
     if( !file.exists(poly_path) ) stop('"aoi.geojson" not found in ', project_dir)
   }

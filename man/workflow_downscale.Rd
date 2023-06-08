@@ -20,7 +20,7 @@ workflow_downscale(
 
 \item{dem_path}{character path to digital elevation model raster file}
 
-\item{poly_path}{character path to polygons definining AOI}
+\item{poly_path}{character path to polygons defining AOI}
 
 \item{from}{POSIXct start of time range}
 
