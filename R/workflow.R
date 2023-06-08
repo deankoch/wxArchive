@@ -447,8 +447,15 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
 #' output files (see `?workflow_daily`). Change this by setting start/end dates
 #' in `from`/`to`.
 #'
+#' @param project_dir character path to the project root directory
+#' @param down integer > 1 downscaling factor
+#' @param from POSIXct start of time range
+#' @param to POSIXct end of time range
+#' @param dem_path character path to digital elevation model raster file
+#' @param poly_path character path to polygons definining AOI
 #'
-#'
+#' @return returns nothing but possible writes to `project_dir`
+#' @export
 workflow_downscale = function(project_dir, down=100,
                               dem_path=NULL, poly_path=NULL,
                               from=NULL, to=NULL) {
