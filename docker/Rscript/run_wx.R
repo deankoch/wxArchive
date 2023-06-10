@@ -26,7 +26,7 @@ operation_valid =  c('list',
                      'daily',
                      'fit_daily',
                      'downscale',
-                     'export')
+                     'extract')
 
 # get user input
 msg_args = 'Usage: Rscript run_wx [data_dir] [operation] [start_date] [end_date]'
@@ -95,7 +95,7 @@ if( operation %in% c('update_gfs', 'update_all') ) data_dir |> wxArchive::workfl
 if( operation == 'fit_daily') stop('fit_daily not yet implemented')
 if( operation %in% c('daily', 'update_all') ) data_dir |> wxArchive::workflow_daily()
 if( operation %in% c('downscale', 'update_all') ) data_dir |> wxArchive::workflow_downscale()
-if( operation %in% c('export', 'update_all') ) data_dir |> wxArchive::workflow_export()
+if( operation %in% c('extract', 'update_all') ) data_dir |> wxArchive::workflow_extract()
 
 # a clue that you can close the bash terminal now
 cat('\n')
