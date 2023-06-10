@@ -70,8 +70,8 @@ nc_downscale = function(base_dir,
   output_nc = file_wx('nc', base_dir, output_nm, var_nm_list, make_dir=TRUE)
 
   # check for available input and existing output dates
-  input_var_info = lapply(input_nc, \(p) time_wx(p))
-  output_var_info = lapply(output_nc, \(p) time_wx(p, file_ext=file_ext))
+  input_var_info = input_nc |> lapply(\(p) time_wx(p))
+  output_var_info = output_nc |> lapply(\(p) time_wx(p, file_ext=file_ext))
 
   # read fitted parameter values of existing models for the variable(s)
   pars_json = file_wx('spatial', base_dir, model_nm, var_nm_list, make_dir=TRUE)
@@ -245,7 +245,6 @@ nc_downscale = function(base_dir,
 
         # update attributes on disk
         p_dest |> write_time_json(r=r_merged)
-        cat('done\n')
 
         # remove remaining SpatRaster object from memory
         rm(r_merged)
@@ -259,7 +258,6 @@ nc_downscale = function(base_dir,
         cat('\nupdating .nc file(s)')
         p = nc_write_chunk(r=r_output, p=output_nc[[v]], path_only=TRUE)
         nc_write(r=r_output, p=p_nc, insert=TRUE, in_mem=FALSE)
-        cat('done\n')
       }
 
       # remove the large source raster from memory

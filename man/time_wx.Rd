@@ -2,7 +2,7 @@
 % Please edit documentation in R/time_wx.R
 \name{time_wx}
 \alias{time_wx}
-\title{Find index of NA layers and times available in a (set of) NetCDF files(s)}
+\title{Find index of NA layers and times available in a (set of) NetCDF or GeoTIFF files(s)}
 \usage{
 time_wx(nc_path, join = TRUE, file_ext = "nc")
 }

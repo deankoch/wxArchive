@@ -2,12 +2,12 @@
 % Please edit documentation in R/time_wx.R
 \name{time_nc}
 \alias{time_nc}
-\title{Read a NetCDF time series file to find times and layers with NAs}
+\title{Read a NetCDF or GeoTIFF time series file to find times and layers with NAs}
 \usage{
 time_nc(r)
 }
 \arguments{
-\item{r}{SpatRaster or character vector of paths to NetCDF file(s)}
+\item{r}{SpatRaster or character vector of paths to NetCDF or GeoTIFF file(s)}
 }
 \value{
 a list of list(s) with vectors 'na' (integer), 'time', 'time_na', 'time_obs'

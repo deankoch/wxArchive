@@ -1,4 +1,4 @@
-#' Find index of NA layers and times available in a (set of) NetCDF files(s)
+#' Find index of NA layers and times available in a (set of) NetCDF or GeoTIFF files(s)
 #'
 #' The function returns a list of vectors indicating the times (layers) available
 #' in one or more NetCDF files (at `nc_path`), along with information about NAs.
@@ -98,7 +98,7 @@ time_wx = function(nc_path, join=TRUE, file_ext='nc') {
 }
 
 
-#' Read a NetCDF time series file to find times and layers with NAs
+#' Read a NetCDF or GeoTIFF time series file to find times and layers with NAs
 #'
 #' For SpatRaster `r`, the function returns a list of four vectors:
 #'
@@ -118,7 +118,7 @@ time_wx = function(nc_path, join=TRUE, file_ext='nc') {
 #' once only, then caching results in a JSON (see `?write_time_json`)
 #' where they can be retrieved much more quickly using `time_json`.
 #'
-#' @param r SpatRaster or character vector of paths to NetCDF file(s)
+#' @param r SpatRaster or character vector of paths to NetCDF or GeoTIFF file(s)
 #'
 #' @return a list of list(s) with vectors 'na' (integer), 'time', 'time_na', 'time_obs'
 #' @export
@@ -151,7 +151,19 @@ time_nc = function(r) {
     return(r_result)
   }
 
-  stop('r had unrecognized class (expected character or SpatRaster)')
+  # Date vector
+  if( is(r, 'Date') ) {
+
+    r_time = seq.Date(min(r), max(r), by='day')
+    r_obs = sort(r)
+    is_obs = r %in% r_time
+    return(list(na = which(!is_obs),
+                time = r_time,
+                time_na = r_time[!is_obs],
+                time_obs = r_time[is_obs]))
+  }
+
+  stop('r had unrecognized class (expected Date, character, or SpatRaster)')
 }
 
 

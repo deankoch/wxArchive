@@ -467,7 +467,7 @@ workflow_downscale = function(project_dir, down=100,
   if( is.null(poly_path) ) poly_path = project_dir |> file.path('aoi_export.geojson')
   if( !file.exists(poly_path) ) {
 
-    warning('"aoi_export.geojson" not found. Defaulting to bounding box of AOI polygon')
+    warning('"aoi_export.geojson" not found. Defaulting to bounding box of data source')
     poly_path = project_dir |> file.path('aoi.geojson')
     if( !file.exists(poly_path) ) stop('"aoi.geojson" not found in ', project_dir)
   }
@@ -490,4 +490,46 @@ workflow_downscale = function(project_dir, down=100,
                from = from,
                to = to,
                file_ext = 'tif')
+}
+
+
+#' Aggregate data over polygons and write results to CSV
+#'
+#' This processes the output from workflow_downscale to extract aggregate
+#' (summary) values over whole areas, defined by the polygons in `poly_path`.
+#'
+#' Each time step of the input appears as a row in the output. The function 'fun'
+#' is applied to all values within each polygon to form the columns, and these are
+#' numbered in the same order as the polygons in `poly_path`.
+#'
+#' @param project_dir character path to the project root directory
+#' @param poly_path character path to polygons to summarize
+#' @param fun character, function name (probably either mean, min, or max)
+#' @param from POSIXct start of time range
+#' @param to POSIXct end of time range
+#'
+#' @return returns nothing but possible writes to sub-directory `.nm_export`
+#' @export
+workflow_extract = function(project_dir, poly_path=NULL, fun=NULL, from=NULL, to=NULL) {
+
+  # check for polygons to crop output
+  if( is.null(poly_path) ) poly_path = project_dir |> file.path('aoi_export.geojson')
+  if( !file.exists(poly_path) ) {
+
+    warning('"aoi_export.geojson" not found. Defaulting to bounding box of data source')
+    poly_path = project_dir |> file.path('aoi.geojson')
+    if( !file.exists(poly_path) ) stop('"aoi.geojson" not found in ', project_dir)
+
+    # load the polygons then run aggregator
+    poly_in = poly_path |> sf::st_read()
+    nc_aggregate_space(base_dir = project_dir,
+                       input_nm = .nm_down,
+                       output_nm = .nm_export,
+                       var_nm = .var_daily,
+                       poly_in = poly_in,
+                       fun = fun,
+                       from = from,
+                       to = to,
+                       file_ext = '.tif')
+  }
 }

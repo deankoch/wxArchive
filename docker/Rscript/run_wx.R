@@ -1,17 +1,14 @@
 # Rscript
 # Dean Koch, May 2023
 #
-# [data_dir] directory containing sub-folders "rap" and gfs". Outputs go here
-# [operation] probably one of "list", "update_all", "daily" or "extract"
-# [start_date] start of the date range for updates or outputs
-# [end_date] end of the date range for updates or outputs
+# USAGE: Rscript run_wx.R [data_dir] [operation] [start_date] [end_date]
 #
-# TODO list
+# [data_dir] directory containing sub-folders "rap" and gfs". All outputs go here
+# [operation] usually either "list" or "update_all". See below for list of all valid operation names
+# [start_date] start of the date range to process (set to non-Date to detect automatically)
+# [end_date] end of the date range to process (set to non-Date to detect automatically)
 #
 # * fix posix_rel in grib_df, which is getting turned into integer somewhere (then rebuild CSVs)
-# * configure aggregation workflow (and everything that follows) to overwrite from a saved date
-# *
-# *
 
 library(wxArchive)
 
@@ -28,6 +25,7 @@ operation_valid =  c('list',
                      'update_gfs',
                      'daily',
                      'fit_daily',
+                     'downscale',
                      'export')
 
 # get user input
@@ -94,13 +92,10 @@ if( operation %in% c('update_all') ) data_dir |> wxArchive::workflow_wnd_rap()
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> wxArchive::workflow_update_gfs()
 
 # for each variable this writes a copy of the completed daily time series
+if( operation == 'fit_daily') stop('fit_daily not yet implemented')
 if( operation %in% c('daily', 'update_all') ) data_dir |> wxArchive::workflow_daily()
 if( operation %in% c('downscale', 'update_all') ) data_dir |> wxArchive::workflow_downscale()
-
-
-
-if( operation == 'fit_daily') stop('fit_daily not yet implemented')
-if( operation == 'export') stop('export not yet implemented. Are you looking for "daily"?')
+if( operation %in% c('export', 'update_all') ) data_dir |> wxArchive::workflow_export()
 
 # a clue that you can close the bash terminal now
 cat('\n')

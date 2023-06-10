@@ -67,6 +67,7 @@
 .nm_complete = 'completed'
 .nm_daily = 'daily'
 .nm_down = 'daily_down'
+.nm_export = 'daily_aggregate'
 
 # set of sub-directories to use for fitting temporal model and spatial model
 .nm_resample_rap = c(.nm_src_rap[['fine']], .nm_resample)

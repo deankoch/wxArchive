@@ -10,6 +10,49 @@ document()
 
 project_dir = 'G:'
 terra::free_RAM() |> units::set_units(kb) |> units::set_units(Gb)
+
+poly_path = project_dir |> file.path('aoi_export.geojson')
+poly_in = poly_path |> sf::st_read()
+
+# new function nc_aggregate_space
+# ARGS
+base_dir = project_dir
+input_nm = .nm_down
+output_nm = .nm_export
+var_nm = .var_daily
+poly_in = poly_in
+fun = NULL # NULL to guess from variable name
+from = NULL # set to 10 days before latest added date
+to = NULL # set to latest available date
+file_ext = '.tif' # in case we decide to switch back to nc for this output
+
+nc_aggregate_space(base_dir = project_dir,
+                   input_nm = .nm_down,
+                   output_nm = .nm_export,
+                   var_nm = .var_daily,
+                   poly_in = poly_in,
+                   fun = NULL,
+                   from = NULL,
+                   to = NULL,
+                   file_ext = '.tif')
+
+
+#
+# *
+## *   \
+### * *  \
+#### \ \ / /
+# --> --> - -=-o
+#### / / \ \
+### * *  /
+## *   /
+# *
+#
+
+
+
+
+
 #workflow_downscale(project_dir)
 
 
