@@ -9,7 +9,8 @@ spatial_fit(
   base_dir,
   dem_path,
   input_nm = "fine",
-  model_nm = .nm_model,
+  mode_dir = base_dir,
+  model_nm = .nm_spatial_model,
   n_max = 500,
   time_fit = NULL,
   pos = NULL

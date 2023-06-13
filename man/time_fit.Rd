@@ -8,7 +8,8 @@ time_fit(
   var_nm,
   base_dir,
   input_nm = "fine",
-  model_nm = .nm_model,
+  model_dir = base_dir,
+  model_nm = .nm_temporal_model,
   daily_n = 5L,
   yearly_n = 5L,
   knots_n = 5L
@@ -20,6 +21,8 @@ time_fit(
 \item{base_dir}{path to parent directory of GRIB storage subfolder}
 
 \item{input_nm}{character vector or list, subdirectories containing the .nc files to fit}
+
+\item{model_dir}{character, name of parent directory of \code{model_nm}}
 
 \item{model_nm}{character vector or list, sub-directories to write output files}
 

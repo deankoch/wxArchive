@@ -20,6 +20,7 @@
 #' @param var_nm list of character vectors, the variable names to fit
 #' @param base_dir path to parent directory of GRIB storage subfolder
 #' @param input_nm character vector or list, subdirectories containing the .nc files to fit
+#' @param model_dir character, name of parent directory of `model_nm`
 #' @param model_nm character vector or list, sub-directories to write output files
 #' @param daily_n integer number of Fourier term pairs for daily cycles (passed to `time_X`)
 #' @param yearly_n integer number of Fourier term pairs for yearly cycles (passed to `time_X`)
@@ -30,7 +31,8 @@
 time_fit = function(var_nm,
                     base_dir,
                     input_nm = 'fine',
-                    model_nm = .nm_model,
+                    model_dir = base_dir,
+                    model_nm = .nm_temporal_model,
                     daily_n = 5L,
                     yearly_n = 5L,
                     knots_n = 5L) {
@@ -39,8 +41,8 @@ time_fit = function(var_nm,
   input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
   var_nm = var_nm |> stats::setNames(nm=names(input_nc))
   var_nm_list = names(var_nm) |> as.list()
-  output_json = file_wx('temporal_index', base_dir, model_nm, var_nm_list, make_dir=TRUE)
-  output_nc = file_wx('temporal_nc', base_dir, model_nm, var_nm_list, make_dir=TRUE)
+  output_json = file_wx('temporal_index', model_dir, model_nm, var_nm_list, make_dir=TRUE)
+  output_nc = file_wx('temporal_nc', model_dir, model_nm, var_nm_list, make_dir=TRUE)
 
   # load time coverage of each variable
   cat('\nreading times and grid information for', paste(names(var_nm), collapse=', '))

@@ -10,7 +10,7 @@ time_impute(
   input_nm = "fine",
   output_nm = "completed",
   model_dir = base_dir,
-  model_nm = .nm_model,
+  model_nm = .nm_temporal_model,
   from = NULL,
   to = NULL,
   quiet = FALSE

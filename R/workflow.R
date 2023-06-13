@@ -191,12 +191,12 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
 #' Fit a temporal model to the RUC/RAP times series or load it from a file
 #'
 #' A wrapper for `time_fit`. This reads its input from the sub-directories
-#' named in `.nm_resample_rap` and writes its output to `.nm_model` (see
+#' named in `.nm_resample_rap` and writes its output to `.nm_temporal_model` (see
 #' `?time_fit`).
 #'
 #' Alternatively, load a previously fitted model from a zip archive by providing
 #' the file name in `from_file`. This zip should contain the contents of
-#' `.nm_model` (including the "temporal" subdirectory) generated from a `time_fit`
+#' `.nm_temporal_model` (including the "temporal" subdirectory) generated from a `time_fit`
 #' call on a similar dataset (in terms of time period and AOI)
 #'
 #' Call this function at least once after running `workflow_update_rap` for
@@ -207,9 +207,9 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
-workflow_fit_temporal = function(project_dir, from_file='model.zip') {
+workflow_fit_temporal = function(project_dir, from_file='temporal_model.zip') {
 
-  # all the output files go here, in sub-directory .nm_model
+  # all the output files go here, in sub-directory .nm_temporal_model
   base_dir_rap = project_dir |> file.path('rap')
 
   # fit the models from scratch
@@ -218,14 +218,15 @@ workflow_fit_temporal = function(project_dir, from_file='model.zip') {
     # part 6: fit temporal model to fine grid (include all layers)
     time_fit(var_nm = .nm_output_var,
              base_dir = base_dir_rap,
-             model_nm = .nm_model,
+             model_dir = project_dir,
+             model_nm = .nm_temporal_model,
              input_nm = .nm_resample_rap) |> invisible()
 
   } else {
 
     # load from archive (overwrites existing model)
     zip_path = project_dir |> file.path(from_file)
-    dest_path = base_dir_rap |> file.path(.nm_model)
+    dest_path = project_dir |> file.path(.nm_temporal_model)
     if( !file.exists(zip_path) ) stop('file ', zip_path, ' not found')
     zip_path |> unzip(exdir=dest_path)
   }
@@ -259,7 +260,8 @@ workflow_impute_rap = function(project_dir) {
   message('imputing missing times')
   time_impute(var_nm = .nm_output_var,
               base_dir = base_dir_rap,
-              model_nm = .nm_model,
+              model_dir = project_dir,
+              model_nm = .nm_temporal_model,
               input_nm = .nm_resample_rap,
               output_nm = .nm_complete) |> invisible()
 }
@@ -380,8 +382,8 @@ workflow_update_gfs = function(project_dir, n_ahead=3) {
   time_impute(var_nm = .nm_gfs_var,
               base_dir = base_dir_gfs,
               to = until,
-              model_dir = base_dir_rap,
-              model_nm = .nm_model,
+              model_dir = project_dir,
+              model_nm = .nm_temporal_model,
               input_nm = .nm_resample,
               output_nm = .nm_complete) |> invisible()
 
@@ -430,6 +432,33 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
                                                                    from = from,
                                                                    to = to))
 }
+
+
+#' Fit a spatial model to daily aggregate time series, or load it from a file
+#'
+#' A wrapper for `space_fit`. This reads its input from the sub-directory
+#' named `.nm_daily` and writes its output to `.nm_spatial_model` (see `?space_fit`).
+#'
+#' Alternatively, load a previously fitted model from a zip archive by providing
+#' the file name in `from_file`. This zip should contain the contents of
+#' `.nm_spatial_model` generated from a `space_fit` call on a similar dataset (in terms
+#' of time period and AOI)
+#'
+#' Call this function at least once after running `daily` for the first time if
+#' you plan on running `workflow_downscale` and/or `workflow_extract`
+#'
+#' @param project_dir character path to the project root directory
+#' @param from_file character file name of zip containing previously fitted model
+#'
+#' @return returns nothing but possible writes to `project_dir`
+#' @export
+workflow_fit_spatial = function(project_dir, from_file='spatial_model.zip') {
+
+
+}
+
+
+
 
 
 #' Construct down-scaled (fine resolution) estimates of daily spatial grid data
@@ -482,7 +511,7 @@ workflow_downscale = function(project_dir, down=100,
                dem = dem,
                down = down,
                input_nm = .nm_daily,
-               model_nm = .nm_model,
+               model_nm = .nm_spatial_model,
                output_nm = .nm_down,
                var_nm = .var_daily,
                poly_out = poly_in,
@@ -519,17 +548,18 @@ workflow_extract = function(project_dir, poly_path=NULL, fun=NULL, from=NULL, to
     warning('"aoi_export.geojson" not found. Defaulting to bounding box of data source')
     poly_path = project_dir |> file.path('aoi.geojson')
     if( !file.exists(poly_path) ) stop('"aoi.geojson" not found in ', project_dir)
-
-    # load the polygons then run aggregator
-    poly_in = poly_path |> sf::st_read()
-    nc_aggregate_space(base_dir = project_dir,
-                       input_nm = .nm_down,
-                       output_nm = .nm_export,
-                       var_nm = .var_daily,
-                       poly_in = poly_in,
-                       fun = fun,
-                       from = from,
-                       to = to,
-                       file_ext = '.tif')
   }
+
+  # load the polygons then run aggregator
+  poly_in = poly_path |> sf::st_read()
+  nc_aggregate_space(base_dir = project_dir,
+                     input_nm = .nm_down,
+                     output_nm = .nm_export,
+                     var_nm = .var_daily,
+                     poly_in = poly_in,
+                     fun = fun,
+                     from = from,
+                     to = to,
+                     file_ext = '.tif')
+
 }

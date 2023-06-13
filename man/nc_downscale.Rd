@@ -9,7 +9,7 @@ nc_downscale(
   dem,
   down = 100,
   input_nm = .nm_daily,
-  model_nm = .nm_model,
+  model_nm = .nm_spatial_model,
   output_nm = .nm_down,
   var_nm = .var_daily,
   poly_out = NULL,

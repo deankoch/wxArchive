@@ -4,7 +4,7 @@
 \alias{workflow_fit_temporal}
 \title{Fit a temporal model to the RUC/RAP times series or load it from a file}
 \usage{
-workflow_fit_temporal(project_dir, from_file = "model.zip")
+workflow_fit_temporal(project_dir, from_file = "temporal_model.zip")
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}
@@ -16,13 +16,13 @@ returns nothing but possible writes to \code{project_dir}
 }
 \description{
 A wrapper for \code{time_fit}. This reads its input from the sub-directories
-named in \code{.nm_resample_rap} and writes its output to \code{.nm_model} (see
+named in \code{.nm_resample_rap} and writes its output to \code{.nm_temporal_model} (see
 \code{?time_fit}).
 }
 \details{
 Alternatively, load a previously fitted model from a zip archive by providing
 the file name in \code{from_file}. This zip should contain the contents of
-\code{.nm_model} (including the "temporal" subdirectory) generated from a \code{time_fit}
+\code{.nm_temporal_model} (including the "temporal" subdirectory) generated from a \code{time_fit}
 call on a similar dataset (in terms of time period and AOI)
 
 Call this function at least once after running \code{workflow_update_rap} for
