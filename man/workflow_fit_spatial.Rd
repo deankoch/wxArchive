@@ -25,7 +25,7 @@ the file name in \code{from_file}. This zip should contain the contents of
 
 Alternatively, load a previously fitted model from a zip archive by providing
 the file name in \code{from_file}. This zip should contain the contents of
-\code{.nm_model} generated from a \code{space_fit} call on a similar dataset (in terms
+\code{.nm_spatial_model} generated from a \code{space_fit} call on a similar dataset (in terms
 of time period and AOI)
 
 Call this function at least once after running \code{daily} for the first time if
