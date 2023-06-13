@@ -207,7 +207,7 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
-workflow_fit_temporal = function(project_dir, from_file='model.zip') {
+workflow_fit_temporal = function(project_dir, from_file='temporal_model.zip') {
 
   # all the output files go here, in sub-directory .nm_model
   base_dir_rap = project_dir |> file.path('rap')
@@ -432,6 +432,33 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
 }
 
 
+#' Fit a spatial model to daily aggregate time series, or load it from a file
+#'
+#' A wrapper for `space_fit`. This reads its input from the sub-directory
+#' named `.nm_daily` and writes its output to `.nm_model` (see `?space_fit`).
+#'
+#' Alternatively, load a previously fitted model from a zip archive by providing
+#' the file name in `from_file`. This zip should contain the contents of
+#' `.nm_model` generated from a `space_fit` call on a similar dataset (in terms
+#' of time period and AOI)
+#'
+#' Call this function at least once after running `daily` for the first time if
+#' you plan on running `workflow_downscale` and/or `workflow_extract`
+#'
+#' @param project_dir character path to the project root directory
+#' @param from_file character file name of zip containing previously fitted model
+#'
+#' @return returns nothing but possible writes to `project_dir`
+#' @export
+workflow_fit_spatial = function(project_dir, from_file='spatial_model.zip') {
+
+
+}
+
+
+
+
+
 #' Construct down-scaled (fine resolution) estimates of daily spatial grid data
 #'
 #' Wrapper for `nc_downscale` to produced down-scaled versions of the daily outputs
@@ -519,17 +546,18 @@ workflow_extract = function(project_dir, poly_path=NULL, fun=NULL, from=NULL, to
     warning('"aoi_export.geojson" not found. Defaulting to bounding box of data source')
     poly_path = project_dir |> file.path('aoi.geojson')
     if( !file.exists(poly_path) ) stop('"aoi.geojson" not found in ', project_dir)
-
-    # load the polygons then run aggregator
-    poly_in = poly_path |> sf::st_read()
-    nc_aggregate_space(base_dir = project_dir,
-                       input_nm = .nm_down,
-                       output_nm = .nm_export,
-                       var_nm = .var_daily,
-                       poly_in = poly_in,
-                       fun = fun,
-                       from = from,
-                       to = to,
-                       file_ext = '.tif')
   }
+
+  # load the polygons then run aggregator
+  poly_in = poly_path |> sf::st_read()
+  nc_aggregate_space(base_dir = project_dir,
+                     input_nm = .nm_down,
+                     output_nm = .nm_export,
+                     var_nm = .var_daily,
+                     poly_in = poly_in,
+                     fun = fun,
+                     from = from,
+                     to = to,
+                     file_ext = '.tif')
+
 }

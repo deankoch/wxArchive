@@ -4,7 +4,7 @@
 \alias{workflow_fit_temporal}
 \title{Fit a temporal model to the RUC/RAP times series or load it from a file}
 \usage{
-workflow_fit_temporal(project_dir, from_file = "model.zip")
+workflow_fit_temporal(project_dir, from_file = "temporal_model.zip")
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}

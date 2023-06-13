@@ -16,15 +16,19 @@ library(wxArchive)
 aoi_nm = 'aoi.geojson'
 local_path = file.path('/home/wxarchive', aoi_nm)
 
+# expected model files (if missing they are created automatically)
+from_temporal_file = 'temporal_model.zip'
+from_spatial_file = 'spatial_model.zip'
+
 # valid operations
 operation_valid =  c('list',
                      'update_all',
                      'update_rap',
-                     'fit_rap',
+                     'fit_temporal',
                      'impute_rap',
                      'update_gfs',
                      'daily',
-                     'fit_daily',
+                     'fit_spatial',
                      'downscale',
                      'extract')
 
@@ -65,12 +69,11 @@ if( operation %in% c('update_rap', 'update_all') ) data_dir |>
   wxArchive::workflow_update_rap(from=start_date, to=end_date)
 
 # fit temporal model to RAP/RUC archive
-if( operation %in% c('fit_rap', 'update_all') ) {
+if( operation %in% c('fit_temporal', 'update_all') ) {
 
-  # this unpacks a saved set of model parameter files unless in fit_rap mode
-  from_file = 'model.zip'
-  if(operation == 'fit_rap') from_file = NULL
-  data_dir |> wxArchive::workflow_fit_temporal(from_file=from_file)
+  # this unpacks a saved set of model parameter files unless in fit_temporal mode
+  if(operation == 'fit_temporal') from_temporal_file = NULL
+  data_dir |> wxArchive::workflow_fit_temporal(from_file=from_temporal_file)
 }
 
 # impute missing values in RAP/RUC archive
@@ -80,7 +83,7 @@ if( operation %in% c('impute_rap', 'update_all') ) {
   model_dir = data_dir |> file.path('rap', wxArchive:::.nm_model)
 
   # check if a temporal model has been fitted to the data yet
-  msg_fail = paste('directory', model_dir, 'not found. Run operation "fit_rap" first')
+  msg_fail = paste('directory', model_dir, 'not found. Run operation "fit_temporal" first')
   if( !dir.exists(model_dir) ) stop(msg_fail)
   data_dir |> wxArchive::workflow_impute_rap()
 }
@@ -92,12 +95,21 @@ if( operation %in% c('update_all') ) data_dir |> wxArchive::workflow_wnd_rap()
 if( operation %in% c('update_gfs', 'update_all') ) data_dir |> wxArchive::workflow_update_gfs()
 
 # for each variable this writes a copy of the completed daily time series
-if( operation == 'fit_daily') stop('fit_daily not yet implemented')
 if( operation %in% c('daily', 'update_all') ) data_dir |> wxArchive::workflow_daily()
+
+# fit a spatial model to the daily data
+if( operation %in% c('fit_spatial', 'update_all') ) {
+
+  # this unpacks a saved set of model parameter files unless in fit_temporal mode
+  if(operation == 'fit_spatial') from_spatial_file = NULL
+  data_dir |> wxArchive::workflow_fit_spatial(from_file=from_spatial_file)
+}
+
+# downscale and aggregate (makes completed daily time series at two scales)
 if( operation %in% c('downscale', 'update_all') ) data_dir |> wxArchive::workflow_downscale()
 if( operation %in% c('extract', 'update_all') ) data_dir |> wxArchive::workflow_extract()
 
-# a clue that you can close the bash terminal now
+
 cat('\n')
 message('all done')
 

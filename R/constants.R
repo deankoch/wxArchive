@@ -71,7 +71,8 @@
 
 # set of sub-directories to use for fitting temporal model and spatial model
 .nm_resample_rap = c(.nm_src_rap[['fine']], .nm_resample)
-.nm_model = 'model'
+.nm_temporal_model = 'temporal_model'
+.nm_spatial_model = 'spatial_model'
 
 # set of sub-directories forming completed time series
 .nm_complete_rap = c(.nm_resample_rap, .nm_complete)

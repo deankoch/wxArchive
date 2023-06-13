@@ -11,7 +11,8 @@ ARG AOI_NAME=aoi.geojson
 ARG EXP_NAME=aoi_export.geojson
 
 # fitted temporal model files
-ARG MODEL_NAME=model.zip
+ARG TIME_MODEL_NAME=temporal_model.zip
+ARG SPACE_MODEL_NAME=spatial_model.zip
 
 # get CRAN packages (skip any installed already)
 RUN install2.r -e -s \
@@ -29,7 +30,8 @@ terra \
 WORKDIR ${WX_PATH}
 COPY ${AOI_NAME} ${AOI_NAME}
 COPY ${EXP_NAME} ${EXP_NAME}
-COPY ${MODEL_NAME} ${MODEL_NAME}
+COPY ${TIME_MODEL_NAME} ${TIME_MODEL_NAME}
+COPY ${SPACE_MODEL_NAME} ${SPACE_MODEL_NAME}
 RUN R -q -e "devtools::install_github('deankoch/wxArchive', force=TRUE)"
 
 # copy Rscript(s)
