@@ -26,7 +26,7 @@
 #' `file_wx('spatial', base_dir, input_nm[1], as.list(names(var_nm))`
 #'
 #' Model fit information is appended to the bottom of the existing list in the JSON file.
-#' The results include the output of helper function `run_spatial_fit`, along with the
+#' The results include the output of helper function `run_space_fit`, along with the
 #' time of the function call, and the input files and variable names.
 #'
 #' @param var_nm character vector or list, the names of the variables to fit (in a loop)
@@ -40,15 +40,16 @@
 #'
 #' @return returns nothing, but writes to JSON files in sub-directory `train_nm` of `base_dir`
 #' @export
-spatial_fit = function(var_nm,
-                       base_dir,
-                       dem_path,
-                       input_nm = 'fine',
-                       mode_dir = base_dir,
-                       model_nm = .nm_spatial_model,
-                       n_max = 5e2,
-                       time_fit = NULL,
-                       pos = NULL) {
+space_fit = function(var_nm,
+                     base_dir,
+                     dem_path,
+                     input_nm = 'fine',
+                     mode_dir = base_dir,
+                     model_nm = .nm_spatial_model,
+                     n_max = 5e2,
+                     time_fit = NULL,
+                     pos = NULL) {
+
 
   # input/output paths (var_nm is list to ensure output paths are in list)
   input_nc = file_wx('nc', base_dir, input_nm, as.list(var_nm))
@@ -81,10 +82,7 @@ spatial_fit = function(var_nm,
 
     # fit the model
     fit_result = nc_chunk(input_nc[[v]]) |>
-      run_spatial_fit(X = X_space,
-                      n_max = n_max,
-                      time_fit = time_fit,
-                      pos = pos)
+      run_space_fit(X = X_space, n_max = n_max, time_fit = time_fit, pos = pos)
 
     # append results to existing list in the JSON
     append_list = list(var_nm=var_nm[[v]], sub_dir=input_nm) |> c(X_attr) |> c(fit_result)
@@ -99,9 +97,9 @@ spatial_fit = function(var_nm,
 }
 
 
-#' Fit a spatial model and return a list of results for use in `spatial_fit`
+#' Fit a spatial model and return a list of results for use in `space_fit`
 #'
-#' This is a helper function for `spatial_fit`. It fits a random subsample of
+#' This is a helper function for `space_fit`. It fits a random subsample of
 #' the observed data (from `p`) using the covariates in `X`. Generate `X` by passing
 #' an example grid from `p` (along with a DEM) to `space_X`.
 #'
@@ -122,7 +120,7 @@ spatial_fit = function(var_nm,
 #'
 #' @return list of model fitting results
 #' @export
-run_spatial_fit = function(p, X, n_max=1e2, time_fit=NULL, pos=NULL) {
+run_space_fit = function(p, X, n_max=1e2, time_fit=NULL, pos=NULL) {
 
   # by default select non-zero layers only for variable names starting with "pcp"
   if( is.null(pos) ) pos = basename(p) |> startsWith('pcp') |> any()

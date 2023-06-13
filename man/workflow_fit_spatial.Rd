@@ -4,7 +4,11 @@
 \alias{workflow_fit_spatial}
 \title{Fit a spatial model to daily aggregate time series, or load it from a file}
 \usage{
-workflow_fit_spatial(project_dir, from_file = "spatial_model.zip")
+workflow_fit_spatial(
+  project_dir,
+  dem_path = NULL,
+  from_file = "spatial_model.zip"
+)
 }
 \arguments{
 \item{project_dir}{character path to the project root directory}
@@ -19,14 +23,13 @@ A wrapper for \code{space_fit}. This reads its input from the sub-directory
 named \code{.nm_daily} and writes its output to \code{.nm_spatial_model} (see \code{?space_fit}).
 }
 \details{
-Alternatively, load a previously fitted model from a zip archive by providing
-the file name in \code{from_file}. This zip should contain the contents of
-\code{.nm_spatial_model} generated from a \code{space_fit} call on a similar dataset (in terms
+Fitting requires a digital elevation model (DEM) with data in meters. This is expected
+in the GeoTIFF file "elev_m.tif" in \code{project_dir}, but you can specify an alternate
+name or location with \code{dem_path} (passed to \code{terra::rast}).
 
 Alternatively, load a previously fitted model from a zip archive by providing
 the file name in \code{from_file}. This zip should contain the contents of
-\code{.nm_spatial_model} generated from a \code{space_fit} call on a similar dataset (in terms
-of time period and AOI)
+\code{.nm_spatial_model} generated from a \code{space_fit} call on a similar dataset
 
 Call this function at least once after running \code{daily} for the first time if
 you plan on running \code{workflow_downscale} and/or \code{workflow_extract}

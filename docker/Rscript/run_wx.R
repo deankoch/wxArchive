@@ -105,6 +105,8 @@ if( operation %in% c('fit_spatial', 'update_all') ) {
   data_dir |> wxArchive::workflow_fit_spatial(from_file=from_spatial_file)
 }
 
+# TODO: check if we have required inputs before calling these last two subroutines
+
 # downscale and aggregate (makes completed daily time series at two scales)
 if( operation %in% c('downscale', 'update_all') ) data_dir |> wxArchive::workflow_downscale()
 if( operation %in% c('extract', 'update_all') ) data_dir |> wxArchive::workflow_extract()

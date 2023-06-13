@@ -209,7 +209,7 @@ workflow_update_rap = function(project_dir, from=NULL, to=NULL) {
 #' @export
 workflow_fit_temporal = function(project_dir, from_file='temporal_model.zip') {
 
-  # all the output files go here, in sub-directory .nm_temporal_model
+  # all the input files come from here, in sub-directory `.nm_resample_rap`
   base_dir_rap = project_dir |> file.path('rap')
 
   # fit the models from scratch
@@ -439,14 +439,13 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
 #' A wrapper for `space_fit`. This reads its input from the sub-directory
 #' named `.nm_daily` and writes its output to `.nm_spatial_model` (see `?space_fit`).
 #'
-#' Alternatively, load a previously fitted model from a zip archive by providing
-#' the file name in `from_file`. This zip should contain the contents of
-#' `.nm_spatial_model` generated from a `space_fit` call on a similar dataset (in terms
+#' Fitting requires a digital elevation model (DEM) with data in meters. This is expected
+#' in the GeoTIFF file "elev_m.tif" in `project_dir`, but you can specify an alternate
+#' name or location with `dem_path` (passed to `terra::rast`).
 #'
 #' Alternatively, load a previously fitted model from a zip archive by providing
 #' the file name in `from_file`. This zip should contain the contents of
-#' `.nm_spatial_model` generated from a `space_fit` call on a similar dataset (in terms
-#' of time period and AOI)
+#' `.nm_spatial_model` generated from a `space_fit` call on a similar dataset
 #'
 #' Call this function at least once after running `daily` for the first time if
 #' you plan on running `workflow_downscale` and/or `workflow_extract`
@@ -456,9 +455,33 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
 #'
 #' @return returns nothing but possible writes to `project_dir`
 #' @export
-workflow_fit_spatial = function(project_dir, from_file='spatial_model.zip') {
+workflow_fit_spatial = function(project_dir, dem_path=NULL, from_file='spatial_model.zip') {
 
+  # set default location for file with elevation data
+  if( is.null(dem_path) ) dem_path = project_dir |> file.path('elev_m.tif')
 
+  # fit the model to aggregate data created by `workflow_daily`
+  if( is.null(from_file) ) {
+
+    # fit spatial model to random sample of 500 layers (days)
+    space_fit(var_nm = .var_daily,
+              base_dir = project_dir,
+              dem_path = dem_path,
+              input_nm = .nm_daily,
+              model_nm = .nm_spatial_model,
+              n_max = 5e2) |> invisible()
+
+    # TODO: zip the result
+    #from_file
+
+  } else {
+
+    # load from archive (overwrites existing model)
+    zip_path = project_dir |> file.path(from_file)
+    dest_path = project_dir |> file.path(.nm_spatial_model)
+    if( !file.exists(zip_path) ) stop('file ', zip_path, ' not found')
+    zip_path |> unzip(exdir=dest_path)
+  }
 }
 
 
