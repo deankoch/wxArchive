@@ -442,6 +442,10 @@ workflow_daily = function(project_dir, from=NULL, to=NULL, tz='MST') {
 #' Alternatively, load a previously fitted model from a zip archive by providing
 #' the file name in `from_file`. This zip should contain the contents of
 #' `.nm_spatial_model` generated from a `space_fit` call on a similar dataset (in terms
+#'
+#' Alternatively, load a previously fitted model from a zip archive by providing
+#' the file name in `from_file`. This zip should contain the contents of
+#' `.nm_model` generated from a `space_fit` call on a similar dataset (in terms
 #' of time period and AOI)
 #'
 #' Call this function at least once after running `daily` for the first time if

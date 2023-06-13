@@ -22,6 +22,10 @@ named \code{.nm_daily} and writes its output to \code{.nm_spatial_model} (see \c
 Alternatively, load a previously fitted model from a zip archive by providing
 the file name in \code{from_file}. This zip should contain the contents of
 \code{.nm_spatial_model} generated from a \code{space_fit} call on a similar dataset (in terms
+
+Alternatively, load a previously fitted model from a zip archive by providing
+the file name in \code{from_file}. This zip should contain the contents of
+\code{.nm_model} generated from a \code{space_fit} call on a similar dataset (in terms
 of time period and AOI)
 
 Call this function at least once after running \code{daily} for the first time if

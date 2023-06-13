@@ -50,7 +50,6 @@
                         c(var='pcp', fun='mean'),
                         c(var='wnd', fun='mean'))
 
-
 # file names for the aggregate series
 .var_daily = .var_daily_pairs |> sapply(\(x) paste(x, collapse='_'))
 
