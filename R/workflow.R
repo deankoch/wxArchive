@@ -486,8 +486,6 @@ workflow_fit_spatial = function(project_dir, dem_path=NULL, from_file='spatial_m
 
 
 
-
-
 #' Construct down-scaled (fine resolution) estimates of daily spatial grid data
 #'
 #' Wrapper for `nc_downscale` to produced down-scaled versions of the daily outputs

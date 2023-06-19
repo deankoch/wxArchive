@@ -121,17 +121,19 @@ time_impute = function(var_nm,
     t_pre = t_pre[ !(t_pre %in% t_gap) ]
     t_both = c(t_pre, t_gap) |> sort()
 
-    # load all observed data into a matrix with NAs for unobserved to be filled below
+    # load all observations into a matrix with NAs for unobserved to be filled below
     cat('\nloading observed data into memory')
-    r_obs = input_nc[[nm]] |> nc_layers(t_pre, na_rm=TRUE)
+    r_obs = c(input_nc[[nm]], output_nc[[nm]]) |> nc_layers(t_pre, na_rm=TRUE)
     mat_both = r_obs[][, match(t_both, t_pre)]
 
-    # loop over gaps
+    # progress bar omitted when only 1 iteration
     if(n_gap > 1) {
 
       cat('\nlooping over', n_gap, 'gaps to impute missing layers...\n')
       pb = utils::txtProgressBar(max=n_gap, style=3)
     }
+
+    # loop over gaps
     for(g in seq(n_gap)) {
 
       # copy relevant times
@@ -175,7 +177,6 @@ time_impute = function(var_nm,
 
     # omit observed times
     r_pred = r_pred[[ (t_both %in% t_gap) ]]
-    t_overwrite = terra::time(r_pred)
 
     # append to nc file
     r_pred |> nc_write_chunk(p=output_nc[[nm]])
