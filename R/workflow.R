@@ -461,6 +461,7 @@ workflow_fit_spatial = function(project_dir, dem_path=NULL, from_file='spatial_m
   if( is.null(dem_path) ) dem_path = project_dir |> file.path('elev_m.tif')
 
   # fit the model to aggregate data created by `workflow_daily`
+  if( !file.exists( file.path(project_dir, from_file) ) ) from_file = NULL
   if( is.null(from_file) ) {
 
     # fit spatial model to random sample of 500 layers (days)

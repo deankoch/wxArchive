@@ -56,7 +56,7 @@ nc_aggregate_space = function(base_dir,
   input_var_info = lapply(input_nc, \(p) time_wx(p, file_ext=file_ext))
   output_var_info = lapply(output_nc, \(p) time_wx(p, file_ext='csv'))
 
-  # TODO: loop over variables
+  # loop over variables
   for(v in seq_along(var_nm)) {
 
     paste0('\n\nprocessing ', var_nm[[v]], '...\n') |> cat()
