@@ -120,7 +120,7 @@ time_wx = function(nc_path, join=TRUE, file_ext='nc') {
 #'
 #' @param r SpatRaster or character vector of paths to NetCDF or GeoTIFF file(s)
 #'
-#' @return a list of list(s) with vectors 'na' (integer), 'time', 'time_na', 'time_obs'
+#' @return a list with vectors 'na' (integer), 'time', 'time_na', 'time_obs'
 #' @export
 time_nc = function(r) {
 
@@ -147,6 +147,9 @@ time_nc = function(r) {
       if( file.exists(p) ) time_nc(terra::rast(p)) else NA
 
     }) |> stats::setNames(r)
+
+    #
+    if( length(r_result) == 1 ) r_result = r_result[[1]]
 
     return(r_result)
   }

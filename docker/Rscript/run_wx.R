@@ -35,6 +35,7 @@ operation_valid =  c('list',
 # get user input
 msg_args = 'Usage: Rscript run_wx [data_dir] [operation] [start_date] [end_date]'
 user_args = commandArgs(trailingOnly=TRUE)
+# user_args = c('G:', 'update_all', 'a', 'a')
 if( length(user_args) != 4 ) stop(msg_args)
 
 # first argument should point to parent directory of "rap" and "gfs"

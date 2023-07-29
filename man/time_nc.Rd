@@ -10,7 +10,7 @@ time_nc(r)
 \item{r}{SpatRaster or character vector of paths to NetCDF or GeoTIFF file(s)}
 }
 \value{
-a list of list(s) with vectors 'na' (integer), 'time', 'time_na', 'time_obs'
+a list with vectors 'na' (integer), 'time', 'time_na', 'time_obs'
 }
 \description{
 For SpatRaster \code{r}, the function returns a list of four vectors:
