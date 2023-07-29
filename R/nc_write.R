@@ -173,7 +173,7 @@ write_time_json = function(nc_path, r=NULL) {
 
   # read times from file if r not supplied
   if( is.null(r) ) r = nc_path
-  json_data = time_nc(r)
+  json_data = time_nc(r)[[1]]
 
   # report problems with `time_nc` or write results to disk
   if( anyNA(json_data) ) stop('there was a problem reading times from the SpatRaster')

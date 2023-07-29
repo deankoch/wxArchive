@@ -232,7 +232,6 @@ nc_downscale = function(base_dir,
           # replace the data file
           unlink(p_dest)
           file.rename(from=p_temp, to=p_dest)
-          p_dest = p_temp
 
           # remove old aux file and rename new one to replace
           if( file.exists(p_gdal_old) ) {
@@ -244,7 +243,7 @@ nc_downscale = function(base_dir,
         }
 
         # update attributes on disk
-        p_dest |> write_time_json(r=r_merged)
+        p_dest |> write_time_json()
 
         # remove remaining SpatRaster object from memory
         rm(r_merged)
