@@ -52,7 +52,9 @@ For our purposes we need the following variables
 
 The first string (eg `pcp_total`) is my name for the variable, whereas the one in parentheses is a regular expression to match layer names in the GRIB/GRIB2 files. The wildcards accommodate a small degree of variation in names among the three models, and among the different forecast times published on a given day. Notice that a vertical level has to be specified (eg "SFC" stands for "surface") and square brackets in the name should be escaped (eg `\\[` instead of `[`).
 
-The precipitation type we are interested in is `pcp_total`. Variables `pcp_large` and `pcp_small` are included so that we can derive an estimate of `pcp_total` for time layers where it is missing.
+The precipitation type we are interested in is `pcp_total`. Variables `pcp_large` and `pcp_small` are included so that we can derive an estimate of `pcp_total` for time layers where it is missing. 
+
+The units for precipitation are kg/m2; temperature is in degrees Celsius; humidity in percent; and wind in m/s.
 
 
 ## Grids
